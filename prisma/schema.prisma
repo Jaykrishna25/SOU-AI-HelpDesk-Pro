@@ -1,0 +1,479 @@
+// ============================================================
+// SOU AI HelpDesk Pro — Prisma Schema
+// Silver Oak University | Enterprise University ERP + Help Desk
+// Datasource: PostgreSQL | ORM: Prisma
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------- ENUMS ----------------------
+enum Role {
+  STUDENT
+  ADMIN
+  FACULTY
+  HOD
+  HOI
+  OWNER
+  SUPER_ADMIN
+}
+
+enum TicketStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  ESCALATED
+  RESOLVED
+  CLOSED
+  REOPENED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEAVE
+}
+
+enum FeeStatus {
+  PAID
+  PENDING
+  PARTIAL
+  OVERDUE
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum TicketEvent {
+  CREATED
+  ASSIGNED
+  ESCALATED
+  COMMENT_ADDED
+  RESPONSE_ADDED
+  RESOLVED
+  CLOSED
+  REOPENED
+  SLA_WARNING
+}
+
+// ---------------------- CORE / RBAC ----------------------
+model User {
+  id            String   @id @default(cuid())
+  loginId       String   @unique // enrollment no / staff id
+  role          Role
+  email         String?  @unique
+  passwordHash  String?  // optional; login uses id + birthdate
+  birthdate     DateTime
+  fullName      String
+  avatarUrl     String?
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  student       Student?
+  faculty       Faculty?
+  admin         Admin?
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  createdTickets Ticket[]      @relation("TicketCreator")
+  assignedTickets Ticket[]     @relation("TicketAssignee")
+  ticketComments TicketComment[]
+  watching      TicketWatcher[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  ipAddress String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+
+// ---------------------- ORG STRUCTURE ----------------------
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  code        String   @unique
+  hodId       String?
+  createdAt   DateTime @default(now())
+
+  students    Student[]
+  faculty     Faculty[]
+  courses     Course[]
+  subjects    Subject[]
+}
+
+model Course {
+  id           String   @id @default(cuid())
+  name         String
+  code         String   @unique
+  durationYrs  Int
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  students     Student[]
+  subjects     Subject[]
+}
+
+model Subject {
+  id           String   @id @default(cuid())
+  name         String
+  code         String   @unique
+  semester     Int
+  credits      Int      @default(4)
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  courseId     String?
+  course       Course?  @relation(fields: [courseId], references: [id])
+  facultyId    String?
+  faculty      Faculty? @relation(fields: [facultyId], references: [id])
+
+  lectures     Lecture[]
+  attendance   Attendance[]
+  exams        Exam[]
+  results      Result[]
+  notes        Note[]
+}
+
+// ---------------------- PEOPLE ----------------------
+model Student {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentNo  String   @unique
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id])
+  courseId      String?
+  course        Course?  @relation(fields: [courseId], references: [id])
+  semester      Int      @default(1)
+  program       String
+  admissionDate DateTime @default(now())
+  cgpa          Float    @default(0)
+
+  attendance    Attendance[]
+  fees          Fee[]
+  results       Result[]
+  examSeats     ExamSeat[]
+}
+
+model Faculty {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facultyId     String   @unique
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id])
+  designation   String   @default("Assistant Professor")
+  joiningDate   DateTime @default(now())
+
+  subjects      Subject[]
+  lectures      Lecture[]
+  salaries      Salary[]
+  notes         Note[]
+  invigilations ExamDuty[]
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminId      String   @unique
+  scope        String   @default("CAMPUS") // CAMPUS, DEPARTMENT
+  joiningDate  DateTime @default(now())
+}
+
+// ---------------------- ACADEMICS ----------------------
+model Timetable {
+  id        String   @id @default(cuid())
+  semester  Int
+  program   String
+  lectures  Lecture[]
+}
+
+model Lecture {
+  id          String   @id @default(cuid())
+  timetableId String?
+  timetable   Timetable? @relation(fields: [timetableId], references: [id])
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  facultyId   String
+  faculty     Faculty  @relation(fields: [facultyId], references: [id])
+  dayOfWeek   Int      // 1=Mon
+  startTime   String
+  endTime     String
+  classroom   String
+  building    String
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  date      DateTime
+  status    AttendanceStatus @default(PRESENT)
+  markedBy  String?
+  createdAt DateTime @default(now())
+
+  @@index([studentId, subjectId])
+}
+
+model Exam {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  title     String
+  type      String   // INTERNAL / EXTERNAL / MID / END
+  date      DateTime
+  venue     String
+  duration  Int      @default(180)
+
+  seats     ExamSeat[]
+  duties    ExamDuty[]
+}
+
+model ExamSeat {
+  id        String  @id @default(cuid())
+  examId    String
+  exam      Exam    @relation(fields: [examId], references: [id])
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+  seatNo    String
+}
+
+model ExamDuty {
+  id        String  @id @default(cuid())
+  examId    String
+  exam      Exam    @relation(fields: [examId], references: [id])
+  facultyId String
+  faculty   Faculty @relation(fields: [facultyId], references: [id])
+  role      String  @default("Invigilator")
+}
+
+model Result {
+  id            String  @id @default(cuid())
+  studentId     String
+  student       Student @relation(fields: [studentId], references: [id])
+  subjectId     String
+  subject       Subject @relation(fields: [subjectId], references: [id])
+  semester      Int
+  internalMarks Float   @default(0)
+  externalMarks Float   @default(0)
+  grade         String?
+  sgpa          Float?
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   // PDF / VIDEO / ASSIGNMENT / PPT
+  url       String
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  facultyId String
+  faculty   Faculty  @relation(fields: [facultyId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// ---------------------- FINANCE ----------------------
+model Fee {
+  id         String    @id @default(cuid())
+  studentId  String
+  student    Student   @relation(fields: [studentId], references: [id])
+  semester   Int
+  totalFees  Float
+  paidFees   Float     @default(0)
+  status     FeeStatus @default(PENDING)
+  dueDate    DateTime
+  receipts   FeeReceipt[]
+}
+
+model FeeReceipt {
+  id        String   @id @default(cuid())
+  feeId     String
+  fee       Fee      @relation(fields: [feeId], references: [id])
+  amount    Float
+  method    String   @default("ONLINE")
+  txnId     String   @unique
+  paidAt    DateTime @default(now())
+}
+
+model Salary {
+  id         String   @id @default(cuid())
+  facultyId  String
+  faculty    Faculty  @relation(fields: [facultyId], references: [id])
+  month      String
+  basic      Float
+  allowances Float    @default(0)
+  deductions Float    @default(0)
+  netPay     Float
+  status     String   @default("PAID")
+  receipts   SalaryReceipt[]
+}
+
+model SalaryReceipt {
+  id        String   @id @default(cuid())
+  salaryId  String
+  salary    Salary   @relation(fields: [salaryId], references: [id])
+  url       String
+  issuedAt  DateTime @default(now())
+}
+
+// ---------------------- CALENDAR / EVENTS ----------------------
+model AcademicCalendar {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   // EVENT / HOLIDAY / DEADLINE
+  startDate DateTime
+  endDate   DateTime?
+  description String?
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   // WORKSHOP / CONFERENCE / SEMINAR
+  date      DateTime
+  venue     String
+  organizer String?
+}
+
+model Meeting {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   // FACULTY / STUDENT / DEPARTMENT
+  date      DateTime
+  agenda    String?
+  createdBy String?
+}
+
+// ---------------------- HELP DESK / TICKETS ----------------------
+model Ticket {
+  id          String   @id @default(cuid())
+  code        String   @unique // TKT-2026-0001
+  subject     String
+  description String
+  category    String   // intent label
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)
+  sentiment   String?  // POSITIVE / NEUTRAL / NEGATIVE
+  aiConfidence Float?
+  slaDueAt    DateTime?
+  slaBreached Boolean  @default(false)
+
+  creatorId   String
+  creator     User     @relation("TicketCreator", fields: [creatorId], references: [id])
+  assigneeId  String?
+  assignee    User?    @relation("TicketAssignee", fields: [assigneeId], references: [id])
+
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+  updatedAt   DateTime @updatedAt
+
+  history     TicketHistory[]
+  comments    TicketComment[]
+  watchers    TicketWatcher[]
+  emailLogs   EmailLog[]
+}
+
+model TicketHistory {
+  id        String      @id @default(cuid())
+  ticketId  String
+  ticket    Ticket      @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  event     TicketEvent
+  actor     String?
+  note      String?
+  createdAt DateTime    @default(now())
+}
+
+model TicketComment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  isInternal Boolean @default(false)
+  createdAt DateTime @default(now())
+}
+
+model TicketWatcher {
+  id       String @id @default(cuid())
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  @@unique([ticketId, userId])
+}
+
+// ---------------------- NOTIFICATIONS / EMAIL ----------------------
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  body      String
+  channel   NotificationChannel @default(IN_APP)
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  ticketId  String?
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id])
+  toEmail   String
+  subject   String
+  body      String
+  provider  String   @default("AWS_SES")
+  status    String   @default("SENT")
+  createdAt DateTime @default(now())
+}
+
+// ---------------------- KNOWLEDGE BASE / RAG ----------------------
+model KnowledgeBase {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   // CIRCULAR / NOTICE / POLICY / FAQ / DOC / FACULTY_RESPONSE
+  content   String
+  tags      String[]
+  embedding Float[]  // pgvector in production
+  source    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

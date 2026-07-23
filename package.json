@@ -1,0 +1,19 @@
+{
+  "name": "sou-ai-helpdesk-pro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SOU AI HelpDesk Pro - Enterprise AI-Powered University ERP, Multi-Agent Help Desk & Management System for Silver Oak University",
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,magenta \"npm --workspace backend run dev\" \"npm --workspace frontend run dev\"",
+    "build": "npm --workspace backend run build && npm --workspace frontend run build",
+    "db:generate": "npm --workspace backend run prisma:generate",
+    "db:migrate": "npm --workspace backend run prisma:migrate",
+    "db:seed": "npm --workspace backend run seed",
+    "docker:up": "docker compose up --build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "engines": { "node": ">=20" }
+}

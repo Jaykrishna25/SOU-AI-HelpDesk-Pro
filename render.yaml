@@ -1,0 +1,42 @@
+databases:
+  - name: sou-postgres
+    databaseName: sou_helpdesk
+    user: sou_admin
+    plan: free
+
+services:
+  # ---------- Backend API ----------
+  - type: web
+    name: sou-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install && npx prisma generate && npm run build && npx prisma db push --accept-data-loss && npm run seed
+    startCommand: node dist/index.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sou-postgres
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: PORT
+        value: 5001
+      - key: ADMIN_RESPONSE_SLA_HOURS
+        value: 48
+      - key: CORS_ORIGIN
+        sync: false   # set to your frontend URL after first deploy
+
+  # ---------- Frontend (Next.js) ----------
+  - type: web
+    name: sou-frontend
+    runtime: node
+    rootDir: frontend
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false   # set to https://sou-backend.onrender.com/api
