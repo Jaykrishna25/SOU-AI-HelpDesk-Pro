@@ -6,9 +6,16 @@ import Panel from "@/components/Panel";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 
 const NAV = ["Dashboard", "Revenue", "University", "Workforce", "Forecasting", "Governance"];
+interface Gov { id: number; text: string; kind: "review" | "approve"; status: string; }
 
 export default function OwnerDashboard() {
   const [tab, setTab] = useState("Dashboard");
+  const [gov, setGov] = useState<Gov[]>([
+    { id: 1, text: "Escalated: Fee refund dispute (TKT-2026-0042)", kind: "review", status: "Pending" },
+    { id: 2, text: "Approve: New lab budget (Rs 12L)", kind: "approve", status: "Pending" },
+    { id: 3, text: "Escalated: Faculty grievance", kind: "review", status: "Pending" },
+  ]);
+  const act = (id: number, status: string) => setGov((g) => g.map((x) => x.id === id ? { ...x, status } : x));
   const forecasts = [["Admissions (Next Yr)", "+18%", "AI forecast"], ["Revenue (Q4)", "Rs 4.2 Cr", "projected"], ["Ticket Volume", "-12%", "trending down"], ["Faculty Workload", "Balanced", "optimal"]];
 
   return (
@@ -51,8 +58,19 @@ export default function OwnerDashboard() {
       {tab === "Governance" && (
         <Panel title="Governance & Escalations">
           <div className="space-y-2 text-sm">
-            <div className="glass px-4 py-3 flex justify-between items-center"><span>Escalated: Fee refund dispute</span><button className="text-xs px-3 py-1 rounded-full bg-brand text-white">Review</button></div>
-            <div className="glass px-4 py-3 flex justify-between items-center"><span>Approve: New lab budget</span><button className="text-xs px-3 py-1 rounded-full bg-emerald-500/80 text-white">Approve</button></div>
+            {gov.map((g) => (
+              <div key={g.id} className="glass px-4 py-3 flex justify-between items-center">
+                <span>{g.text}</span>
+                {g.status === "Pending" ? (
+                  <button onClick={() => act(g.id, g.kind === "approve" ? "Approved" : "Reviewed")}
+                    className={`text-xs px-3 py-1 rounded-full text-white ${g.kind === "approve" ? "bg-emerald-500/80" : "bg-brand"}`}>
+                    {g.kind === "approve" ? "Approve" : "Review"}
+                  </button>
+                ) : (
+                  <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300">{g.status}</span>
+                )}
+              </div>
+            ))}
           </div>
         </Panel>
       )}

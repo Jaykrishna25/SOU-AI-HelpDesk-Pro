@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { GraduationCap, LogOut, Bell } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { GraduationCap, LogOut, Bell, CheckCheck } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
 
 export interface Stat { label: string; value: string; icon: React.ElementType; accent?: string; }
+
+interface Notif { title: string; body: string; read: boolean; }
 
 export default function DashboardShell({
   role, name, nav, stats, children, activeNav, onNavSelect,
@@ -20,6 +22,14 @@ export default function DashboardShell({
 }) {
   const [displayName, setDisplayName] = useState(name);
   const [displayRole, setDisplayRole] = useState(role);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifs, setNotifs] = useState<Notif[]>([
+    { title: "Ticket TKT-2026-0042 created", body: "Fee receipt issue is being reviewed.", read: false },
+    { title: "SLA reminder", body: "1 ticket approaching the 48h response deadline.", read: false },
+    { title: "New announcement", body: "Semester 5 exam datesheet published.", read: false },
+    { title: "Attendance updated", body: "Your DBMS attendance is now 92%.", read: true },
+  ]);
+
   useEffect(() => {
     try {
       const raw = typeof window !== "undefined" ? sessionStorage.getItem("sou_user") : null;
@@ -34,6 +44,7 @@ export default function DashboardShell({
   const logout = () => {
     try { sessionStorage.removeItem("sou_token"); sessionStorage.removeItem("sou_user"); } catch {}
   };
+  const unread = notifs.filter((n) => !n.read).length;
   const current = activeNav ?? nav[0];
 
   return (
@@ -56,13 +67,39 @@ export default function DashboardShell({
 
       <div className="lg:ml-64 p-4 md:p-8 relative z-10">
         <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-          className="glass px-6 py-4 flex items-center justify-between mb-8">
+          className="glass px-6 py-4 flex items-center justify-between mb-8 relative z-[70]" style={{ isolation: "isolate" }}>
           <div>
             <p className="text-xs text-[var(--muted)] uppercase tracking-wide">{displayRole} Portal</p>
             <h1 className="text-xl font-bold">Welcome, {displayName}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <button className="glass p-2 rounded-full relative"><Bell size={18} /><span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" /></button>
+            <div className="relative z-[80]">
+              <button type="button" onClick={() => setNotifOpen((o) => !o)} className="glass p-2 rounded-full relative">
+                <Bell size={18} />
+                {unread > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 text-[10px] flex items-center justify-center bg-rose-500 text-white rounded-full">{unread}</span>}
+              </button>
+              <AnimatePresence>
+                {notifOpen && (
+                  <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-80 p-3 rounded-2xl border border-[var(--border)] shadow-2xl z-[90]"
+                    style={{ background: "var(--bg)" }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <b className="text-sm">Notifications</b>
+                      <button onClick={() => setNotifs((ns) => ns.map((n) => ({ ...n, read: true })))} className="text-xs text-brand-light flex items-center gap-1"><CheckCheck size={12} /> Mark all read</button>
+                    </div>
+                    <div className="space-y-2 max-h-72 overflow-y-auto">
+                      {notifs.map((n, i) => (
+                        <div key={i} onClick={() => setNotifs((ns) => ns.map((x, j) => j === i ? { ...x, read: true } : x))}
+                          className={`p-3 rounded-xl cursor-pointer text-sm border border-[var(--border)] ${n.read ? "opacity-60" : "bg-brand/10"}`}>
+                          <div className="font-medium flex items-center gap-2">{!n.read && <span className="w-2 h-2 bg-brand-light rounded-full" />}{n.title}</div>
+                          <div className="text-xs text-[var(--muted)] mt-0.5">{n.body}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <ThemeToggle />
           </div>
         </motion.header>

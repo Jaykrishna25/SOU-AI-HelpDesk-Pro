@@ -5,9 +5,19 @@ import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
 
 const NAV = ["Dashboard", "Timetable", "Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets"];
+interface Tkt { code: string; subject: string; priority: string; status: string; }
 
 export default function FacultyDashboard() {
   const [tab, setTab] = useState("Dashboard");
+  const [tickets, setTickets] = useState<Tkt[]>([
+    { code: "TKT-2026-0039", subject: "Revaluation query - DBMS", priority: "MEDIUM", status: "Assigned" },
+    { code: "TKT-2026-0047", subject: "Extra lab session request", priority: "LOW", status: "Assigned" },
+  ]);
+  const setStatus = (code: string, status: string) =>
+    setTickets((ts) => ts.map((t) => t.code === code ? { ...t, status } : t));
+  const statusColor = (s: string) =>
+    s === "Resolved" ? "bg-emerald-500/20 text-emerald-300" : s === "Escalated" ? "bg-rose-500/20 text-rose-300" : "bg-brand/20 text-brand-light";
+
   const students = [["Navlani Jaykrishna", "88%", "A"], ["Harsh Barot", "94%", "A+"], ["Zala Rudraraj", "76%", "B+"], ["Ashok Sharma", "81%", "A"]];
   const schedule = [["Mon 09:00", "Data Structures", "A-301"], ["Mon 11:00", "OS Lab", "Lab-2"], ["Tue 10:00", "DBMS", "A-302"]];
 
@@ -94,14 +104,26 @@ export default function FacultyDashboard() {
         </Panel>
       )}
 
-      {tab === "Tickets" && (
-        <Panel title="Assigned Tickets">
-          <div className="glass px-4 py-3 text-sm">
-            <div className="flex justify-between"><span className="font-mono text-brand-light">TKT-2026-0039</span><span className="text-xs px-2 py-0.5 rounded-full bg-brand/20">MEDIUM</span></div>
-            <div className="text-[var(--muted)]">Revaluation query - Assigned to you</div>
-            <div className="flex gap-2 mt-2"><button className="text-xs px-3 py-1 rounded-full bg-brand text-white">Resolve</button><button className="text-xs px-3 py-1 rounded-full glass">Escalate</button></div>
-          </div>
-        </Panel>
+      {(tab === "Dashboard" || tab === "Tickets") && (
+        <div className="mt-6">
+          <Panel title="Assigned Tickets">
+            <div className="space-y-2 text-sm">
+              {tickets.map((t) => (
+                <div key={t.code} className="glass px-4 py-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono text-brand-light">{t.code}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(t.status)}`}>{t.status}</span>
+                  </div>
+                  <div className="text-[var(--muted)]">{t.subject}</div>
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={() => setStatus(t.code, "Resolved")} className="text-xs px-3 py-1 rounded-full bg-emerald-500/80 text-white">Resolve</button>
+                    <button onClick={() => setStatus(t.code, "Escalated")} className="text-xs px-3 py-1 rounded-full bg-rose-500/80 text-white">Escalate</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </div>
       )}
 
     </DashboardShell>

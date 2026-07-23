@@ -6,18 +6,68 @@ import Panel from "@/components/Panel";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 
 const NAV = ["Dashboard", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports"];
+interface Member { name: string; id: string; info: string; }
 
 export default function HodDashboard() {
   const [tab, setTab] = useState("Dashboard");
-  const members = [["Navlani Jaykrishna", "SOU2023CSE69", "Sem 5"], ["Harsh Barot", "SOU2023CSE02", "Sem 5"], ["Ashok Sharma", "SOU2023CSE05", "Sem 5"]];
-  const faculty = [["Akshay Sir", "FAC001", "Asst. Professor"], ["Sagar Sir", "FAC002", "Asst. Professor"]];
+  const [students, setStudents] = useState<Member[]>([
+    { name: "Navlani Jaykrishna", id: "SOU2023CSE69", info: "Sem 5" },
+    { name: "Harsh Barot", id: "SOU2023CSE02", info: "Sem 5" },
+    { name: "Ashok Sharma", id: "SOU2023CSE05", info: "Sem 5" },
+  ]);
+  const [faculty, setFaculty] = useState<Member[]>([
+    { name: "Akshay Sir", id: "FAC001", info: "Asst. Professor" },
+    { name: "Sagar Sir", id: "FAC002", info: "Asst. Professor" },
+  ]);
+  const [admins, setAdmins] = useState<Member[]>([
+    { name: "Umangini Mam", id: "ADM001", info: "Campus" },
+    { name: "Dipal Darji Sir", id: "ADM002", info: "Department" },
+  ]);
+
+  const add = (setter: React.Dispatch<React.SetStateAction<Member[]>>, idPrefix: string, infoLabel: string) => {
+    const name = window.prompt("Enter full name:");
+    if (!name) return;
+    const id = window.prompt("Enter ID:", idPrefix) || idPrefix;
+    const info = window.prompt(infoLabel + ":", infoLabel) || infoLabel;
+    setter((list) => [...list, { name, id, info }]);
+  };
+  const edit = (setter: React.Dispatch<React.SetStateAction<Member[]>>, idx: number, cur: Member) => {
+    const name = window.prompt("Edit name:", cur.name);
+    if (name === null) return;
+    const info = window.prompt("Edit info:", cur.info) ?? cur.info;
+    setter((list) => list.map((m, i) => i === idx ? { ...m, name: name || m.name, info } : m));
+  };
+  const remove = (setter: React.Dispatch<React.SetStateAction<Member[]>>, idx: number) => {
+    if (window.confirm("Remove this record?")) setter((list) => list.filter((_, i) => i !== idx));
+  };
+
+  const MemberTable = ({ title, data, setter, idPrefix, infoLabel }: {
+    title: string; data: Member[]; setter: React.Dispatch<React.SetStateAction<Member[]>>; idPrefix: string; infoLabel: string;
+  }) => (
+    <Panel title={title}>
+      <button onClick={() => add(setter, idPrefix, infoLabel)} className="mb-3 px-4 py-2 rounded-full bg-brand text-white text-sm hover:bg-brand-light">+ Add</button>
+      <div className="space-y-2 text-sm">
+        {data.map((m, i) => (
+          <div key={m.id + i} className="flex items-center justify-between glass px-4 py-3">
+            <span className="flex-1">{m.name}</span>
+            <span className="text-[var(--muted)] font-mono flex-1">{m.id}</span>
+            <span className="flex-1">{m.info}</span>
+            <div className="flex gap-2">
+              <button onClick={() => edit(setter, i, m)} className="text-xs px-3 py-1 rounded-full bg-brand text-white">Edit</button>
+              <button onClick={() => remove(setter, i)} className="text-xs px-3 py-1 rounded-full bg-rose-500/80 text-white">Remove</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
 
   return (
     <DashboardShell role="HOD / Head" name="Deepika Chauhan Mam" nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
-        { label: "Total Students", value: "480", icon: Users },
+        { label: "Total Students", value: String(students.length), icon: Users },
         { label: "New Admissions", value: "62", icon: UserPlus },
-        { label: "Faculty", value: "28", icon: Building2 },
+        { label: "Faculty", value: String(faculty.length), icon: Building2 },
         { label: "Students Left", value: "5", icon: UserMinus },
       ]}>
 
@@ -28,43 +78,9 @@ export default function HodDashboard() {
         </div>
       </Panel></div></>}
 
-      {tab === "Students" && (
-        <Panel title="Student Management">
-          <button className="mb-3 px-4 py-2 rounded-full bg-brand text-white text-sm">+ Add Student</button>
-          <div className="space-y-2 text-sm">
-            {members.map((m, i) => (
-              <div key={i} className="flex items-center justify-between glass px-4 py-3">
-                <span>{m[0]}</span><span className="text-[var(--muted)] font-mono">{m[1]}</span><span>{m[2]}</span>
-                <div className="flex gap-2"><button className="text-xs px-3 py-1 rounded-full glass">Edit</button><button className="text-xs px-3 py-1 rounded-full bg-rose-500/20 text-rose-300">Remove</button></div>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      )}
-
-      {tab === "Faculty" && (
-        <Panel title="Faculty Management">
-          <button className="mb-3 px-4 py-2 rounded-full bg-brand text-white text-sm">+ Add Faculty</button>
-          <div className="space-y-2 text-sm">
-            {faculty.map((m, i) => (
-              <div key={i} className="flex items-center justify-between glass px-4 py-3">
-                <span>{m[0]}</span><span className="text-[var(--muted)] font-mono">{m[1]}</span><span>{m[2]}</span>
-                <div className="flex gap-2"><button className="text-xs px-3 py-1 rounded-full glass">Edit</button><button className="text-xs px-3 py-1 rounded-full bg-rose-500/20 text-rose-300">Remove</button></div>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      )}
-
-      {tab === "Admins" && (
-        <Panel title="Admin Management">
-          <button className="mb-3 px-4 py-2 rounded-full bg-brand text-white text-sm">+ Add Admin</button>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between glass px-4 py-3"><span>Umangini Mam</span><span className="text-[var(--muted)] font-mono">ADM001</span><span>Campus</span></div>
-            <div className="flex items-center justify-between glass px-4 py-3"><span>Dipal Darji Sir</span><span className="text-[var(--muted)] font-mono">ADM002</span><span>Department</span></div>
-          </div>
-        </Panel>
-      )}
+      {tab === "Students" && <MemberTable title="Student Management" data={students} setter={setStudents} idPrefix="SOU2023CSE" infoLabel="Sem 5" />}
+      {tab === "Faculty" && <MemberTable title="Faculty Management" data={faculty} setter={setFaculty} idPrefix="FAC" infoLabel="Asst. Professor" />}
+      {tab === "Admins" && <MemberTable title="Admin Management" data={admins} setter={setAdmins} idPrefix="ADM" infoLabel="Campus" />}
 
       {tab === "Meetings" && (
         <Panel title="Meetings">
