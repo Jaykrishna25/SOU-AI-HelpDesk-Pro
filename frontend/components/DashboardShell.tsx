@@ -1,50 +1,73 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, LogOut, Bell, CheckCheck } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
+import { useTickets, Ticket } from "@/lib/tickets";
 
 export interface Stat { label: string; value: string; icon: React.ElementType; accent?: string; }
+interface Notif { key: string; title: string; body: string; ts: number; }
 
-interface Notif { title: string; body: string; read: boolean; }
+function stageForRole(role: string): string {
+  if (role === "HOI") return "HOI";
+  if (role === "HOD") return "HOD";
+  if (role === "FACULTY") return "FACULTY";
+  if (role === "OWNER" || role === "SUPER_ADMIN") return "OWNER";
+  return "ADMIN";
+}
+
+function buildNotifs(tickets: Ticket[], role: string, name: string): Notif[] {
+  let relevant: Ticket[];
+  if (role === "STUDENT") {
+    const first = name.split(" ")[0].toLowerCase();
+    relevant = tickets.filter((t) => t.creator.toLowerCase().includes(first) || name.toLowerCase().includes(t.creator.split(" ")[0].toLowerCase()));
+  } else {
+    relevant = tickets.filter((t) => t.stage === stageForRole(role));
+  }
+  return relevant
+    .map((t) => {
+      let body = t.subject;
+      if (t.status === "Resolved") body = t.note || "Your query has been resolved.";
+      else if (t.status === "Escalated") body = t.note || "This ticket was escalated.";
+      else if (t.status === "Assigned") body = "Ticket assigned to a staff member.";
+      else if (t.status === "Reopened") body = "Ticket reopened.";
+      else if (role !== "STUDENT") body = "New ticket: " + t.subject;
+      return { key: `${t.code}|${t.status}|${t.note}`, title: `${t.code} - ${t.status}`, body, ts: t.createdAt };
+    })
+    .sort((a, b) => b.ts - a.ts)
+    .slice(0, 15);
+}
 
 export default function DashboardShell({
   role, name, nav, stats, children, activeNav, onNavSelect,
 }: {
   role: string; name: string;
-  nav: string[];
-  stats: Stat[];
+  nav: string[]; stats: Stat[];
   children?: React.ReactNode;
-  activeNav?: string;
-  onNavSelect?: (item: string) => void;
+  activeNav?: string; onNavSelect?: (item: string) => void;
 }) {
   const [displayName, setDisplayName] = useState(name);
   const [displayRole, setDisplayRole] = useState(role);
+  const [roleCode, setRoleCode] = useState("STUDENT");
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifs, setNotifs] = useState<Notif[]>([
-    { title: "Ticket TKT-2026-0042 created", body: "Fee receipt issue is being reviewed.", read: false },
-    { title: "SLA reminder", body: "1 ticket approaching the 48h response deadline.", read: false },
-    { title: "New announcement", body: "Semester 5 exam datesheet published.", read: false },
-    { title: "Attendance updated", body: "Your DBMS attendance is now 92%.", read: true },
-  ]);
+  const [readKeys, setReadKeys] = useState<string[]>([]);
+  const tickets = useTickets();
 
   useEffect(() => {
     try {
-      const raw = typeof window !== "undefined" ? sessionStorage.getItem("sou_user") : null;
-      if (raw) {
-        const u = JSON.parse(raw);
-        if (u.fullName) setDisplayName(u.fullName);
-        if (u.role) setDisplayRole(String(u.role).replace("_", " "));
-      }
+      const raw = sessionStorage.getItem("sou_user");
+      if (raw) { const u = JSON.parse(raw); if (u.fullName) setDisplayName(u.fullName); if (u.role) { setDisplayRole(String(u.role).replace("_", " ")); setRoleCode(u.role); } }
+      setReadKeys(JSON.parse(localStorage.getItem("sou_notif_read") || "[]"));
     } catch {}
   }, []);
 
-  const logout = () => {
-    try { sessionStorage.removeItem("sou_token"); sessionStorage.removeItem("sou_user"); } catch {}
-  };
-  const unread = notifs.filter((n) => !n.read).length;
+  const notifs = useMemo(() => buildNotifs(tickets, roleCode, displayName), [tickets, roleCode, displayName]);
+  const persistRead = (keys: string[]) => { setReadKeys(keys); try { localStorage.setItem("sou_notif_read", JSON.stringify(keys)); } catch {} };
+  const unread = notifs.filter((n) => !readKeys.includes(n.key)).length;
+
+  const logout = () => { try { sessionStorage.removeItem("sou_token"); sessionStorage.removeItem("sou_user"); } catch {} };
   const current = activeNav ?? nav[0];
 
   return (
@@ -81,20 +104,23 @@ export default function DashboardShell({
               <AnimatePresence>
                 {notifOpen && (
                   <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-80 p-3 rounded-2xl border border-[var(--border)] shadow-2xl z-[90]"
-                    style={{ background: "var(--bg)" }}>
+                    className="absolute right-0 mt-2 w-80 p-3 rounded-2xl border border-[var(--border)] shadow-2xl z-[90]" style={{ background: "var(--bg)" }}>
                     <div className="flex items-center justify-between mb-2">
                       <b className="text-sm">Notifications</b>
-                      <button onClick={() => setNotifs((ns) => ns.map((n) => ({ ...n, read: true })))} className="text-xs text-brand-light flex items-center gap-1"><CheckCheck size={12} /> Mark all read</button>
+                      <button onClick={() => persistRead(notifs.map((n) => n.key))} className="text-xs text-brand-light flex items-center gap-1"><CheckCheck size={12} /> Mark all read</button>
                     </div>
                     <div className="space-y-2 max-h-72 overflow-y-auto">
-                      {notifs.map((n, i) => (
-                        <div key={i} onClick={() => setNotifs((ns) => ns.map((x, j) => j === i ? { ...x, read: true } : x))}
-                          className={`p-3 rounded-xl cursor-pointer text-sm border border-[var(--border)] ${n.read ? "opacity-60" : "bg-brand/10"}`}>
-                          <div className="font-medium flex items-center gap-2">{!n.read && <span className="w-2 h-2 bg-brand-light rounded-full" />}{n.title}</div>
-                          <div className="text-xs text-[var(--muted)] mt-0.5">{n.body}</div>
-                        </div>
-                      ))}
+                      {notifs.map((n) => {
+                        const isRead = readKeys.includes(n.key);
+                        return (
+                          <div key={n.key} onClick={() => { if (!isRead) persistRead([...readKeys, n.key]); }}
+                            className={`p-3 rounded-xl cursor-pointer text-sm border border-[var(--border)] ${isRead ? "opacity-60" : "bg-brand/10"}`}>
+                            <div className="font-medium flex items-center gap-2">{!isRead && <span className="w-2 h-2 bg-brand-light rounded-full" />}{n.title}</div>
+                            <div className="text-xs text-[var(--muted)] mt-0.5">{n.body}</div>
+                          </div>
+                        );
+                      })}
+                      {notifs.length === 0 && <p className="text-xs text-[var(--muted)] px-1 py-2">No notifications yet.</p>}
                     </div>
                   </motion.div>
                 )}
