@@ -1,32 +1,62 @@
 "use client";
+import { useState } from "react";
 import { TrendingUp, Wallet, Users, Brain } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 
+const NAV = ["Dashboard", "Revenue", "University", "Workforce", "Forecasting", "Governance"];
+
 export default function OwnerDashboard() {
-  const forecasts = [["Admissions (Next Yr)", "+18%", "AI forecast"], ["Revenue (Q4)", "₹4.2 Cr", "projected"], ["Ticket Volume", "-12%", "trending down"], ["Faculty Workload", "Balanced", "optimal"]];
+  const [tab, setTab] = useState("Dashboard");
+  const forecasts = [["Admissions (Next Yr)", "+18%", "AI forecast"], ["Revenue (Q4)", "Rs 4.2 Cr", "projected"], ["Ticket Volume", "-12%", "trending down"], ["Faculty Workload", "Balanced", "optimal"]];
+
   return (
-    <DashboardShell role="Owner" name="Dr. Aditya Silver"
-      nav={["Dashboard", "Revenue", "University", "Workforce", "Forecasting", "Governance"]}
+    <DashboardShell role="Owner" name="Shital Aggrawal Sir" nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
-        { label: "Total Revenue", value: "₹18.6 Cr", icon: Wallet },
+        { label: "Total Revenue", value: "Rs 18.6 Cr", icon: Wallet },
         { label: "Fees Collected", value: "92%", icon: TrendingUp },
         { label: "Total Students", value: "3,240", icon: Users },
         { label: "AI Accuracy", value: "92%", icon: Brain },
       ]}>
-      <div className="mb-6"><AnalyticsCharts /></div>
-      <Panel title="Strategic AI Forecasting">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-          {forecasts.map((f, i) => (
-            <div key={i} className="glass p-4">
-              <div className="text-lg font-bold gradient-text">{f[1]}</div>
-              <div>{f[0]}</div>
-              <div className="text-xs text-[var(--muted)]">{f[2]}</div>
+
+      {(tab === "Dashboard" || tab === "Revenue" || tab === "University") && <AnalyticsCharts />}
+
+      {(tab === "Dashboard" || tab === "Forecasting") && (
+        <div className="mt-6">
+          <Panel title="Strategic AI Forecasting">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+              {forecasts.map((f, i) => (
+                <div key={i} className="glass p-4">
+                  <div className="text-lg font-bold gradient-text">{f[1]}</div>
+                  <div>{f[0]}</div>
+                  <div className="text-xs text-[var(--muted)]">{f[2]}</div>
+                </div>
+              ))}
             </div>
-          ))}
+          </Panel>
         </div>
-      </Panel>
+      )}
+
+      {tab === "Workforce" && (
+        <Panel title="Workforce Performance">
+          <div className="space-y-2 text-sm">
+            <div className="glass px-4 py-3 flex justify-between"><span>Faculty avg rating</span><span className="text-brand-light">4.5 / 5</span></div>
+            <div className="glass px-4 py-3 flex justify-between"><span>Admin ticket resolution</span><span className="text-brand-light">91%</span></div>
+            <div className="glass px-4 py-3 flex justify-between"><span>Avg response time</span><span className="text-brand-light">6.2 hrs</span></div>
+          </div>
+        </Panel>
+      )}
+
+      {tab === "Governance" && (
+        <Panel title="Governance & Escalations">
+          <div className="space-y-2 text-sm">
+            <div className="glass px-4 py-3 flex justify-between items-center"><span>Escalated: Fee refund dispute</span><button className="text-xs px-3 py-1 rounded-full bg-brand text-white">Review</button></div>
+            <div className="glass px-4 py-3 flex justify-between items-center"><span>Approve: New lab budget</span><button className="text-xs px-3 py-1 rounded-full bg-emerald-500/80 text-white">Approve</button></div>
+          </div>
+        </Panel>
+      )}
+
     </DashboardShell>
   );
 }
