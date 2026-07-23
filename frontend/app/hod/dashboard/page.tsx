@@ -8,6 +8,58 @@ import AnalyticsCharts from "@/components/AnalyticsCharts";
 const NAV = ["Dashboard", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports"];
 interface Member { name: string; id: string; info: string; }
 
+function MemberSection({ title, data, onChange, idPrefix, infoLabel }: {
+  title: string; data: Member[]; onChange: (next: Member[]) => void; idPrefix: string; infoLabel: string;
+}) {
+  const [editIdx, setEditIdx] = useState(-1);
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState<Member>({ name: "", id: "", info: "" });
+
+  const startEdit = (i: number, m: Member) => { setAdding(false); setEditIdx(i); setDraft(m); };
+  const saveEdit = () => { onChange(data.map((m, i) => i === editIdx ? draft : m)); setEditIdx(-1); };
+  const startAdd = () => { setEditIdx(-1); setAdding(true); setDraft({ name: "", id: idPrefix, info: infoLabel }); };
+  const saveAdd = () => { if (draft.name.trim()) onChange([...data, draft]); setAdding(false); };
+  const remove = (i: number) => { if (window.confirm("Remove this record?")) onChange(data.filter((_, j) => j !== i)); };
+
+  const Editor = ({ onSave, onCancel }: { onSave: () => void; onCancel: () => void }) => (
+    <div className="glass px-4 py-3 space-y-2">
+      <div className="grid grid-cols-3 gap-2">
+        <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="Name" className="glass px-3 py-2 bg-transparent outline-none text-sm" />
+        <input value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} placeholder="ID" className="glass px-3 py-2 bg-transparent outline-none text-sm" />
+        <input value={draft.info} onChange={(e) => setDraft({ ...draft, info: e.target.value })} placeholder="Info" className="glass px-3 py-2 bg-transparent outline-none text-sm" />
+      </div>
+      <div className="flex gap-2">
+        <button onClick={onSave} className="text-xs px-3 py-1 rounded-full bg-emerald-500/80 text-white">Save</button>
+        <button onClick={onCancel} className="text-xs px-3 py-1 rounded-full glass">Cancel</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <Panel title={title}>
+      <button onClick={startAdd} className="mb-3 px-4 py-2 rounded-full bg-brand text-white text-sm hover:bg-brand-light">+ Add</button>
+      <div className="space-y-2 text-sm">
+        {adding && <Editor onSave={saveAdd} onCancel={() => setAdding(false)} />}
+        {data.map((m, i) => (
+          editIdx === i ? (
+            <Editor key={m.id + i} onSave={saveEdit} onCancel={() => setEditIdx(-1)} />
+          ) : (
+            <div key={m.id + i} className="flex items-center justify-between glass px-4 py-3">
+              <span className="flex-1">{m.name}</span>
+              <span className="text-[var(--muted)] font-mono flex-1">{m.id}</span>
+              <span className="flex-1">{m.info}</span>
+              <div className="flex gap-2">
+                <button onClick={() => startEdit(i, m)} className="text-xs px-3 py-1 rounded-full bg-brand text-white">Edit</button>
+                <button onClick={() => remove(i)} className="text-xs px-3 py-1 rounded-full bg-rose-500/80 text-white">Remove</button>
+              </div>
+            </div>
+          )
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
 export default function HodDashboard() {
   const [tab, setTab] = useState("Dashboard");
   const [students, setStudents] = useState<Member[]>([
@@ -23,44 +75,6 @@ export default function HodDashboard() {
     { name: "Umangini Mam", id: "ADM001", info: "Campus" },
     { name: "Dipal Darji Sir", id: "ADM002", info: "Department" },
   ]);
-
-  const add = (setter: React.Dispatch<React.SetStateAction<Member[]>>, idPrefix: string, infoLabel: string) => {
-    const name = window.prompt("Enter full name:");
-    if (!name) return;
-    const id = window.prompt("Enter ID:", idPrefix) || idPrefix;
-    const info = window.prompt(infoLabel + ":", infoLabel) || infoLabel;
-    setter((list) => [...list, { name, id, info }]);
-  };
-  const edit = (setter: React.Dispatch<React.SetStateAction<Member[]>>, idx: number, cur: Member) => {
-    const name = window.prompt("Edit name:", cur.name);
-    if (name === null) return;
-    const info = window.prompt("Edit info:", cur.info) ?? cur.info;
-    setter((list) => list.map((m, i) => i === idx ? { ...m, name: name || m.name, info } : m));
-  };
-  const remove = (setter: React.Dispatch<React.SetStateAction<Member[]>>, idx: number) => {
-    if (window.confirm("Remove this record?")) setter((list) => list.filter((_, i) => i !== idx));
-  };
-
-  const MemberTable = ({ title, data, setter, idPrefix, infoLabel }: {
-    title: string; data: Member[]; setter: React.Dispatch<React.SetStateAction<Member[]>>; idPrefix: string; infoLabel: string;
-  }) => (
-    <Panel title={title}>
-      <button onClick={() => add(setter, idPrefix, infoLabel)} className="mb-3 px-4 py-2 rounded-full bg-brand text-white text-sm hover:bg-brand-light">+ Add</button>
-      <div className="space-y-2 text-sm">
-        {data.map((m, i) => (
-          <div key={m.id + i} className="flex items-center justify-between glass px-4 py-3">
-            <span className="flex-1">{m.name}</span>
-            <span className="text-[var(--muted)] font-mono flex-1">{m.id}</span>
-            <span className="flex-1">{m.info}</span>
-            <div className="flex gap-2">
-              <button onClick={() => edit(setter, i, m)} className="text-xs px-3 py-1 rounded-full bg-brand text-white">Edit</button>
-              <button onClick={() => remove(setter, i)} className="text-xs px-3 py-1 rounded-full bg-rose-500/80 text-white">Remove</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Panel>
-  );
 
   return (
     <DashboardShell role="HOD / Head" name="Deepika Chauhan Mam" nav={NAV} activeNav={tab} onNavSelect={setTab}
@@ -78,9 +92,9 @@ export default function HodDashboard() {
         </div>
       </Panel></div></>}
 
-      {tab === "Students" && <MemberTable title="Student Management" data={students} setter={setStudents} idPrefix="SOU2023CSE" infoLabel="Sem 5" />}
-      {tab === "Faculty" && <MemberTable title="Faculty Management" data={faculty} setter={setFaculty} idPrefix="FAC" infoLabel="Asst. Professor" />}
-      {tab === "Admins" && <MemberTable title="Admin Management" data={admins} setter={setAdmins} idPrefix="ADM" infoLabel="Campus" />}
+      {tab === "Students" && <MemberSection title="Student Management" data={students} onChange={setStudents} idPrefix="SOU2023CSE" infoLabel="Sem 5" />}
+      {tab === "Faculty" && <MemberSection title="Faculty Management" data={faculty} onChange={setFaculty} idPrefix="FAC" infoLabel="Asst. Professor" />}
+      {tab === "Admins" && <MemberSection title="Admin Management" data={admins} onChange={setAdmins} idPrefix="ADM" infoLabel="Campus" />}
 
       {tab === "Meetings" && (
         <Panel title="Meetings">
