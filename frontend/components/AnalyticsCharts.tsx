@@ -14,11 +14,15 @@ const pie = [
 ];
 const COLORS = ["#8b5cf6", "#06b6d4", "#f43f5e"];
 
+const tipStyle = { background: "#14142b", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "#ffffff" };
+const tipItem = { color: "#ffffff" };
+const tipLabel = { color: "#ffffff" };
+
 export default function AnalyticsCharts() {
   return (
     <div className="grid md:grid-cols-3 gap-6">
       <div className="glass p-5">
-        <h4 className="font-semibold mb-3 text-sm">Revenue Trend (₹ Lakh)</h4>
+        <h4 className="font-semibold mb-3 text-sm">Revenue Trend (Rs Lakh)</h4>
         <ResponsiveContainer width="100%" height={180}>
           <AreaChart data={revenue}>
             <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
@@ -27,7 +31,7 @@ export default function AnalyticsCharts() {
             </linearGradient></defs>
             <XAxis dataKey="m" stroke="#9aa0b4" fontSize={11} />
             <YAxis stroke="#9aa0b4" fontSize={11} />
-            <Tooltip contentStyle={{ background: "#14142b", border: "none", borderRadius: 12 }} />
+            <Tooltip contentStyle={tipStyle} itemStyle={tipItem} labelStyle={tipLabel} />
             <Area type="monotone" dataKey="v" stroke="#8b5cf6" fill="url(#g)" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>
@@ -38,7 +42,7 @@ export default function AnalyticsCharts() {
           <BarChart data={tickets}>
             <XAxis dataKey="c" stroke="#9aa0b4" fontSize={11} />
             <YAxis stroke="#9aa0b4" fontSize={11} />
-            <Tooltip contentStyle={{ background: "#14142b", border: "none", borderRadius: 12 }} />
+            <Tooltip contentStyle={tipStyle} itemStyle={tipItem} labelStyle={tipLabel} cursor={{ fill: "rgba(139,92,246,0.1)" }} />
             <Bar dataKey="n" fill="#06b6d4" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -50,7 +54,7 @@ export default function AnalyticsCharts() {
             <Pie data={pie} dataKey="value" innerRadius={45} outerRadius={70} paddingAngle={4}>
               {pie.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
             </Pie>
-            <Tooltip contentStyle={{ background: "#14142b", border: "none", borderRadius: 12 }} />
+            <Tooltip contentStyle={tipStyle} itemStyle={tipItem} labelStyle={tipLabel} />
           </PieChart>
         </ResponsiveContainer>
       </div>
