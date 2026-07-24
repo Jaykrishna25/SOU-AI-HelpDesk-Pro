@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
+import { sendMail } from "@/lib/email";
 
 export interface Ticket {
   code: string; subject: string; description: string; category: string;
   priority: string; status: string; creator: string; note: string;
-  stage: string;
-  createdAt: number;
+  stage: string; createdAt: number;
 }
 
 const KEY = "sou_tickets_v2";
@@ -41,11 +41,24 @@ export function addTicket(t: Partial<Ticket>): Ticket {
     status: "Open", creator: t.creator || "Student", note: "", stage: "ADMIN", createdAt: Date.now(),
   };
   saveTickets([nt, ...list]);
+  sendMail(`New ticket ${nt.code}`, `A new query was raised by ${nt.creator}: "${nt.subject}". It is now with the Admin desk.`, "Admin");
   return nt;
 }
 
 export function updateTicket(code: string, patch: Partial<Ticket>) {
-  saveTickets(getTickets().map((t) => t.code === code ? { ...t, ...patch } : t));
+  const next = getTickets().map((t) => t.code === code ? { ...t, ...patch } : t);
+  saveTickets(next);
+  const t = next.find((x) => x.code === code);
+  if (t && patch.status) {
+    if (patch.status === "Resolved")
+      sendMail(`Ticket ${t.code} resolved`, `Your query "${t.subject}" has been resolved. ${t.note}`, t.creator);
+    else if (patch.status === "Escalated")
+      sendMail(`Ticket ${t.code} escalated`, `${t.note} (Query: "${t.subject}")`, t.stage);
+    else if (patch.status === "Assigned")
+      sendMail(`Ticket ${t.code} assigned`, `Your query "${t.subject}" was assigned to a staff member.`, t.creator);
+    else if (patch.status === "Reopened")
+      sendMail(`Ticket ${t.code} reopened`, `The query "${t.subject}" was reopened.`, "Admin");
+  }
 }
 
 export function roleToStage(label: string): string {
