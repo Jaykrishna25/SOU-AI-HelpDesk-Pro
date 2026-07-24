@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, LogOut, Bell, CheckCheck } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
 import { useTickets, Ticket } from "@/lib/tickets";
+import { playSuccess, playAction } from "@/lib/sound";
 
 export interface Stat { label: string; value: string; icon: React.ElementType; accent?: string; }
 interface Notif { key: string; title: string; body: string; ts: number; }
@@ -59,6 +60,23 @@ export default function DashboardShell({
   }, []);
 
   const notifs = useMemo(() => buildNotifs(tickets, roleCode, displayName), [tickets, roleCode, displayName]);
+
+  // Play a sound when a NEW ticket event appears (not on first load).
+  const seenRef = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const keys = new Set(notifs.map((n) => n.key));
+    if (seenRef.current === null) { seenRef.current = keys; return; }
+    let resolved = false, other = false;
+    for (const n of notifs) {
+      if (!seenRef.current.has(n.key)) {
+        if (n.title.includes("Resolved")) resolved = true; else other = true;
+      }
+    }
+    seenRef.current = keys;
+    if (resolved) playSuccess();
+    else if (other) playAction();
+  }, [notifs]);
+
   const persistRead = (keys: string[]) => { setReadKeys(keys); try { localStorage.setItem("sou_notif_read", JSON.stringify(keys)); } catch {} };
   const unread = notifs.filter((n) => !readKeys.includes(n.key)).length;
 
