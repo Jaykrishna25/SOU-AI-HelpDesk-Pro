@@ -31,7 +31,7 @@ services:
       JWT_ACCESS_SECRET: "docker-access-secret"
       JWT_REFRESH_SECRET: "docker-refresh-secret"
       PORT: "5001"
-      CORS_ORIGIN: "http://localhost:3000"
+      CORS_ORIGIN: "http://localhost:3001"
       ADMIN_RESPONSE_SLA_HOURS: "48"
     ports:
       - "5001:5001"
@@ -46,7 +46,8 @@ services:
     depends_on:
       - backend
     ports:
-      - "3000:3000"
+      - "3001:3000"
 
 volumes:
   sou_pgdata:
+
