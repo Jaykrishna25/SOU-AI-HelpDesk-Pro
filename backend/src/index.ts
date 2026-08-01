@@ -10,7 +10,9 @@ import aiRoutes from "./routes/ai.routes";
 import ticketRoutes from "./routes/ticket.routes";
 import analyticsRoutes from "./routes/analytics.routes";
 import dataRoutes from "./routes/data.routes";
+import integrationRoutes from "./routes/integration.routes";
 import { runSlaSweep } from "./services/ticket.service";
+import { SouMisAdapter } from "./services/soumis.adapter";
 
 const app = express();
 app.use(helmet());
@@ -24,15 +26,17 @@ app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/integrations", integrationRoutes);
 app.use("/api", dataRoutes);
 
 app.use(errorHandler);
 
-// Background SLA sweep every 15 minutes.
 setInterval(() => { runSlaSweep().catch(console.error); }, 15 * 60 * 1000);
 
 app.listen(env.port, () => {
-  console.log(`🚀 SOU AI HelpDesk Pro API running on http://localhost:${env.port}`);
+  console.log(`SOU AI HelpDesk Pro API running on http://localhost:${env.port}`);
+  const s = SouMisAdapter.status();
+  console.log(`SOU MIS integration: mode=${s.mode} live=${s.live} (${s.note})`);
 });
 
 export default app;

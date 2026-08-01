@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, LogOut, Bell, CheckCheck } from "lucide-react";
+import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
 import { useTickets, Ticket } from "@/lib/tickets";
@@ -10,6 +10,9 @@ import { playSuccess, playAction } from "@/lib/sound";
 
 export interface Stat { label: string; value: string; icon: React.ElementType; accent?: string; }
 interface Notif { key: string; title: string; body: string; ts: number; }
+
+const MIS_ACCOUNT = "https://account.soumis.in/";
+const MIS_ATTENDANCE = "https://curriculum.soumis.in/PostAttendance/Index";
 
 function stageForRole(role: string): string {
   if (role === "HOI") return "HOI";
@@ -61,7 +64,6 @@ export default function DashboardShell({
 
   const notifs = useMemo(() => buildNotifs(tickets, roleCode, displayName), [tickets, roleCode, displayName]);
 
-  // Play a sound when a NEW ticket event appears (not on first load).
   const seenRef = useRef<Set<string> | null>(null);
   useEffect(() => {
     const keys = new Set(notifs.map((n) => n.key));
@@ -91,13 +93,26 @@ export default function DashboardShell({
         <div className="flex items-center gap-2 font-bold mb-8">
           <GraduationCap className="text-brand-light" /><span className="gradient-text text-sm">SOU HelpDesk</span>
         </div>
-        <nav className="space-y-1 flex-1">
+        <nav className="space-y-1 flex-1 overflow-y-auto">
           {nav.map((n, i) => (
             <motion.button key={n} onClick={() => onNavSelect && onNavSelect(n)} type="button"
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
               className={`w-full text-left block px-4 py-2.5 rounded-xl text-sm transition ${n === current ? "bg-brand text-white" : "text-[var(--muted)] hover:bg-brand/10"}`}>{n}</motion.button>
           ))}
         </nav>
+
+        <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-1">
+          <p className="text-[10px] uppercase tracking-wide text-[var(--muted)] px-4 mb-1">University Systems</p>
+          <a href={MIS_ACCOUNT} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-brand-light hover:bg-brand/10">
+            <ExternalLink size={14} /> SOU MIS Account
+          </a>
+          <a href={MIS_ATTENDANCE} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-brand-light hover:bg-brand/10">
+            <ExternalLink size={14} /> Attendance Portal
+          </a>
+        </div>
+
         <Link href="/login" onClick={logout} className="flex items-center gap-2 text-sm text-[var(--muted)] hover:text-rose-400 mt-4"><LogOut size={16} /> Sign out</Link>
       </aside>
 
@@ -143,13 +158,22 @@ export default function DashboardShell({
           </div>
         </motion.header>
 
-        <div className="lg:hidden mb-6 -mx-1 overflow-x-auto">
+        <div className="lg:hidden mb-3 -mx-1 overflow-x-auto">
           <div className="flex gap-2 px-1 pb-1 w-max">
             {nav.map((n) => (
               <button key={n} onClick={() => onNavSelect && onNavSelect(n)} type="button"
                 className={`whitespace-nowrap px-4 py-2 rounded-full text-sm transition ${n === current ? "bg-brand text-white" : "glass text-[var(--muted)]"}`}>{n}</button>
             ))}
             <Link href="/login" onClick={logout} className="whitespace-nowrap px-4 py-2 rounded-full text-sm glass text-rose-400 flex items-center gap-1"><LogOut size={14} /> Sign out</Link>
+          </div>
+        </div>
+
+        <div className="lg:hidden mb-6 -mx-1 overflow-x-auto">
+          <div className="flex gap-2 px-1 pb-1 w-max">
+            <a href={MIS_ACCOUNT} target="_blank" rel="noopener noreferrer"
+              className="whitespace-nowrap px-4 py-2 rounded-full text-sm glass text-brand-light flex items-center gap-1"><ExternalLink size={13} /> SOU MIS Account</a>
+            <a href={MIS_ATTENDANCE} target="_blank" rel="noopener noreferrer"
+              className="whitespace-nowrap px-4 py-2 rounded-full text-sm glass text-brand-light flex items-center gap-1"><ExternalLink size={13} /> Attendance Portal</a>
           </div>
         </div>
 
