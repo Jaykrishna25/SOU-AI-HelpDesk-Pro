@@ -3,24 +3,37 @@ import { useEffect, useState } from "react";
 import { CalendarDays, GraduationCap, Wallet, ClipboardCheck } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
+import ClassroomPanel from "@/components/ClassroomPanel";
+import CRAttendance from "@/components/CRAttendance";
 import { useTickets, addTicket, updateTicket, statusColor } from "@/lib/tickets";
-
-const NAV = ["Dashboard", "Timetable", "Attendance", "Fees", "Results", "Exams", "Notes", "My Tickets"];
+import { useCRs, CRAssignment } from "@/lib/attendance";
 
 export default function StudentDashboard() {
   const [tab, setTab] = useState("Dashboard");
-  const [me, setMe] = useState("Navlani Jaykrishna");
+  const [me, setMe] = useState({ name: "Navlani Jaykrishna", enrollmentNo: "SOU2023CSE69" });
   const tickets = useTickets();
+  const crs = useCRs();
+
   useEffect(() => {
-    try { const raw = sessionStorage.getItem("sou_user"); if (raw) { const u = JSON.parse(raw); if (u.fullName) setMe(u.fullName); } } catch {}
+    try {
+      const raw = sessionStorage.getItem("sou_user");
+      if (raw) { const u = JSON.parse(raw); setMe({ name: u.fullName || "Student", enrollmentNo: u.loginId || "" }); }
+    } catch {}
   }, []);
-  const myFirst = me.split(" ")[0].toLowerCase();
-  const mine = tickets.filter((t) => t.creator.toLowerCase().includes(myFirst) || me.toLowerCase().includes(t.creator.split(" ")[0].toLowerCase()));
+
+  const myCr: CRAssignment[] = crs.filter((c) => c.enrollmentNo.toLowerCase() === me.enrollmentNo.toLowerCase());
+  const isCR = myCr.length > 0;
+
+  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Exams", "Notes", "My Tickets"];
+  if (isCR) NAV.splice(2, 0, "Mark Attendance");
+
+  const first = me.name.split(" ")[0].toLowerCase();
+  const mine = tickets.filter((t) => t.creator.toLowerCase().includes(first) || me.name.toLowerCase().includes(t.creator.split(" ")[0].toLowerCase()));
 
   const raise = () => {
     const subject = window.prompt("Describe your issue / query:");
     if (!subject) return;
-    addTicket({ subject: subject.slice(0, 60), description: subject, category: "GENERAL", creator: me, priority: "MEDIUM" });
+    addTicket({ subject: subject.slice(0, 60), description: subject, category: "GENERAL", creator: me.name, priority: "MEDIUM" });
     setTab("My Tickets");
   };
 
@@ -32,7 +45,7 @@ export default function StudentDashboard() {
     table{width:100%;border-collapse:collapse;margin-top:20px}td,th{border:1px solid #ddd;padding:10px;text-align:left}
     th{background:#f3e8ff}.foot{margin-top:24px;font-size:12px;color:#666;text-align:center}</style></head>
     <body><div class="head"><h1>Silver Oak University</h1><p>Official Fee Receipt</p></div>
-    <table><tr><th>Student Name</th><td>Navlani Jaykrishna Satishkumar</td></tr><tr><th>Enrollment No.</th><td>SOU2023CSE69</td></tr>
+    <table><tr><th>Student Name</th><td>${me.name}</td></tr><tr><th>Enrollment No.</th><td>${me.enrollmentNo}</td></tr>
     <tr><th>Program</th><td>B.Tech CSE - Semester 5</td></tr><tr><th>Receipt No.</th><td>RC-2026-000069</td></tr>
     <tr><th>Date</th><td>${now}</td></tr><tr><th>Total Fees</th><td>Rs 1,20,000</td></tr><tr><th>Amount Paid</th><td>Rs 90,000</td></tr>
     <tr><th>Balance Due</th><td>Rs 30,000 (due 15 Aug 2026)</td></tr><tr><th>Payment Mode</th><td>Online</td></tr></table>
@@ -44,15 +57,14 @@ export default function StudentDashboard() {
   };
 
   const timetable = [["09:00", "Data Structures", "Akshay Sir", "A-301"], ["10:00", "DBMS", "Sagar Sir", "A-302"], ["11:00", "OS Lab", "Akshay Sir", "Lab-2"]];
-  const attendance = [["Data Structures", "88%"], ["DBMS", "92%"], ["Operating Systems", "79%"], ["Machine Learning", "95%"]];
   const results = [["Data Structures", 28, 66, "A"], ["DBMS", 26, 71, "A"], ["Operating Systems", 24, 58, "B+"]];
   const notes = [["DSA - Trees.pdf", "PDF"], ["DBMS Normalization.ppt", "PPT"], ["OS Scheduling.mp4", "VIDEO"], ["Assignment 3.pdf", "ASSIGNMENT"]];
 
   return (
-    <DashboardShell role="Student" name="Navlani Jaykrishna" nav={NAV} activeNav={tab} onNavSelect={setTab}
+    <DashboardShell role="Student" name={me.name} nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
         { label: "CGPA", value: "8.4", icon: GraduationCap },
-        { label: "Attendance", value: "88%", icon: ClipboardCheck },
+        { label: isCR ? "CR Subjects" : "Courses", value: isCR ? String(myCr.length) : "4", icon: ClipboardCheck },
         { label: "Pending Fees", value: "Rs 30k", icon: Wallet },
         { label: "My Tickets", value: String(mine.length), icon: CalendarDays },
       ]}>
@@ -63,35 +75,29 @@ export default function StudentDashboard() {
             {timetable.map((r, i) => (
               <div key={i} className="flex items-center justify-between glass px-4 py-3">
                 <span className="font-mono text-brand-light">{r[0]}</span><span className="flex-1 px-3">{r[1]}</span>
-                <span className="text-[var(--muted)]">{r[2]}</span><span className="ml-3 text-xs glass px-2 py-1">{r[3]}</span>
+                <span className="text-[var(--muted)] hidden sm:block">{r[2]}</span><span className="ml-3 text-xs glass px-2 py-1">{r[3]}</span>
               </div>
             ))}
           </div>
+          <p className="text-xs text-[var(--muted)] mt-3">Attendance is recorded in the official SOU MIS. Ask your CR or subject faculty for corrections.</p>
         </Panel>
       )}
 
-      {(tab === "Dashboard" || tab === "Attendance") && (
-        <div className="mt-6"><Panel title="Attendance by Subject">
-          <div className="space-y-3">
-            {attendance.map(([s, p]) => (
-              <div key={s}>
-                <div className="flex justify-between text-sm mb-1"><span>{s}</span><span className="text-brand-light">{p}</span></div>
-                <div className="h-2 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-gradient-to-r from-brand to-brand-cyan" style={{ width: p }} /></div>
-              </div>
-            ))}
-          </div>
-        </Panel></div>
+      {tab === "Mark Attendance" && isCR && <CRAttendance assignments={myCr} me={me} />}
+
+      {(tab === "Dashboard" || tab === "Classroom") && (
+        <div className={tab === "Dashboard" ? "mt-6" : ""}><ClassroomPanel /></div>
       )}
 
-      {(tab === "Dashboard" || tab === "Fees") && (
-        <div className="mt-6"><Panel title="Fees">
+      {(tab === "Fees") && (
+        <Panel title="Fees">
           <div className="grid grid-cols-3 gap-3 text-center text-sm">
             <div className="glass p-4"><div className="text-lg font-bold">Rs 1.2L</div><div className="text-[var(--muted)]">Total</div></div>
             <div className="glass p-4"><div className="text-lg font-bold text-emerald-400">Rs 90k</div><div className="text-[var(--muted)]">Paid</div></div>
             <div className="glass p-4"><div className="text-lg font-bold text-rose-400">Rs 30k</div><div className="text-[var(--muted)]">Pending</div></div>
           </div>
           <button onClick={downloadReceipt} className="mt-4 px-4 py-2 rounded-full bg-brand text-white text-sm hover:bg-brand-light">Download Receipt</button>
-        </Panel></div>
+        </Panel>
       )}
 
       {tab === "Results" && (

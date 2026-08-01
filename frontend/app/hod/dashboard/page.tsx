@@ -5,9 +5,10 @@ import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
+import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports"];
 interface Member { name: string; id: string; info: string; }
 
 function EditableSection({ title, data, onChange, cols }: {
@@ -23,7 +24,7 @@ function EditableSection({ title, data, onChange, cols }: {
   const remove = (i: number) => { if (window.confirm("Remove this record?")) onChange(data.filter((_, j) => j !== i)); };
   const Editor = ({ onSave, onCancel }: { onSave: () => void; onCancel: () => void }) => (
     <div className="glass px-4 py-3 space-y-2">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder={cols[0]} className="glass px-3 py-2 bg-transparent outline-none text-sm" />
         <input value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} placeholder={cols[1]} className="glass px-3 py-2 bg-transparent outline-none text-sm" />
         <input value={draft.info} onChange={(e) => setDraft({ ...draft, info: e.target.value })} placeholder={cols[2]} className="glass px-3 py-2 bg-transparent outline-none text-sm" />
@@ -41,10 +42,10 @@ function EditableSection({ title, data, onChange, cols }: {
         {adding && <Editor onSave={saveAdd} onCancel={() => setAdding(false)} />}
         {data.map((m, i) => (
           editIdx === i ? <Editor key={i} onSave={saveEdit} onCancel={() => setEditIdx(-1)} /> : (
-            <div key={i} className="flex items-center justify-between glass px-4 py-3">
+            <div key={i} className="flex items-center justify-between glass px-4 py-3 gap-2">
               <span className="flex-1">{m.name}</span>
-              <span className="text-[var(--muted)] flex-1">{m.id}</span>
-              <span className="flex-1">{m.info}</span>
+              <span className="text-[var(--muted)] flex-1 hidden sm:block">{m.id}</span>
+              <span className="flex-1 hidden sm:block">{m.info}</span>
               <div className="flex gap-2">
                 <button onClick={() => startEdit(i, m)} className="text-xs px-3 py-1 rounded-full bg-brand text-white">Edit</button>
                 <button onClick={() => remove(i)} className="text-xs px-3 py-1 rounded-full bg-rose-500/80 text-white">Remove</button>
@@ -60,9 +61,14 @@ function EditableSection({ title, data, onChange, cols }: {
 export default function HodDashboard() {
   const [tab, setTab] = useState("Dashboard");
   const [myStage, setMyStage] = useState("HOD");
+  const [me, setMe] = useState("Deepika Chauhan Mam");
   const all = useTickets();
   useEffect(() => {
-    try { const u = JSON.parse(sessionStorage.getItem("sou_user") || "{}"); setMyStage(u.role === "HOI" ? "HOI" : "HOD"); } catch {}
+    try {
+      const u = JSON.parse(sessionStorage.getItem("sou_user") || "{}");
+      setMyStage(u.role === "HOI" ? "HOI" : "HOD");
+      if (u.fullName) setMe(u.fullName);
+    } catch {}
   }, []);
   const tickets = all.filter((t) => t.stage === myStage);
   const [modal, setModal] = useState<{ open: boolean; mode: "escalate" | "resolve"; code: string }>({ open: false, mode: "escalate", code: "" });
@@ -97,7 +103,7 @@ export default function HodDashboard() {
   ]);
 
   return (
-    <DashboardShell role="HOD / Head" name="Deepika Chauhan Mam" nav={NAV} activeNav={tab} onNavSelect={setTab}
+    <DashboardShell role="HOD / Head" name={me} nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
         { label: "Total Students", value: String(students.length), icon: Users },
         { label: "My Tickets", value: String(tickets.length), icon: UserPlus },
@@ -134,6 +140,8 @@ export default function HodDashboard() {
           </div>
         </Panel>
       )}
+
+      {tab === "CR & Attendance" && <CRPanel actor={me} />}
 
       {tab === "Students" && <EditableSection title="Student Management" data={students} onChange={setStudents} cols={["Name", "Enrollment No.", "Semester"]} />}
       {tab === "Faculty" && <EditableSection title="Faculty Management" data={faculty} onChange={setFaculty} cols={["Name", "Faculty ID", "Designation"]} />}

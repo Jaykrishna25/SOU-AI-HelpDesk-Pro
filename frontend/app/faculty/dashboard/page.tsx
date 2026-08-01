@@ -1,19 +1,27 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Users, ClipboardCheck, Wallet, BookOpen } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
+import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
+import { useSubmissions } from "@/lib/attendance";
 
-const NAV = ["Dashboard", "Timetable", "Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets"];
+const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets"];
 
 export default function FacultyDashboard() {
   const [tab, setTab] = useState("Dashboard");
+  const [me, setMe] = useState("Akshay Sir");
   const all = useTickets();
+  const subs = useSubmissions();
   const tickets = all.filter((t) => t.stage === "FACULTY");
   const [modal, setModal] = useState<{ open: boolean; mode: "escalate" | "resolve"; code: string }>({ open: false, mode: "escalate", code: "" });
-  const [marks, setMarks] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    try { const u = JSON.parse(sessionStorage.getItem("sou_user") || "{}"); if (u.fullName) setMe(u.fullName); } catch {}
+  }, []);
+
   const openModal = (mode: "escalate" | "resolve", code: string) => setModal({ open: true, mode, code });
   const onConfirm = (a: TicketAction) => {
     if (a.mode === "escalate")
@@ -31,7 +39,7 @@ export default function FacultyDashboard() {
     table{width:100%;border-collapse:collapse;margin-top:20px}td,th{border:1px solid #ddd;padding:10px;text-align:left}
     th{background:#f3e8ff}.foot{margin-top:24px;font-size:12px;color:#666;text-align:center}</style></head>
     <body><div class="head"><h1>Silver Oak University</h1><p>Salary Slip - SOU AI HelpDesk Pro</p></div>
-    <table><tr><th>Faculty Name</th><td>Akshay Sir</td></tr><tr><th>Faculty ID</th><td>FAC001</td></tr>
+    <table><tr><th>Faculty Name</th><td>${me}</td></tr><tr><th>Faculty ID</th><td>FAC001</td></tr>
     <tr><th>Department</th><td>Computer Science & Engineering</td></tr><tr><th>Designation</th><td>Assistant Professor</td></tr>
     <tr><th>Pay Month</th><td>July 2026</td></tr><tr><th>Basic</th><td>Rs 90,000</td></tr><tr><th>Allowances</th><td>Rs 25,000</td></tr>
     <tr><th>Deductions</th><td>Rs 12,000</td></tr><tr><th>Net Pay</th><td><b>Rs 1,03,000</b></td></tr><tr><th>Generated</th><td>${now}</td></tr></table>
@@ -44,14 +52,15 @@ export default function FacultyDashboard() {
 
   const students = ["Navlani Jaykrishna", "Harsh Barot", "Zala Rudraraj", "Ashok Sharma"];
   const schedule = [["Mon 09:00", "Data Structures", "A-301"], ["Mon 11:00", "OS Lab", "Lab-2"], ["Tue 10:00", "DBMS", "A-302"]];
+  const pending = subs.filter((s) => s.status === "PENDING").length;
 
   return (
-    <DashboardShell role="Faculty" name="Akshay Sir" nav={NAV} activeNav={tab} onNavSelect={setTab}
+    <DashboardShell role="Faculty" name={me} nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
         { label: "Subjects", value: "2", icon: BookOpen },
         { label: "Students", value: "120", icon: Users },
-        { label: "My Tickets", value: String(tickets.length), icon: ClipboardCheck },
-        { label: "Net Salary", value: "Rs 1.03L", icon: Wallet },
+        { label: "Attendance Pending", value: String(pending), icon: ClipboardCheck },
+        { label: "My Tickets", value: String(tickets.length), icon: Wallet },
       ]}>
 
       <TicketActionModal open={modal.open} mode={modal.mode} ticketCode={modal.code}
@@ -59,22 +68,7 @@ export default function FacultyDashboard() {
         resolveOptions={["Student (ticket creator)", "HOD"]}
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 
-      {(tab === "Dashboard" || tab === "Attendance") && (
-        <Panel title="Mark Attendance - DSA (A-302)">
-          <div className="space-y-2 text-sm">
-            {students.map((s) => (
-              <div key={s} className="flex items-center justify-between glass px-4 py-3">
-                <span>{s}</span>
-                <div className="flex gap-2">
-                  <button onClick={() => setMarks((m) => ({ ...m, [s]: "P" }))} className={`text-xs px-3 py-1 rounded-full ${marks[s] === "P" ? "bg-emerald-500 text-white" : "bg-emerald-500/20 text-emerald-300"}`}>Present</button>
-                  <button onClick={() => setMarks((m) => ({ ...m, [s]: "A" }))} className={`text-xs px-3 py-1 rounded-full ${marks[s] === "A" ? "bg-rose-500 text-white" : "bg-rose-500/20 text-rose-300"}`}>Absent</button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button onClick={() => alert("Attendance saved for " + Object.keys(marks).length + " students.")} className="mt-3 px-4 py-2 rounded-full bg-brand text-white text-sm">Save Attendance</button>
-        </Panel>
-      )}
+      {(tab === "Dashboard" || tab === "CR & Attendance") && <CRPanel actor={me} />}
 
       {tab === "Timetable" && (
         <Panel title="Weekly Schedule">
@@ -106,12 +100,10 @@ export default function FacultyDashboard() {
         </Panel>
       )}
 
-      {(tab === "Dashboard" || tab === "Exam Duties") && (
-        <div className="mt-6">
-          <Panel title="Exam Invigilation Duty">
-            <div className="glass px-4 py-3 text-sm flex justify-between"><span>ML End Sem - Exam Hall 1</span><span className="text-[var(--muted)]">20 Nov 2026</span></div>
-          </Panel>
-        </div>
+      {tab === "Exam Duties" && (
+        <Panel title="Exam Invigilation Duty">
+          <div className="glass px-4 py-3 text-sm flex justify-between"><span>ML End Sem - Exam Hall 1</span><span className="text-[var(--muted)]">20 Nov 2026</span></div>
+        </Panel>
       )}
 
       {tab === "Salary" && (
@@ -126,29 +118,27 @@ export default function FacultyDashboard() {
         </Panel>
       )}
 
-      {(tab === "Dashboard" || tab === "Tickets") && (
-        <div className="mt-6">
-          <Panel title={`Tickets Assigned to Me (${tickets.length})`}>
-            <div className="space-y-2 text-sm">
-              {tickets.map((t) => (
-                <div key={t.code} className="glass px-4 py-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-mono text-brand-light">{t.code}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(t.status)}`}>{t.status}</span>
-                  </div>
-                  <div className="text-[var(--muted)]">{t.subject}</div>
-                  <div className="text-xs text-[var(--muted)] mt-0.5">By {t.creator}</div>
-                  {t.note && <div className="text-xs text-brand-light mt-1">{t.note}</div>}
-                  <div className="flex gap-2 mt-2">
-                    <button onClick={() => openModal("resolve", t.code)} className="text-xs px-3 py-1 rounded-full bg-emerald-500/80 text-white">Resolve</button>
-                    <button onClick={() => openModal("escalate", t.code)} className="text-xs px-3 py-1 rounded-full bg-rose-500/80 text-white">Escalate</button>
-                  </div>
+      {tab === "Tickets" && (
+        <Panel title={`Tickets Assigned to Me (${tickets.length})`}>
+          <div className="space-y-2 text-sm">
+            {tickets.map((t) => (
+              <div key={t.code} className="glass px-4 py-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-brand-light">{t.code}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(t.status)}`}>{t.status}</span>
                 </div>
-              ))}
-              {tickets.length === 0 && <p className="text-[var(--muted)]">No tickets assigned to you.</p>}
-            </div>
-          </Panel>
-        </div>
+                <div className="text-[var(--muted)]">{t.subject}</div>
+                <div className="text-xs text-[var(--muted)] mt-0.5">By {t.creator}</div>
+                {t.note && <div className="text-xs text-brand-light mt-1">{t.note}</div>}
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => openModal("resolve", t.code)} className="text-xs px-3 py-1 rounded-full bg-emerald-500/80 text-white">Resolve</button>
+                  <button onClick={() => openModal("escalate", t.code)} className="text-xs px-3 py-1 rounded-full bg-rose-500/80 text-white">Escalate</button>
+                </div>
+              </div>
+            ))}
+            {tickets.length === 0 && <p className="text-[var(--muted)]">No tickets assigned to you.</p>}
+          </div>
+        </Panel>
       )}
 
     </DashboardShell>
