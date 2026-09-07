@@ -13,6 +13,8 @@ const nextConfig = {
       "node_modules/@esbuild/**",
       "node_modules/terser/**",
       "node_modules/sharp/**",
+      "node_modules/prisma/**",
+      "node_modules/@prisma/engines/**",
     ],
   },
 };
