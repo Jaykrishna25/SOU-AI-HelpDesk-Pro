@@ -45,7 +45,7 @@ export default function OwnerDashboard() {
                   <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(t.status)}`}>{t.status}</span>
                 </div>
                 <div className="text-[var(--muted)]">{t.subject}</div>
-                <div className="text-xs text-[var(--muted)] mt-0.5">By {t.creator} - {t.category}</div>
+                <div className="text-xs text-[var(--muted)] mt-0.5">Raised by {t.creator} ({t.creatorRole})</div>
                 {t.note && <div className="text-xs text-brand-light mt-1">{t.note}</div>}
                 <div className="flex gap-2 mt-2">
                   <button onClick={() => setModal({ open: true, code: t.code })} className="text-xs px-3 py-1 rounded-full bg-emerald-500/80 text-white">Review & Resolve</button>
@@ -86,3 +86,4 @@ export default function OwnerDashboard() {
     </DashboardShell>
   );
 }
+

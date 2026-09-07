@@ -4,61 +4,85 @@ import { sendMail } from "@/lib/email";
 
 export interface Ticket {
   code: string; subject: string; description: string; category: string;
-  priority: string; status: string; creator: string; note: string;
-  stage: string; createdAt: number;
+  priority: string; status: string; stage: string; note: string;
+  creator: string; creatorRole: string; createdAt: number;
 }
 
-const KEY = "sou_tickets_v2";
-const EVT = "sou_tickets_changed";
+const EVT = "sou_data_changed";
+export const refreshData = () => { if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(EVT)); };
 
-const SEED: Ticket[] = [
-  { code: "TKT-2026-0042", subject: "Fee receipt not generated", description: "My fee receipt is not generating on the portal.", category: "FEES", priority: "HIGH", status: "Open", creator: "Navlani Jaykrishna", note: "", stage: "ADMIN", createdAt: Date.now() - 3600000 },
-  { code: "TKT-2026-0039", subject: "Revaluation of DBMS paper", description: "Requesting revaluation for the DBMS end-sem paper.", category: "REVALUATION", priority: "MEDIUM", status: "Open", creator: "Harsh Barot", note: "", stage: "ADMIN", createdAt: Date.now() - 7200000 },
-];
-
-export function getTickets(): Ticket[] {
-  if (typeof window === "undefined") return SEED;
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) { localStorage.setItem(KEY, JSON.stringify(SEED)); return SEED; }
-    const list: Ticket[] = JSON.parse(raw);
-    return list.map((t) => ({ ...t, stage: t.stage || "ADMIN" }));
-  } catch { return SEED; }
+function token(): string {
+  try { return typeof window === "undefined" ? "" : sessionStorage.getItem("sou_token") || ""; } catch { return ""; }
 }
 
-export function saveTickets(list: Ticket[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(list));
-  window.dispatchEvent(new CustomEvent(EVT));
+async function api(path: string, init: RequestInit = {}) {
+  const res = await fetch("/api" + path, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token() ? { Authorization: "Bearer " + token() } : {}),
+      ...(init.headers || {}),
+    },
+  });
+  return res.json().catch(() => ({ success: false }));
 }
 
-export function addTicket(t: Partial<Ticket>): Ticket {
-  const list = getTickets();
-  const code = "TKT-2026-" + String(4000 + Math.floor(Math.random() * 5000));
-  const nt: Ticket = {
-    code, subject: t.subject || "New request", description: t.description || "",
-    category: t.category || "GENERAL", priority: t.priority || "MEDIUM",
-    status: "Open", creator: t.creator || "Student", note: "", stage: "ADMIN", createdAt: Date.now(),
-  };
-  saveTickets([nt, ...list]);
-  sendMail(`New ticket ${nt.code}`, `A new query was raised by ${nt.creator}: "${nt.subject}". It is now with the Admin desk.`, "Admin");
-  return nt;
+interface RawTicket {
+  code: string; subject: string; description: string; category: string;
+  priority: string; status: string; stage: string; note: string;
+  creatorName: string; createdAt: string; creator?: { role: string };
+}
+const map = (t: RawTicket): Ticket => ({
+  code: t.code, subject: t.subject, description: t.description, category: t.category,
+  priority: t.priority, status: t.status, stage: t.stage, note: t.note || "",
+  creator: t.creatorName, creatorRole: t.creator?.role || "STUDENT", createdAt: Date.parse(t.createdAt) || Date.now(),
+});
+
+export async function fetchTickets(): Promise<Ticket[]> {
+  const d = await api("/tickets");
+  return d.success && Array.isArray(d.tickets) ? d.tickets.map(map) : [];
 }
 
-export function updateTicket(code: string, patch: Partial<Ticket>) {
-  const next = getTickets().map((t) => t.code === code ? { ...t, ...patch } : t);
-  saveTickets(next);
-  const t = next.find((x) => x.code === code);
-  if (t && patch.status) {
-    if (patch.status === "Resolved")
-      sendMail(`Ticket ${t.code} resolved`, `Your query "${t.subject}" has been resolved. ${t.note}`, t.creator);
-    else if (patch.status === "Escalated")
-      sendMail(`Ticket ${t.code} escalated`, `${t.note} (Query: "${t.subject}")`, t.stage);
-    else if (patch.status === "Assigned")
-      sendMail(`Ticket ${t.code} assigned`, `Your query "${t.subject}" was assigned to a staff member.`, t.creator);
-    else if (patch.status === "Reopened")
-      sendMail(`Ticket ${t.code} reopened`, `The query "${t.subject}" was reopened.`, "Admin");
+export async function addTicket(t: Partial<Ticket>): Promise<Ticket | null> {
+  const d = await api("/tickets", {
+    method: "POST",
+    body: JSON.stringify({
+      subject: t.subject, description: t.description,
+      category: t.category || "GENERAL", priority: t.priority || "MEDIUM",
+    }),
+  });
+  refreshData();
+  if (d.success) {
+    sendMail("New ticket " + d.ticket.code, "A new query was raised: " + d.ticket.subject, "Admin");
+    return map(d.ticket);
   }
+  return null;
+}
+
+export async function updateTicket(code: string, patch: Partial<Ticket>) {
+  const d = await api("/tickets/" + code, {
+    method: "PATCH",
+    body: JSON.stringify({ status: patch.status, stage: patch.stage, note: patch.note }),
+  });
+  refreshData();
+  if (d.success && patch.status) {
+    const t = d.ticket;
+    if (patch.status === "Resolved") sendMail("Ticket " + t.code + " resolved", t.note || t.subject, t.creatorName);
+    else if (patch.status === "Escalated") sendMail("Ticket " + t.code + " escalated", t.note || t.subject, t.stage);
+  }
+}
+
+export function useTickets(): Ticket[] {
+  const [list, setList] = useState<Ticket[]>([]);
+  useEffect(() => {
+    let alive = true;
+    const load = async () => { const t = await fetchTickets(); if (alive) setList(t); };
+    load();
+    const timer = setInterval(load, 6000);
+    window.addEventListener(EVT, load);
+    return () => { alive = false; clearInterval(timer); window.removeEventListener(EVT, load); };
+  }, []);
+  return list;
 }
 
 export function roleToStage(label: string): string {
@@ -71,18 +95,6 @@ export function roleToStage(label: string): string {
   return "ADMIN";
 }
 
-export function useTickets(): Ticket[] {
-  const [list, setList] = useState<Ticket[]>([]);
-  useEffect(() => {
-    const refresh = () => setList(getTickets());
-    refresh();
-    window.addEventListener(EVT, refresh);
-    window.addEventListener("storage", refresh);
-    return () => { window.removeEventListener(EVT, refresh); window.removeEventListener("storage", refresh); };
-  }, []);
-  return list;
-}
-
 export function statusColor(s: string): string {
   return s === "Resolved" || s === "Closed" ? "bg-emerald-500/20 text-emerald-300"
     : s === "Escalated" ? "bg-rose-500/20 text-rose-300"
@@ -90,3 +102,4 @@ export function statusColor(s: string): string {
     : s === "Assigned" || s === "In Progress" ? "bg-brand/20 text-brand-light"
     : "bg-white/10 text-[var(--muted)]";
 }
+

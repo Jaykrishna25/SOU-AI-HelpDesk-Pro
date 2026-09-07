@@ -28,3 +28,19 @@ export async function sendMail(subject: string, message: string, forWhom = "") {
     });
   } catch {}
 }
+
+export async function sendMailTo(toEmail: string, subject: string, message: string) {
+  if (!emailEnabled() || !toEmail || typeof window === "undefined") return;
+  try {
+    await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service_id: SERVICE,
+        template_id: TEMPLATE,
+        user_id: PUBLIC_KEY,
+        template_params: { to_email: toEmail, to_name: toEmail, subject: "[SOU HelpDesk] " + subject, message },
+      }),
+    });
+  } catch {}
+}

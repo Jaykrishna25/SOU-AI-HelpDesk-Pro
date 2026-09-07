@@ -59,7 +59,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="text-[var(--muted)]">{t.subject}</div>
-                <div className="text-xs text-[var(--muted)] mt-0.5">By {t.creator} - {t.category}</div>
+                <div className="text-xs text-[var(--muted)] mt-0.5">Raised by {t.creator} ({t.creatorRole})</div>
                 {t.note && <div className="text-xs text-brand-light mt-1">{t.note}</div>}
                 <div className="flex gap-2 mt-2">
                   <button onClick={() => updateTicket(t.code, { status: "Assigned", note: "" })} className="text-xs px-3 py-1 rounded-full bg-brand text-white hover:bg-brand-light">Assign</button>
@@ -119,3 +119,4 @@ export default function AdminDashboard() {
     </DashboardShell>
   );
 }
+

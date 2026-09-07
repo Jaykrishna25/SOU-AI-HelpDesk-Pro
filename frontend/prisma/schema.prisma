@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  FACULTY
+  HOD
+  HOI
+  OWNER
+  SUPER_ADMIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  loginId      String   @unique
+  role         Role
+  fullName     String
+  email        String?  @unique
+  birthdate    DateTime
+  phone        String?
+  institute    String?
+  course       String?
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+
+  student      Student?
+  faculty      Faculty?
+  admin        Admin?
+  createdTickets Ticket[]      @relation("TicketCreator")
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  students  Student[]
+  faculty   Faculty[]
+  subjects  Subject[]
+}
+
+model Student {
+  id           String @id @default(cuid())
+  userId       String @unique
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentNo String @unique
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  semester     Int    @default(1)
+  program      String
+  cgpa         Float  @default(0)
+
+  fees     Fee[]
+  results  Result[]
+}
+
+model Faculty {
+  id           String @id @default(cuid())
+  userId       String @unique
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facultyId    String @unique
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  designation  String @default("Assistant Professor")
+
+  subjects Subject[]
+}
+
+model Admin {
+  id      String @id @default(cuid())
+  userId  String @unique
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminId String @unique
+  scope   String @default("CAMPUS")
+}
+
+model Subject {
+  id           String @id @default(cuid())
+  code         String @unique
+  name         String
+  semester     Int
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  facultyId    String?
+  faculty      Faculty?   @relation(fields: [facultyId], references: [id])
+
+  results Result[]
+  exams   Exam[]
+}
+
+model Fee {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  semester  Int
+  totalFees Float
+  paidFees  Float    @default(0)
+  status    String   @default("PENDING")
+  dueDate   DateTime
+}
+
+model Result {
+  id            String  @id @default(cuid())
+  studentId     String
+  student       Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       Subject @relation(fields: [subjectId], references: [id])
+  semester      Int
+  internalMarks Float   @default(0)
+  externalMarks Float   @default(0)
+  grade         String?
+}
+
+model Exam {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  title     String
+  type      String
+  date      DateTime
+  venue     String
+}
+
+model Ticket {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  subject     String
+  description String
+  category    String   @default("GENERAL")
+  priority    String   @default("MEDIUM")
+  status      String   @default("Open")
+  stage       String   @default("ADMIN")
+  note        String   @default("")
+  creatorId   String
+  creator     User     @relation("TicketCreator", fields: [creatorId], references: [id])
+  creatorName String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  history TicketHistory[]
+}
+
+model TicketHistory {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  event     String
+  actor     String
+  note      String   @default("")
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model CRAssignment {
+  id           String   @id @default(cuid())
+  subjectCode  String   @unique
+  subjectName  String
+  enrollmentNo String
+  studentName  String
+  assignedBy   String
+  createdAt    DateTime @default(now())
+}
+
+model AttendanceSubmission {
+  id                 String   @id @default(cuid())
+  subjectCode        String
+  subjectName        String
+  date               String
+  markedByEnrollment String
+  markedByName       String
+  entries            Json
+  status             String   @default("PENDING")
+  syncState          String   @default("NOT_SYNCED")
+  approvedBy         String   @default("")
+  createdAt          DateTime @default(now())
+}
+
+model KnowledgeBase {
+  id        String   @id @default(cuid())
+  title     String
+  type      String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  createdAt DateTime @default(now())
+}
+
