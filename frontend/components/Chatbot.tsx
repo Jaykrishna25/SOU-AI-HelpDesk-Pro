@@ -206,7 +206,7 @@ export default function Chatbot() {
       <AnimatePresence>
         {open && (
           <motion.div initial={{ opacity: 0, y: 30, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: 0.9 }}
-            className="fixed bottom-28 right-6 z-[60] w-[92vw] max-w-sm glass p-4 flex flex-col h-[28rem]">
+            className="fixed bottom-28 right-6 z-[60] w-[92vw] max-w-sm p-4 flex flex-col h-[28rem] rounded-2xl border border-[var(--border)] shadow-2xl" style={{ background: "var(--bg)" }}>
             <div className="flex items-center gap-2 pb-3 border-b border-[var(--border)]">
               <Sparkles size={18} className="text-brand-light" />
               <b>AI Help Desk</b>
@@ -274,3 +274,4 @@ export default function Chatbot() {
     </>
   );
 }
+

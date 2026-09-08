@@ -27,6 +27,15 @@ const INSTITUTES = [
   "Silver Oak College of Vocational Education",
 ];
 
+const ROLES = [
+  { value: "STUDENT", label: "Student" },
+  { value: "FACULTY", label: "Faculty" },
+  { value: "ADMIN", label: "Admin" },
+  { value: "HOD", label: "HOD (Head of Department)" },
+  { value: "HOI", label: "HOI (Head of Institute)" },
+  { value: "OWNER", label: "Owner / Management" },
+];
+
 const ROLE_PATH: Record<string, string> = {
   STUDENT: "/student/dashboard",
   ADMIN: "/admin/dashboard",
@@ -55,10 +64,14 @@ export default function LoginPage() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [su, setSu] = useState({ fullName: "", email: "", phone: "", birthdate: "", institute: INSTITUTES[0], course: "" });
+  const [su, setSu] = useState({
+    fullName: "", email: "", phone: "", birthdate: "",
+    role: "STUDENT", institute: INSTITUTES[0], course: "",
+  });
   const [suErr, setSuErr] = useState("");
   const [suLoading, setSuLoading] = useState(false);
   const [newId, setNewId] = useState("");
+  const [mailNote, setMailNote] = useState("");
   const [copied, setCopied] = useState(false);
 
   const submitLogin = async (e: React.FormEvent) => {
@@ -90,8 +103,17 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok || !data.success) { setSuErr(data.error || "Could not create the account."); return; }
       setNewId(data.loginId);
-      sendMailTo(su.email, "Your SOU HelpDesk login ID",
-        "Welcome " + su.fullName + ".\n\nYour login ID: " + data.loginId + "\nYour password: your date of birth (" + su.birthdate + ")\n\nInstitute: " + su.institute + "\nCourse: " + su.course);
+      const roleLabel = ROLES.find((r) => r.value === su.role)?.label || "Student";
+      const sent = await sendMailTo(su.email, "Your SOU HelpDesk login details",
+        "Welcome " + su.fullName + ".\n\n" +
+        "Your account has been created on SOU AI HelpDesk Pro.\n\n" +
+        "Login ID: " + data.loginId + "\n" +
+        "Password: your date of birth (" + su.birthdate + ")\n" +
+        "Role: " + roleLabel + "\n" +
+        "Institute: " + su.institute + "\n" +
+        "Course / Department: " + su.course + "\n\n" +
+        "Please keep this ID safe. You can sign in from the portal login page.");
+      setMailNote(sent ? "A copy has been emailed to " + su.email + "." : "Email delivery is not configured, so please copy your ID from this screen.");
     } catch {
       setSuErr("Could not reach the server. Please try again.");
     } finally { setSuLoading(false); }
@@ -154,6 +176,13 @@ export default function LoginPage() {
           <>
             <p className="text-center text-xs text-[var(--muted)] mb-4">Register to get your unique login ID</p>
             <form onSubmit={submitSignup} className="space-y-3">
+              <div>
+                <label className="text-xs text-[var(--muted)]">I am registering as</label>
+                <select value={su.role} onChange={(e) => setSu({ ...su, role: e.target.value })}
+                  className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none text-sm" style={{ color: "var(--text)" }}>
+                  {ROLES.map((r) => <option key={r.value} value={r.value} style={{ color: "#111" }}>{r.label}</option>)}
+                </select>
+              </div>
               <input required value={su.fullName} onChange={(e) => setSu({ ...su, fullName: e.target.value })}
                 placeholder="Full name" className="w-full glass px-4 py-3 bg-transparent outline-none text-sm" />
               <input required type="email" value={su.email} onChange={(e) => setSu({ ...su, email: e.target.value })}
@@ -170,7 +199,8 @@ export default function LoginPage() {
                 {INSTITUTES.map((i) => <option key={i} value={i} style={{ color: "#111" }}>{i}</option>)}
               </select>
               <input required value={su.course} onChange={(e) => setSu({ ...su, course: e.target.value })}
-                placeholder="Course / programme (e.g. B.Tech CSE)" className="w-full glass px-4 py-3 bg-transparent outline-none text-sm" />
+                placeholder={su.role === "STUDENT" ? "Course (e.g. B.Tech CSE)" : "Department / subject"}
+                className="w-full glass px-4 py-3 bg-transparent outline-none text-sm" />
               {suErr && <p className="text-rose-400 text-xs">{suErr}</p>}
               <button disabled={suLoading}
                 className="w-full py-3 rounded-full bg-brand text-white font-semibold glow flex items-center justify-center gap-2 hover:bg-brand-light transition">
@@ -193,9 +223,7 @@ export default function LoginPage() {
                 <Copy size={12} /> {copied ? "Copied" : "Copy ID"}
               </button>
             </div>
-            <p className="text-xs text-[var(--muted)] mb-4">
-              We have also tried to email it to {su.email}. If no email arrives, use the ID shown above.
-            </p>
+            {mailNote && <p className="text-xs text-[var(--muted)] mb-4">{mailNote}</p>}
             <button onClick={useNewId} className="w-full py-3 rounded-full bg-brand text-white font-semibold">Continue to Login</button>
           </div>
         )}

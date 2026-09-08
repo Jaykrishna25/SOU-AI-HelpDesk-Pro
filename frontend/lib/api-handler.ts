@@ -66,19 +66,21 @@ export async function POST(req: Request, ctx: Ctx) {
   const body = await req.json().catch(() => ({}));
 
   if (a === "auth" && b === "signup") {
-    const { fullName, email, phone, birthdate, institute, course } = body as Record<string, string>;
+    const { fullName, email, phone, birthdate, institute, course, role } = body as Record<string, string>;
+    const roleValue = ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER"].includes(String(role || "").toUpperCase()) ? String(role).toUpperCase() : "STUDENT";
     if (!fullName || !email || !birthdate) return bad("Name, email and date of birth are required");
     const existing = await prisma.user.findFirst({ where: { email } });
     if (existing) return bad("An account with this email already exists. Please log in.");
     let loginId = "";
     for (let i = 0; i < 8; i++) {
-      const candidate = "SOU" + new Date().getFullYear() + String(1000 + Math.floor(Math.random() * 9000));
+      const prefixes: Record<string, string> = { STUDENT: "SOU" + new Date().getFullYear(), FACULTY: "FAC", ADMIN: "ADM", HOD: "HOD", HOI: "HOI", OWNER: "OWN" };
+      const candidate = (prefixes[roleValue] || "SOU") + String(1000 + Math.floor(Math.random() * 9000));
       const clash = await prisma.user.findUnique({ where: { loginId: candidate } });
       if (!clash) { loginId = candidate; break; }
     }
     if (!loginId) return bad("Could not allocate an ID. Please try again.");
     await prisma.user.create({
-      data: { loginId, role: "STUDENT", fullName, email, phone, institute, course, birthdate: new Date(birthdate + "T00:00:00Z") },
+      data: { loginId, role: roleValue as any, fullName, email, phone, institute, course, birthdate: new Date(birthdate + "T00:00:00Z") },
     });
     return ok({ loginId, fullName });
   }
@@ -226,5 +228,6 @@ export async function DELETE(req: Request, ctx: Ctx) {
 
   return bad("Unknown endpoint: " + path.join("/"), 404);
 }
+
 
 

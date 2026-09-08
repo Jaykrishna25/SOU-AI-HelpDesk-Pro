@@ -5,42 +5,31 @@ const PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
 const NOTIFY_EMAIL = process.env.NEXT_PUBLIC_NOTIFY_EMAIL;
 
 export function emailEnabled(): boolean {
-  return Boolean(SERVICE && TEMPLATE && PUBLIC_KEY && NOTIFY_EMAIL);
+  return Boolean(SERVICE && TEMPLATE && PUBLIC_KEY);
 }
 
-export async function sendMail(subject: string, message: string, forWhom = "") {
-  if (!emailEnabled() || typeof window === "undefined") return;
+async function post(toEmail: string, toName: string, subject: string, message: string): Promise<boolean> {
+  if (!emailEnabled() || !toEmail || typeof window === "undefined") return false;
   try {
-    await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         service_id: SERVICE,
         template_id: TEMPLATE,
         user_id: PUBLIC_KEY,
-        template_params: {
-          to_email: NOTIFY_EMAIL,
-          to_name: forWhom || "SOU User",
-          subject: "[SOU HelpDesk] " + subject,
-          message: (forWhom ? "Recipient: " + forWhom + "\n\n" : "") + message,
-        },
+        template_params: { to_email: toEmail, to_name: toName, subject: "[SOU HelpDesk] " + subject, message },
       }),
     });
-  } catch {}
+    return res.ok;
+  } catch { return false; }
 }
 
-export async function sendMailTo(toEmail: string, subject: string, message: string) {
-  if (!emailEnabled() || !toEmail || typeof window === "undefined") return;
-  try {
-    await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        service_id: SERVICE,
-        template_id: TEMPLATE,
-        user_id: PUBLIC_KEY,
-        template_params: { to_email: toEmail, to_name: toEmail, subject: "[SOU HelpDesk] " + subject, message },
-      }),
-    });
-  } catch {}
+export async function sendMail(subject: string, message: string, forWhom = ""): Promise<boolean> {
+  if (!NOTIFY_EMAIL) return false;
+  return post(NOTIFY_EMAIL, forWhom || "SOU User", subject, (forWhom ? "Recipient: " + forWhom + "\n\n" : "") + message);
+}
+
+export async function sendMailTo(toEmail: string, subject: string, message: string): Promise<boolean> {
+  return post(toEmail, toEmail, subject, message);
 }
