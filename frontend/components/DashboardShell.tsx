@@ -115,6 +115,13 @@ export default function DashboardShell({
         </div>
         )}
 
+        <div className="mt-4 pt-3 border-t border-[var(--border)]">
+          <p className="text-[10px] uppercase tracking-wide text-[var(--muted)] mb-1">Need help?</p>
+          <a href="tel:07935201300" className="block text-[11px] text-brand-light hover:underline">079-35201300</a>
+          <a href="tel:07966046300" className="block text-[11px] text-brand-light hover:underline">079-66046300</a>
+          <a href="tel:+919099063464" className="block text-[11px] text-brand-light hover:underline">+91 9099063464</a>
+        </div>
+
         <Link href="/login" onClick={logout} className="flex items-center gap-2 text-sm text-[var(--muted)] hover:text-rose-400 mt-4"><LogOut size={16} /> Sign out</Link>
       </aside>
 
@@ -199,4 +206,5 @@ export default function DashboardShell({
     </div>
   );
 }
+
 

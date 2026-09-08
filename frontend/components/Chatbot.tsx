@@ -31,6 +31,8 @@ const COMMON_COURSES: Record<string, string[]> = {
   "Silver Oak Commerce College": ["B.Com", "M.Com"],
 };
 
+const CONTACT = "079-35201300 / 079-66046300 / +91 9099063464";
+
 interface Faq { intent: string; keywords: string[]; answer: string }
 
 const KB: Faq[] = [
@@ -191,7 +193,7 @@ export default function Chatbot() {
     } else {
       setStats((s) => ({ ...s, answered: s.answered + 1 }));
     }
-    setMsgs((m) => [...m, { role: "ai", text: d.text, meta }]);
+    setMsgs((m) => [...m, { role: "ai", text: d.ticket ? d.text + "\n\nIf it is urgent you can also call " + CONTACT : d.text, meta }]);
   };
 
   const total = stats.answered + stats.ticketed;
@@ -261,7 +263,10 @@ export default function Chatbot() {
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-2 pt-2 border-t border-[var(--border)]">
+                <div className="text-[10px] text-[var(--muted)] pt-2 border-t border-[var(--border)] leading-relaxed">
+                  Not solved here? Call {CONTACT}
+                </div>
+                <div className="flex gap-2 pt-2">
                   <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
                     placeholder="Ask about fees, exams, hostel, library..." className="flex-1 bg-transparent outline-none text-sm px-2" />
                   <button onClick={send} className="p-2 rounded-full bg-brand text-white"><Send size={16} /></button>
@@ -274,5 +279,6 @@ export default function Chatbot() {
     </>
   );
 }
+
 
 
