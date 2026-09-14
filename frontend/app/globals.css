@@ -148,3 +148,28 @@ html, body { padding: 0; margin: 0; background: var(--bg); color: var(--text);
   [style*="jn-drift"]{animation:none!important}
 }
 
+
+/* ================= SOU "Iris" cinematic ================= */
+.ir-3d{transform-style:preserve-3d}
+.ir-gpu{will-change:transform,opacity;backface-visibility:hidden}
+.ir-glass{background:linear-gradient(155deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+  border:1px solid rgba(201,162,39,.25);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.ir-display{letter-spacing:.14em}
+
+@keyframes ir-rot{to{transform:rotate(360deg)}}
+@keyframes ir-rot-r{to{transform:rotate(-360deg)}}
+@keyframes ir-rise{0%{transform:translate3d(0,30px,0);opacity:0}20%{opacity:.9}80%{opacity:.5}100%{transform:translate3d(0,-190px,0);opacity:0}}
+@keyframes ir-breathe{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.9;transform:scale(1.06)}}
+@keyframes ir-hover{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-16px,0)}}
+@keyframes ir-sweep{0%{transform:translateX(-140%) skewX(-16deg)}100%{transform:translateX(140%) skewX(-16deg)}}
+@keyframes ir-dash{to{stroke-dashoffset:-500}}
+
+.ir-rot{animation:ir-rot 50s linear infinite}
+.ir-rot-r{animation:ir-rot-r 38s linear infinite}
+.ir-breathe{animation:ir-breathe 3.6s ease-in-out infinite}
+.ir-hover{animation:ir-hover 7s ease-in-out infinite}
+.ir-dash{stroke-dasharray:16 12;animation:ir-dash 11s linear infinite}
+
+@media (prefers-reduced-motion: reduce){
+  .ir-rot,.ir-rot-r,.ir-breathe,.ir-hover,.ir-dash{animation:none!important}
+}
