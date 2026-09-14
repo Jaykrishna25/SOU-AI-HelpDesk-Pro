@@ -1,4 +1,5 @@
 "use client";
+import SeatingPanel from "@/components/SeatingPanel";
 import InsightsPanel from "@/components/InsightsPanel";
 import FeedbackPanel from "@/components/FeedbackPanel";
 import GrievancePanel from "@/components/GrievancePanel";
@@ -12,7 +13,7 @@ import TicketActionModal, { TicketAction } from "@/components/TicketActionModal"
 import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources", "Announcements", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources", "Announcements", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Exam Seating"];
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -78,6 +79,7 @@ export default function AdminDashboard() {
         </Panel>
       )}
 
+      {tab === "Exam Seating" && <SeatingPanel />}
       {tab === "Insights" && <InsightsPanel />}
       {tab === "Feedback" && <FeedbackPanel />}
       {tab === "Grievance" && <GrievancePanel />}
@@ -129,6 +131,7 @@ export default function AdminDashboard() {
     </DashboardShell>
   );
 }
+
 
 
 

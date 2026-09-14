@@ -1,4 +1,5 @@
 "use client";
+import SeatingPanel from "@/components/SeatingPanel";
 import InsightsPanel from "@/components/InsightsPanel";
 import FeedbackPanel from "@/components/FeedbackPanel";
 import GrievancePanel from "@/components/GrievancePanel";
@@ -13,7 +14,7 @@ import TicketActionModal, { TicketAction } from "@/components/TicketActionModal"
 import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Exam Seating"];
 interface Member { name: string; id: string; info: string; }
 
 function EditableSection({ title, data, onChange, cols }: {
@@ -121,6 +122,7 @@ export default function HodDashboard() {
         resolveOptions={["Student (ticket creator)", "Admin", "Faculty"]}
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 
+      {tab === "Exam Seating" && <SeatingPanel />}
       {tab === "Insights" && <InsightsPanel />}
       {tab === "Feedback" && <FeedbackPanel />}
       {tab === "Grievance" && <GrievancePanel />}
@@ -172,6 +174,7 @@ export default function HodDashboard() {
     </DashboardShell>
   );
 }
+
 
 
 
