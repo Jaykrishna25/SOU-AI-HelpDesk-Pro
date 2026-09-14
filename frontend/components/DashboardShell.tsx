@@ -122,7 +122,7 @@ export default function DashboardShell({
           <a href="tel:+919099063464" className="block text-[11px] text-brand-light hover:underline">+91 9099063464</a>
         </div>
 
-        <Link href="/login" onClick={logout} className="flex items-center gap-2 text-sm text-[var(--muted)] hover:text-rose-400 mt-4"><LogOut size={16} /> Sign out</Link>
+        <Link href="/farewell" onClick={logout} className="flex items-center gap-2 text-sm text-[var(--muted)] hover:text-rose-400 mt-4"><LogOut size={16} /> Sign out</Link>
       </aside>
 
       <div className="lg:ml-64 p-3 sm:p-4 md:p-8 relative z-10">
@@ -173,7 +173,7 @@ export default function DashboardShell({
               <button key={n} onClick={() => onNavSelect && onNavSelect(n)} type="button"
                 className={`whitespace-nowrap px-4 py-2 rounded-full text-sm transition ${n === current ? "bg-brand text-white" : "glass text-[var(--muted)]"}`}>{n}</button>
             ))}
-            <Link href="/login" onClick={logout} className="whitespace-nowrap px-4 py-2 rounded-full text-sm glass text-rose-400 flex items-center gap-1"><LogOut size={14} /> Sign out</Link>
+            <Link href="/farewell" onClick={logout} className="whitespace-nowrap px-4 py-2 rounded-full text-sm glass text-rose-400 flex items-center gap-1"><LogOut size={14} /> Sign out</Link>
           </div>
         </div>
 
@@ -206,5 +206,6 @@ export default function DashboardShell({
     </div>
   );
 }
+
 
 

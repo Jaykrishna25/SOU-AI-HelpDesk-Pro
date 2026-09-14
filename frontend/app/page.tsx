@@ -6,6 +6,7 @@ import {
   BarChart3, Workflow, Database, Sparkles, ArrowRight, MessageSquare, Layers,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import CinematicIntro from "@/components/CinematicIntro";
 import ThreeBackground from "@/components/ThreeBackground";
 import Chatbot from "@/components/Chatbot";
 import Reveal from "@/components/Reveal";
@@ -18,9 +19,9 @@ const features = [
   { icon: Ticket, title: "Smart Ticketing + SLA", desc: "Auto-ticketing below 90% confidence, 48h SLA, auto-escalation letters." },
   { icon: Bell, title: "Real-Time Notifications", desc: "Watchers auto-added across the chain; In-App + AWS SES email on every event." },
   { icon: BarChart3, title: "Analytics Dashboards", desc: "Revenue, admissions, attendance, AI accuracy & workforce KPIs via Recharts." },
-  { icon: Workflow, title: "Workflow Automation", desc: "Student → AI → Admin → Faculty → HOD → Owner → Resolution → KB learning." },
+  { icon: Workflow, title: "Workflow Automation", desc: "Student ??? AI ??? Admin ??? Faculty ??? HOD ??? Owner ??? Resolution ??? KB learning." },
   { icon: ShieldCheck, title: "RBAC + Audit Logs", desc: "JWT + refresh tokens, 7 role portals, full audit trail & responsible AI." },
-  { icon: Cloud, title: "Cloud-Native (AWS)", desc: "EC2, RDS, S3, SES, Cognito, IAM, CloudWatch — Dockerized & CI/CD ready." },
+  { icon: Cloud, title: "Cloud-Native (AWS)", desc: "EC2, RDS, S3, SES, Cognito, IAM, CloudWatch ??? Dockerized & CI/CD ready." },
 ];
 
 const agents = [
@@ -43,6 +44,7 @@ const stack = ["Next.js 15", "React 19", "TypeScript", "Tailwind", "Framer Motio
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-x-hidden">
+      <CinematicIntro />
       <div className="aurora" />
       <ThreeBackground />
       <Navbar />
@@ -52,7 +54,7 @@ export default function Home() {
       <section className="relative z-10 pt-40 pb-24 px-6 text-center max-w-5xl mx-auto">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }}
           className="inline-flex items-center gap-2 glass px-4 py-1.5 text-xs mb-6">
-          <Sparkles size={14} className="text-brand-light" /> Silver Oak University · Enterprise SaaS
+          <Sparkles size={14} className="text-brand-light" /> Silver Oak University ?? Enterprise SaaS
         </motion.div>
         <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
           className="text-5xl md:text-7xl font-extrabold leading-tight">
@@ -107,7 +109,7 @@ export default function Home() {
       {/* AGENTS */}
       <section id="agents" className="relative z-10 py-24 px-6 max-w-6xl mx-auto">
         <Reveal><h2 className="text-4xl font-bold text-center mb-4">A <span className="gradient-text">multi-agent</span> brain</h2></Reveal>
-        <Reveal delay={0.1}><p className="text-center text-[var(--muted)] mb-14 max-w-2xl mx-auto">Every query flows through a LangChain-style pipeline. Confidence ≥ 90% answers instantly; below that, a ticket is born.</p></Reveal>
+        <Reveal delay={0.1}><p className="text-center text-[var(--muted)] mb-14 max-w-2xl mx-auto">Every query flows through a LangChain-style pipeline. Confidence ??? 90% answers instantly; below that, a ticket is born.</p></Reveal>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {agents.map((a, i) => (
             <Reveal key={a} delay={i * 0.04}>
@@ -120,7 +122,7 @@ export default function Home() {
         </div>
         <Reveal delay={0.2}>
           <div className="glass mt-10 p-6 text-center text-sm text-[var(--muted)]">
-            <b className="text-[var(--text)]">Flow:</b> Student → AI Chatbot → Confidence Check → (Answer or Ticket) → Admin → Faculty → HOD → Owner → Resolution → Knowledge Base Update → Student Notification
+            <b className="text-[var(--text)]">Flow:</b> Student ??? AI Chatbot ??? Confidence Check ??? (Answer or Ticket) ??? Admin ??? Faculty ??? HOD ??? Owner ??? Resolution ??? Knowledge Base Update ??? Student Notification
           </div>
         </Reveal>
       </section>
@@ -137,7 +139,7 @@ export default function Home() {
                   <h3 className="font-semibold text-lg">{p.name}</h3>
                 </div>
                 <ul className="space-y-2 text-sm text-[var(--muted)]">
-                  {p.pts.map((pt) => <li key={pt} className="flex gap-2"><span className="text-brand-light">▹</span>{pt}</li>)}
+                  {p.pts.map((pt) => <li key={pt} className="flex gap-2"><span className="text-brand-light">???</span>{pt}</li>)}
                 </ul>
               </motion.div>
             </Reveal>
@@ -174,8 +176,9 @@ export default function Home() {
             </Link>
           </div>
         </Reveal>
-        <p className="mt-12 text-xs text-[var(--muted)]">© 2026 Silver Oak University · SOU AI HelpDesk Pro · Enterprise University ERP & Multi-Agent Help Desk</p>
+        <p className="mt-12 text-xs text-[var(--muted)]">?? 2026 Silver Oak University ?? SOU AI HelpDesk Pro ?? Enterprise University ERP & Multi-Agent Help Desk</p>
       </footer>
     </main>
   );
 }
+
