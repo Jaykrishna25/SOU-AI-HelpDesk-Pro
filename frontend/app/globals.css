@@ -87,3 +87,32 @@ html, body { padding: 0; margin: 0; background: var(--bg); color: var(--text);
 @media (prefers-reduced-motion: reduce) {
   .sou-walking, .sou-walking *, .sou-awe { animation: none !important; }
 }
+
+/* ================= SOU cinematic landing ================= */
+.lp-noise{background-image:url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27140%27%20height=%27140%27%3E%3Cfilter%20id=%27n%27%3E%3CfeTurbulence%20type=%27fractalNoise%27%20baseFrequency=%270.9%27%20numOctaves=%273%27%20stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect%20width=%27140%27%20height=%27140%27%20filter=%27url(%23n)%27/%3E%3C/svg%3E);background-repeat:repeat}
+.lp-glass{background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.lp-gpu{will-change:transform,opacity;transform:translateZ(0);backface-visibility:hidden}
+
+@keyframes lp-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-16px,0)}}
+@keyframes lp-float-s{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-8px,0)}}
+@keyframes lp-drift{0%{transform:translate3d(0,20px,0);opacity:0}14%{opacity:.9}86%{opacity:.55}100%{transform:translate3d(0,-150px,0);opacity:0}}
+@keyframes lp-pulse{0%,100%{opacity:.30;transform:scale(1)}50%{opacity:.72;transform:scale(1.05)}}
+@keyframes lp-spin{to{transform:rotate(360deg)}}
+@keyframes lp-spin-rev{to{transform:rotate(-360deg)}}
+@keyframes lp-ring{0%{transform:translate(-50%,-50%) scale(.15);opacity:0}12%{opacity:.85}100%{transform:translate(-50%,-50%) scale(3.4);opacity:0}}
+@keyframes lp-shimmer{0%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+@keyframes lp-orbit{from{transform:rotate(0deg) translateX(var(--r)) rotate(0deg)}to{transform:rotate(360deg) translateX(var(--r)) rotate(-360deg)}}
+@keyframes lp-beam{0%,100%{opacity:.18}50%{opacity:.44}}
+@keyframes lp-leaf{0%{transform:translate3d(0,-10px,0) rotate(0)}100%{transform:translate3d(40px,120px,0) rotate(220deg)}}
+
+.lp-float{animation:lp-float 7s ease-in-out infinite}
+.lp-float-s{animation:lp-float-s 5s ease-in-out infinite}
+.lp-pulse{animation:lp-pulse 3.2s ease-in-out infinite}
+.lp-spin{animation:lp-spin 42s linear infinite}
+.lp-spin-rev{animation:lp-spin-rev 32s linear infinite}
+.lp-beam{animation:lp-beam 6s ease-in-out infinite}
+
+@media (prefers-reduced-motion: reduce){
+  .lp-float,.lp-float-s,.lp-pulse,.lp-spin,.lp-spin-rev,.lp-beam,
+  .lp-noise,[class*="lp-"]{animation:none!important}
+}
