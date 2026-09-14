@@ -9,3 +9,8 @@ build/
 coverage/
 prisma/*.db
 .turbo/
+
+.env
+frontend/.env
+.vercel
+.env*

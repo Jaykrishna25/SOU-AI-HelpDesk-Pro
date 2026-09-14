@@ -212,3 +212,255 @@ model AuditLog {
 }
 
 
+
+// ===================== GreenReserve + institutional features =====================
+
+enum ResourceType {
+  CLASSROOM
+  LAB
+  LIBRARY_SEAT
+  SPORTS
+  PARKING
+  AUDITORIUM
+  EQUIPMENT
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum AlertKind {
+  LOW_ATTENDANCE
+  FEE_OVERDUE
+  RESULT_RISK
+  TICKET_SURGE
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum GrievanceStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+model Resource {
+  id         String       @id @default(cuid())
+  code       String       @unique
+  name       String
+  type       ResourceType
+  capacity   Int          @default(1)
+  building   String?
+  floor      String?
+  location   String?
+  department String?
+  ecoScore   Int          @default(50)
+  areaSqm    Float        @default(0)
+  powerKw    Float        @default(0)
+  openHour   Int          @default(8)
+  closeHour  Int          @default(20)
+  active     Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  bookings   Booking[]
+
+  @@index([type])
+  @@index([department])
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  code       String        @unique
+  resourceId String
+  resource   Resource      @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId     String
+  userName   String
+  userRole   String
+  purpose    String
+  attendees  Int           @default(1)
+  startsAt   DateTime
+  endsAt     DateTime
+  status     BookingStatus @default(PENDING)
+  note       String?
+  decidedBy  String?
+  decidedAt  DateTime?
+  energyKwh  Float         @default(0)
+  co2Kg      Float         @default(0)
+  createdAt  DateTime      @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([resourceId, startsAt])
+}
+
+model QRSession {
+  id            String    @id @default(cuid())
+  token         String    @unique
+  subjectName   String
+  className     String
+  crUserId      String
+  facultyUserId String?
+  sessionDate   DateTime  @default(now())
+  expiresAt     DateTime
+  rotateSeconds Int       @default(20)
+  expectedCount Int       @default(0)
+  closed        Boolean   @default(false)
+  approved      Boolean   @default(false)
+  approvedBy    String?
+  approvedAt    DateTime?
+  syncState     String    @default("PENDING")
+  createdAt     DateTime  @default(now())
+  scans         QRScan[]
+
+  @@index([crUserId])
+  @@index([closed])
+}
+
+model QRScan {
+  id            String    @id @default(cuid())
+  sessionId     String
+  session       QRSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentUserId String
+  studentName   String
+  enrollment    String?
+  scannedAt     DateTime  @default(now())
+
+  @@unique([sessionId, studentUserId])
+  @@index([studentUserId])
+}
+
+model RiskAlert {
+  id            String        @id @default(cuid())
+  studentUserId String?
+  studentName   String?
+  department    String?
+  kind          AlertKind
+  severity      AlertSeverity @default(WARNING)
+  metric        Float?
+  threshold     Float?
+  message       String
+  forecastFor   DateTime?
+  acknowledged  Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+
+  @@index([kind])
+  @@index([severity])
+  @@index([studentUserId])
+}
+
+model SustainabilityMetric {
+  id             String   @id @default(cuid())
+  day            DateTime
+  department     String   @default("ALL")
+  energyKwhUsed  Float    @default(0)
+  energyKwhSaved Float    @default(0)
+  co2KgSaved     Float    @default(0)
+  seatHoursSaved Float    @default(0)
+  utilisationPct Float    @default(0)
+  bookingsCount  Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@unique([day, department])
+}
+
+model SeatingPlan {
+  id        String           @id @default(cuid())
+  code      String           @unique
+  examName  String
+  examDate  DateTime
+  rule      String           @default("NO_SAME_COURSE_ADJACENT")
+  roomsJson String
+  totalSeats Int             @default(0)
+  createdBy String
+  createdAt DateTime         @default(now())
+  seats     SeatAllocation[]
+}
+
+model SeatAllocation {
+  id          String      @id @default(cuid())
+  planId      String
+  plan        SeatingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  room        String
+  rowNo       Int
+  colNo       Int
+  seatNo      String
+  studentName String
+  enrollment  String
+  course      String?
+
+  @@index([planId, room])
+}
+
+model FeedbackForm {
+  id            String             @id @default(cuid())
+  code          String             @unique
+  subjectName   String
+  facultyUserId String?
+  facultyName   String
+  department    String?
+  term          String
+  opensAt       DateTime           @default(now())
+  closesAt      DateTime
+  active        Boolean            @default(true)
+  createdBy     String
+  createdAt     DateTime           @default(now())
+  responses     FeedbackResponse[]
+
+  @@index([facultyUserId])
+  @@index([active])
+}
+
+model FeedbackResponse {
+  id             String       @id @default(cuid())
+  formId         String
+  form           FeedbackForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  respondentHash String
+  clarity        Int
+  engagement     Int
+  fairness       Int
+  availability   Int
+  overall        Int
+  comment        String?
+  createdAt      DateTime     @default(now())
+
+  @@unique([formId, respondentHash])
+}
+
+model Grievance {
+  id          String          @id @default(cuid())
+  code        String          @unique
+  category    String
+  subject     String
+  body        String
+  identityRef String?
+  status      GrievanceStatus @default(OPEN)
+  response    String?
+  respondedBy String?
+  respondedAt DateTime?
+  createdAt   DateTime        @default(now())
+
+  @@index([status])
+  @@index([category])
+}
+
+model ReportExport {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  kind        String
+  title       String
+  periodFrom  DateTime
+  periodTo    DateTime
+  payloadJson String
+  generatedBy String
+  generatedAt DateTime @default(now())
+
+  @@index([kind])
+}
