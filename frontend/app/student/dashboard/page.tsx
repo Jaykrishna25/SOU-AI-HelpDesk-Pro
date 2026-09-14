@@ -1,4 +1,6 @@
 "use client";
+import FeedbackPanel from "@/components/FeedbackPanel";
+import GrievancePanel from "@/components/GrievancePanel";
 import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useEffect, useState } from "react";
@@ -26,7 +28,7 @@ export default function StudentDashboard() {
   const myCr: CRAssignment[] = crs.filter((c) => c.enrollmentNo.toLowerCase() === me.enrollmentNo.toLowerCase());
   const isCR = myCr.length > 0;
 
-  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Exams", "Notes", "My Tickets", "GreenReserve", "QR Attendance"];
+  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Exams", "Notes", "My Tickets", "GreenReserve", "QR Attendance", "Feedback", "Grievance"];
   if (isCR) NAV.splice(2, 0, "Mark Attendance");
 
   const first = me.name.split(" ")[0].toLowerCase();
@@ -85,6 +87,8 @@ export default function StudentDashboard() {
         </Panel>
       )}
 
+      {tab === "Feedback" && <FeedbackPanel />}
+      {tab === "Grievance" && <GrievancePanel />}
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Mark Attendance" && isCR && <CRAttendance assignments={myCr} me={me} />}
@@ -155,5 +159,6 @@ export default function StudentDashboard() {
     </DashboardShell>
   );
 }
+
 
 

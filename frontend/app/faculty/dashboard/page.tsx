@@ -1,4 +1,6 @@
 "use client";
+import FeedbackPanel from "@/components/FeedbackPanel";
+import GrievancePanel from "@/components/GrievancePanel";
 import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useEffect, useState } from "react";
@@ -10,7 +12,7 @@ import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 import { useSubmissions } from "@/lib/attendance";
 
-const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets", "GreenReserve", "QR Attendance"];
+const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets", "GreenReserve", "QR Attendance", "Feedback", "Grievance"];
 
 export default function FacultyDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -72,6 +74,8 @@ export default function FacultyDashboard() {
 
       {(tab === "Dashboard" || tab === "CR & Attendance") && <CRPanel actor={me} />}
 
+      {tab === "Feedback" && <FeedbackPanel />}
+      {tab === "Grievance" && <GrievancePanel />}
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Timetable" && (
@@ -148,6 +152,7 @@ export default function FacultyDashboard() {
     </DashboardShell>
   );
 }
+
 
 
 

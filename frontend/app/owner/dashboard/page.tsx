@@ -1,4 +1,6 @@
 "use client";
+import FeedbackPanel from "@/components/FeedbackPanel";
+import GrievancePanel from "@/components/GrievancePanel";
 import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useState } from "react";
@@ -9,7 +11,7 @@ import AnalyticsCharts from "@/components/AnalyticsCharts";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
 import { useTickets, updateTicket, statusColor } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve", "QR Attendance"];
+const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve", "QR Attendance", "Feedback", "Grievance"];
 
 export default function OwnerDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -75,6 +77,8 @@ export default function OwnerDashboard() {
         </div>
       )}
 
+      {tab === "Feedback" && <FeedbackPanel />}
+      {tab === "Grievance" && <GrievancePanel />}
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Workforce" && (
@@ -90,6 +94,7 @@ export default function OwnerDashboard() {
     </DashboardShell>
   );
 }
+
 
 
 
