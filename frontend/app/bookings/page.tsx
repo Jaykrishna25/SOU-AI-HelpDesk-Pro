@@ -16,13 +16,7 @@ const STAFF = ["ADMIN", "FACULTY", "HOD", "HOI", "OWNER", "SUPER_ADMIN"];
 
 function findToken() {
   if (typeof window === "undefined") return "";
-  for (const st of [window.sessionStorage, window.localStorage]) {
-    for (let i = 0; i < st.length; i++) {
-      const v = st.getItem(st.key(i) as string) || "";
-      if (/^[\w-]+\.[\w-]+\.[\w-]+$/.test(v)) return v;
-    }
-  }
-  return "";
+  try { return sessionStorage.getItem("sou_token") || localStorage.getItem("sou_token") || ""; } catch { return ""; }
 }
 const H = () => ({ "Content-Type": "application/json", Authorization: "Bearer " + findToken() });
 const hh = (s: string) => new Date(s).toISOString().slice(11, 16);
@@ -296,3 +290,4 @@ export default function BookingsPage() {
     </main>
   );
 }
+
