@@ -60,3 +60,30 @@ html, body { padding: 0; margin: 0; background: var(--bg); color: var(--text);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
+
+/* ---- SOU cinematic: GPU-only walk cycle ---- */
+.sou-fig .lg, .sou-fig .ar {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  will-change: transform;
+  transition: transform .55s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes sou-leg-a { 0%,100% { transform: rotate(12deg) }  50% { transform: rotate(-12deg) } }
+@keyframes sou-leg-b { 0%,100% { transform: rotate(-12deg) } 50% { transform: rotate(12deg) } }
+@keyframes sou-arm-a { 0%,100% { transform: rotate(-18deg) } 50% { transform: rotate(18deg) } }
+@keyframes sou-arm-b { 0%,100% { transform: rotate(18deg) }  50% { transform: rotate(-18deg) } }
+@keyframes sou-bob   { 0%,100% { transform: translateY(0) }  50% { transform: translateY(-0.9%) } }
+@keyframes sou-breathe { 0%,100% { transform: scaleX(1) }    50% { transform: scaleX(1.02) } }
+.sou-walking { animation: sou-bob .41s ease-in-out infinite; will-change: transform; }
+.sou-walking .lg-a { animation: sou-leg-a .82s ease-in-out infinite; transition: none; }
+.sou-walking .lg-b { animation: sou-leg-b .82s ease-in-out infinite; transition: none; }
+.sou-walking .ar-a { animation: sou-arm-a .82s ease-in-out infinite; transition: none; }
+.sou-walking .ar-b { animation: sou-arm-b .82s ease-in-out infinite; transition: none; }
+.sou-awe { animation: sou-breathe 3.2s ease-in-out infinite; will-change: transform; }
+.sou-awe .lg-a { transform: rotate(4deg) }
+.sou-awe .lg-b { transform: rotate(-4deg) }
+.sou-awe .ar-a { transform: rotate(-9deg) }
+.sou-awe .ar-b { transform: rotate(-48deg) }
+@media (prefers-reduced-motion: reduce) {
+  .sou-walking, .sou-walking *, .sou-awe { animation: none !important; }
+}
