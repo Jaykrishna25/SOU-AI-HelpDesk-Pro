@@ -86,7 +86,9 @@ export default function LoginPage() {
       if (!res.ok || !data.success) { setErr(data.error || "Invalid ID or birthdate."); return; }
       sessionStorage.setItem("sou_token", data.token); try { localStorage.setItem("sou_token", data.token); } catch {} /* sou_token_mirrored */
       sessionStorage.setItem("sou_user", JSON.stringify(data.user));
-      router.push(ROLE_PATH[data.user.role] || "/student/dashboard");
+      const nx = new URLSearchParams(window.location.search).get("next");
+        const safe = nx && nx.startsWith("/") && !nx.startsWith("//") ? nx : null;
+        router.push(safe || ROLE_PATH[data.user.role] || "/student/dashboard");
     } catch {
       setErr("Could not reach the server. Please try again.");
     } finally { setLoading(false); }
@@ -231,4 +233,5 @@ export default function LoginPage() {
     </main>
   );
 }
+
 

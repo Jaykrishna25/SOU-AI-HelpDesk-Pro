@@ -1,32 +1,37 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { FastForward } from "lucide-react";
-import {
-  SceneIntro, SceneGate, ScenePortal, SceneWorld, SceneFinal, LOGO,
-} from "@/components/sou/Scenes";
+import { SceneIntro, SceneGate, ScenePortal, SceneFinal, LOGO } from "@/components/sou/Scenes";
 
 type State =
   | "intro" | "universityGate" | "brandingBoard" | "portalOpening"
-  | "portalTravel" | "portalWorld" | "portalExit" | "finalTransformation";
+  | "portalTravel" | "portalExit" | "finalTransformation";
 
-/** Scenes that share one mount. AnimatePresence swaps only when this key changes,
- *  so the board stays on screen continuously from brandingBoard through portalExit. */
 const GROUP: Record<State, string> = {
   intro: "intro", universityGate: "gate",
   brandingBoard: "portal", portalOpening: "portal", portalTravel: "portal", portalExit: "portal",
-  portalWorld: "world", finalTransformation: "final",
+  finalTransformation: "final",
 };
 
 export default function Story() {
+  const router = useRouter();
   const [state, setState] = useState<State>("intro");
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [reduced, setReduced] = useState(false);
 
-  /* preload the logo so the portal click has nothing left to fetch */
   useEffect(() => {
-    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    // returning from the portal? open straight into the exit story, not the intro
+    let start: State = "intro";
+    try {
+      if (new URLSearchParams(window.location.search).get("story") === "exit") {
+        start = "portalExit";
+        window.history.replaceState({}, "", "/");
+      }
+    } catch {}
+    setState(start);
+
     const img = new window.Image();
     img.src = LOGO;
     const done = () => setReady(true);
@@ -36,23 +41,16 @@ export default function Story() {
     return () => clearTimeout(g);
   }, []);
 
-  /* no scroll during the cinematic */
   useEffect(() => {
     const prev = document.body.style.overflow;
-    document.body.style.overflow = state === "portalWorld" ? "auto" : "hidden";
+    document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = prev; };
-  }, [state]);
+  }, []);
 
   const enter = useCallback(() => {
     if (busy) return;
     setBusy(true);
     setState("portalOpening");
-  }, [busy]);
-
-  const exit = useCallback(() => {
-    if (busy) return;
-    setBusy(true);
-    setState("portalExit");
   }, [busy]);
 
   const skipAll = useCallback(() => { setBusy(false); setState("finalTransformation"); }, []);
@@ -71,39 +69,24 @@ export default function Story() {
 
   return (
     <main className="sou-stage fixed inset-0">
-
-      {/* one scene at a time: mode="wait" will not mount the next until this one has exited */}
       <AnimatePresence mode="wait" initial={false}>
         <motion.div key={GROUP[state]} className="absolute inset-0">
-
-          {GROUP[state] === "intro" && (
-            <SceneIntro onBegin={() => setState("universityGate")} />
-          )}
-
-          {GROUP[state] === "gate" && (
-            <SceneGate onDone={() => setState("brandingBoard")} />
-          )}
-
+          {GROUP[state] === "intro" && <SceneIntro onBegin={() => setState("universityGate")} />}
+          {GROUP[state] === "gate" && <SceneGate onDone={() => setState("brandingBoard")} />}
           {GROUP[state] === "portal" && (
             <ScenePortal
               mode={mode as any}
               onEnterClick={enter}
               onTravelStart={() => setState("portalTravel")}
-              onEnterDone={() => { setState("portalWorld"); setBusy(false); }}
+              /* the flight ends at the LOGIN page - never at the dashboard */
+              onEnterDone={() => router.push("/login?next=/portal")}
               onExitDone={() => { setState("finalTransformation"); setBusy(false); }}
             />
           )}
-
-          {GROUP[state] === "world" && (
-            <SceneWorld onExit={exit} busy={busy} />
-          )}
-
           {GROUP[state] === "final" && <SceneFinal />}
-
         </motion.div>
       </AnimatePresence>
 
-      {/* navbar - highest layer, never overlaps scene copy */}
       <header className="absolute inset-x-0 top-0 sou-z-ui pointer-events-none">
         <div className="mx-auto max-w-[1400px] m-3 md:m-5 px-5 py-3 flex items-center justify-between gap-4">
           <img src={LOGO} alt="Silver Oak University" className="h-7 md:h-9 w-auto pointer-events-auto"
@@ -126,3 +109,4 @@ export default function Story() {
     </main>
   );
 }
+
