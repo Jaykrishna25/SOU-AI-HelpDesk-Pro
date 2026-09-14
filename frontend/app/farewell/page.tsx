@@ -1,46 +1,62 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import CampusScene, { Walker } from "@/components/CampusScene";
+import { Silhouette, FilmLayers } from "@/components/CinematicIntro";
+
+const LOGO_X = 46;
+const LOGO_Y = 57;
 
 export default function Farewell() {
   const [stage, setStage] = useState<"pull" | "walk" | "end">("pull");
 
   useEffect(() => {
-    const t1 = setTimeout(() => setStage("walk"), 2400);
-    const t2 = setTimeout(() => setStage("end"), 6200);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t = [
+      setTimeout(() => setStage("walk"), 2200),
+      setTimeout(() => setStage("end"), 6200),
+    ];
+    return () => t.forEach(clearTimeout);
   }, []);
+
+  const scale = stage === "pull" ? 3.6 : 1.24;
+  const filter = stage === "pull"
+    ? "blur(4px) saturate(1.3) brightness(1.15) contrast(1.0)"
+    : "blur(0px) saturate(0.95) brightness(0.72) contrast(1.14)";
 
   return (
     <main className="fixed inset-0 overflow-hidden bg-black select-none">
       <motion.div className="absolute inset-0"
-        animate={{ x: [0, -4, 3, 0], y: [0, 2, -3, 0] }}
-        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}>
-        <CampusScene dolly={stage === "pull" ? 1.5 : 0} dawn={true} />
-
-        {stage !== "pull" && (
-          <motion.div className="absolute" style={{ top: "71%", zIndex: 20 }}
-            initial={{ left: "47%", opacity: 0 }} animate={{ left: "96%", opacity: 1 }}
-            transition={{ left: { duration: 3.8, ease: "easeInOut" }, opacity: { duration: 1 } }}>
-            <div style={{ transform: "translateY(-100%)" }}>
-              <Walker graduate />
-            </div>
-            <div className="absolute" style={{ left: "-140%", bottom: -3, width: "400%", height: "1.1vh",
-              background: "radial-gradient(ellipse, rgba(0,0,0,0.75), transparent 70%)", filter: "blur(4px)" }} />
-          </motion.div>
-        )}
+        animate={{ x: [0, 6, -4, 0], y: [0, -4, 3, 0] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}>
+        <motion.div className="absolute bg-center bg-cover"
+          style={{ inset: "-6%", backgroundImage: "url(/sou-campus.jpg)",
+            transformOrigin: LOGO_X + "% " + LOGO_Y + "%" }}
+          initial={{ scale: 4.2, filter: "blur(8px) brightness(1.4) saturate(1.4)" }}
+          animate={{ scale, filter }}
+          transition={{ duration: stage === "pull" ? 2.2 : 3.6, ease: [0.24, 0.9, 0.28, 1] }} />
       </motion.div>
 
-      {stage === "end" && (
-        <motion.div className="absolute inset-x-0 text-center" style={{ bottom: "3.5vh", zIndex: 50 }}
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2 }}>
-          <Link href="/" className="inline-block px-7 py-2.5 rounded-full text-xs tracking-widest uppercase text-white/80 border border-white/25 hover:bg-white/10">
+      <motion.div className="absolute" style={{ bottom: "11.5vh", zIndex: 24 }}
+        initial={{ left: "30%", opacity: 0 }}
+        animate={{ left: stage === "pull" ? "30%" : "112%", opacity: stage === "pull" ? 0 : 1 }}
+        transition={{ left: { duration: 4.0, ease: "easeInOut" }, opacity: { duration: 1.0 } }}>
+        <Silhouette graduate />
+      </motion.div>
+
+      <FilmLayers />
+
+      <motion.div className="absolute inset-0 flex items-center justify-center"
+        style={{ zIndex: 55 }}
+        initial={{ opacity: 0 }} animate={{ opacity: stage === "end" ? 1 : 0 }}
+        transition={{ duration: 1.2 }}>
+        <div className="text-center">
+          <p className="text-white/85 text-lg tracking-[0.3em] uppercase mb-8">Signed out</p>
+          <Link href="/"
+            className="inline-block px-7 py-3 rounded-full border border-white/30 text-white/80 text-sm tracking-widest uppercase hover:bg-white/10 hover:text-white transition-colors">
             Return to the gate
           </Link>
-        </motion.div>
-      )}
+        </div>
+      </motion.div>
     </main>
   );
 }
