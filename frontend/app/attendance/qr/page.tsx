@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import QRCode from "qrcode";
 
 const APPROVERS = ["FACULTY", "HOD", "HOI", "ADMIN", "SUPER_ADMIN", "OWNER"];
-const tok = () => { try { return sessionStorage.getItem("sou_token") || ""; } catch { return ""; } };
+const tok = () => { try { return sessionStorage.getItem("sou_token") || localStorage.getItem("sou_token") || ""; } catch { return ""; } };
 const H = () => ({ "Content-Type": "application/json", Authorization: "Bearer " + tok() });
 
 export default function QRAttendance() {
@@ -245,3 +245,4 @@ export default function QRAttendance() {
     </main>
   );
 }
+

@@ -82,7 +82,7 @@ export default function DashboardShell({
   const persistRead = (keys: string[]) => { setReadKeys(keys); try { localStorage.setItem("sou_notif_read", JSON.stringify(keys)); } catch {} };
   const unread = notifs.filter((n) => !readKeys.includes(n.key)).length;
 
-  const logout = () => { try { sessionStorage.removeItem("sou_token"); sessionStorage.removeItem("sou_user"); } catch {} };
+  const logout = () => { try { sessionStorage.removeItem("sou_token"); try { localStorage.removeItem("sou_token"); } catch {} sessionStorage.removeItem("sou_user"); } catch {} };
   const current = activeNav ?? nav[0];
 
   return (
@@ -206,6 +206,7 @@ export default function DashboardShell({
     </div>
   );
 }
+
 
 
 

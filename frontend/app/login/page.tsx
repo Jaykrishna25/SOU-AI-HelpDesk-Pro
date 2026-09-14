@@ -84,7 +84,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) { setErr(data.error || "Invalid ID or birthdate."); return; }
-      sessionStorage.setItem("sou_token", data.token);
+      sessionStorage.setItem("sou_token", data.token); try { localStorage.setItem("sou_token", data.token); } catch {} /* sou_token_mirrored */
       sessionStorage.setItem("sou_user", JSON.stringify(data.user));
       router.push(ROLE_PATH[data.user.role] || "/student/dashboard");
     } catch {
@@ -231,3 +231,4 @@ export default function LoginPage() {
     </main>
   );
 }
+
