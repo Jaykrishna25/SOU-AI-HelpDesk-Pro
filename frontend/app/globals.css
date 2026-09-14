@@ -116,3 +116,34 @@ html, body { padding: 0; margin: 0; background: var(--bg); color: var(--text);
   .lp-float,.lp-float-s,.lp-pulse,.lp-spin,.lp-spin-rev,.lp-beam,
   .lp-noise,[class*="lp-"]{animation:none!important}
 }
+
+/* ============== SOU "Corridor" journey ============== */
+.jn-display{font-family:Georgia,"Times New Roman",serif;letter-spacing:.01em}
+.jn-glass{background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  border:1px solid rgba(201,162,39,.22);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.jn-gpu{will-change:transform,opacity;backface-visibility:hidden}
+.jn-3d{transform-style:preserve-3d}
+
+@keyframes jn-drift{0%{transform:translate3d(0,26px,0);opacity:0}18%{opacity:.85}82%{opacity:.5}100%{transform:translate3d(0,-170px,0);opacity:0}}
+@keyframes jn-spin{to{transform:rotate(360deg)}}
+@keyframes jn-spin-rev{to{transform:rotate(-360deg)}}
+@keyframes jn-iris{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.05)}}
+@keyframes jn-pulse{0%,100%{opacity:.34;transform:scale(1)}50%{opacity:.8;transform:scale(1.07)}}
+@keyframes jn-sheen{0%{transform:translateX(-140%) skewX(-18deg)}100%{transform:translateX(140%) skewX(-18deg)}}
+@keyframes jn-bob{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-14px,0)}}
+@keyframes jn-ribbon{0%{transform:rotate(0) translateX(0)}100%{transform:rotate(360deg) translateX(0)}}
+@keyframes jn-flicker{0%,100%{opacity:.5}45%{opacity:.85}60%{opacity:.42}}
+@keyframes jn-dash{to{stroke-dashoffset:-420}}
+
+.jn-spin{animation:jn-spin 60s linear infinite}
+.jn-spin-rev{animation:jn-spin-rev 44s linear infinite}
+.jn-iris{animation:jn-iris 22s ease-in-out infinite}
+.jn-pulse{animation:jn-pulse 3.4s ease-in-out infinite}
+.jn-bob{animation:jn-bob 6.5s ease-in-out infinite}
+.jn-flicker{animation:jn-flicker 7s ease-in-out infinite}
+.jn-trace{stroke-dasharray:14 10;animation:jn-dash 9s linear infinite}
+
+@media (prefers-reduced-motion: reduce){
+  .jn-spin,.jn-spin-rev,.jn-iris,.jn-pulse,.jn-bob,.jn-flicker,.jn-trace,
+  [style*="jn-drift"]{animation:none!important}
+}
