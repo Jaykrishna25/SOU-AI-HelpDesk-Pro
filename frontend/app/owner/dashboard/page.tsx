@@ -1,4 +1,5 @@
 "use client";
+import BookingPanel from "@/components/BookingPanel";
 import { useState } from "react";
 import { TrendingUp, Wallet, Users, Brain } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
@@ -7,7 +8,7 @@ import AnalyticsCharts from "@/components/AnalyticsCharts";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
 import { useTickets, updateTicket, statusColor } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance"];
+const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve"];
 
 export default function OwnerDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -73,6 +74,7 @@ export default function OwnerDashboard() {
         </div>
       )}
 
+      {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Workforce" && (
         <Panel title="Workforce Performance">
           <div className="space-y-2 text-sm">
@@ -86,4 +88,5 @@ export default function OwnerDashboard() {
     </DashboardShell>
   );
 }
+
 

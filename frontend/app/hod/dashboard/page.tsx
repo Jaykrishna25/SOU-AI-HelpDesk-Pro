@@ -1,4 +1,5 @@
 "use client";
+import BookingPanel from "@/components/BookingPanel";
 import { useState, useEffect } from "react";
 import { Users, UserPlus, UserMinus, Building2 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
@@ -8,7 +9,7 @@ import TicketActionModal, { TicketAction } from "@/components/TicketActionModal"
 import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports", "GreenReserve"];
 interface Member { name: string; id: string; info: string; }
 
 function EditableSection({ title, data, onChange, cols }: {
@@ -116,6 +117,7 @@ export default function HodDashboard() {
         resolveOptions={["Student (ticket creator)", "Admin", "Faculty"]}
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 
+      {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Dashboard" && <AnalyticsCharts />}
 
       {tab === "Tickets" && (
@@ -162,4 +164,5 @@ export default function HodDashboard() {
     </DashboardShell>
   );
 }
+
 

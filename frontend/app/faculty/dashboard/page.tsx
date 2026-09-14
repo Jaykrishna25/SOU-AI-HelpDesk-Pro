@@ -1,4 +1,5 @@
 "use client";
+import BookingPanel from "@/components/BookingPanel";
 import { useEffect, useState } from "react";
 import { Users, ClipboardCheck, Wallet, BookOpen } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
@@ -8,7 +9,7 @@ import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 import { useSubmissions } from "@/lib/attendance";
 
-const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets"];
+const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets", "GreenReserve"];
 
 export default function FacultyDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -70,6 +71,7 @@ export default function FacultyDashboard() {
 
       {(tab === "Dashboard" || tab === "CR & Attendance") && <CRPanel actor={me} />}
 
+      {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Timetable" && (
         <Panel title="Weekly Schedule">
           <div className="space-y-2 text-sm">
@@ -144,4 +146,5 @@ export default function FacultyDashboard() {
     </DashboardShell>
   );
 }
+
 
