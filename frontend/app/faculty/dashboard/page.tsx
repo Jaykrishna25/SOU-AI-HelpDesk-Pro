@@ -1,4 +1,5 @@
 "use client";
+import InsightsPanel from "@/components/InsightsPanel";
 import FeedbackPanel from "@/components/FeedbackPanel";
 import GrievancePanel from "@/components/GrievancePanel";
 import QRPanel from "@/components/QRPanel";
@@ -12,7 +13,7 @@ import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 import { useSubmissions } from "@/lib/attendance";
 
-const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets", "GreenReserve", "QR Attendance", "Feedback", "Grievance"];
+const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights"];
 
 export default function FacultyDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -74,6 +75,7 @@ export default function FacultyDashboard() {
 
       {(tab === "Dashboard" || tab === "CR & Attendance") && <CRPanel actor={me} />}
 
+      {tab === "Insights" && <InsightsPanel />}
       {tab === "Feedback" && <FeedbackPanel />}
       {tab === "Grievance" && <GrievancePanel />}
       {tab === "QR Attendance" && <QRPanel />}
@@ -152,6 +154,7 @@ export default function FacultyDashboard() {
     </DashboardShell>
   );
 }
+
 
 
 
