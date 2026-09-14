@@ -58,7 +58,7 @@ export default function BookingsPage() {
       setRole(String(p.role || p.roleCode || "STUDENT").toUpperCase());
     } catch {}
   }, []);
-  const isStaff = STAFF.includes(role) && role !== "STUDENT";
+  const isStaff = ["ADMIN", "SUPER_ADMIN", "OWNER"].includes(role);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/gr/resources?type=" + type, { headers: H() });
@@ -290,4 +290,5 @@ export default function BookingsPage() {
     </main>
   );
 }
+
 

@@ -5,6 +5,7 @@ import { getSession } from "@/lib/server-auth";
 // Central Electricity Authority grid emission factor for India (kg CO2 per kWh)
 const GRID_KG_PER_KWH = 0.71;
 const STAFF = ["ADMIN", "FACULTY", "HOD", "HOI", "OWNER", "SUPER_ADMIN"];
+const APPROVERS = ["ADMIN", "SUPER_ADMIN", "OWNER"];
 
 function json(d: any, s = 200) { return NextResponse.json(d, { status: s }); }
 
@@ -65,7 +66,7 @@ export async function GET(req: NextRequest) {
 
   if (s[0] === "bookings") {
     const scope = q.get("scope") || "mine";
-    const staff = STAFF.includes(u.role);
+    const staff = APPROVERS.includes(u.role);
     const where: any = scope === "all" && staff ? {} : { userId: u.id };
     if (q.get("status")) where.status = q.get("status");
     const items = await prisma.booking.findMany({
@@ -152,7 +153,7 @@ export async function POST(req: NextRequest) {
     const energyKwh = Math.round(res.powerKw * hours * 100) / 100;
     const savedKwh = Math.max(0, (base - res.powerKw) * hours);
     const co2Kg = Math.round(savedKwh * GRID_KG_PER_KWH * 100) / 100;
-    const autoApprove = STAFF.includes(u.role) && u.role !== "STUDENT";
+    const autoApprove = false;
 
     const created = await prisma.booking.create({
       data: {
@@ -182,14 +183,14 @@ export async function PATCH(req: NextRequest) {
   const b = await prisma.booking.findUnique({ where: { id } });
   if (!b) return json({ error: "Booking not found" }, 404);
 
-  const staff = STAFF.includes(u.role) && u.role !== "STUDENT";
+  const staff = APPROVERS.includes(u.role);
   if (action === "cancel") {
     if (b.userId !== u.id && !staff) return json({ error: "Not your booking" }, 403);
     const up = await prisma.booking.update({ where: { id }, data: { status: "CANCELLED", note: note || null } });
     return json({ booking: up });
   }
   if (action === "approve" || action === "reject") {
-    if (!staff) return json({ error: "Staff only" }, 403);
+    if (!staff) return json({ error: "Only Admin can approve or reject bookings" }, 403);
     const up = await prisma.booking.update({
       where: { id },
       data: {
@@ -203,3 +204,4 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Use PATCH cancel" }, 405); }
+
