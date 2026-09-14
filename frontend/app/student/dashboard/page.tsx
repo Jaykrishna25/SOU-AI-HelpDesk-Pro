@@ -1,4 +1,5 @@
 "use client";
+import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useEffect, useState } from "react";
 import { CalendarDays, GraduationCap, Wallet, ClipboardCheck } from "lucide-react";
@@ -25,7 +26,7 @@ export default function StudentDashboard() {
   const myCr: CRAssignment[] = crs.filter((c) => c.enrollmentNo.toLowerCase() === me.enrollmentNo.toLowerCase());
   const isCR = myCr.length > 0;
 
-  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Exams", "Notes", "My Tickets", "GreenReserve"];
+  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Exams", "Notes", "My Tickets", "GreenReserve", "QR Attendance"];
   if (isCR) NAV.splice(2, 0, "Mark Attendance");
 
   const first = me.name.split(" ")[0].toLowerCase();
@@ -84,6 +85,7 @@ export default function StudentDashboard() {
         </Panel>
       )}
 
+      {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Mark Attendance" && isCR && <CRAttendance assignments={myCr} me={me} />}
 
@@ -153,4 +155,5 @@ export default function StudentDashboard() {
     </DashboardShell>
   );
 }
+
 

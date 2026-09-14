@@ -1,4 +1,5 @@
 "use client";
+import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useState } from "react";
 import { TrendingUp, Wallet, Users, Brain } from "lucide-react";
@@ -8,7 +9,7 @@ import AnalyticsCharts from "@/components/AnalyticsCharts";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
 import { useTickets, updateTicket, statusColor } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve"];
+const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve", "QR Attendance"];
 
 export default function OwnerDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -74,6 +75,7 @@ export default function OwnerDashboard() {
         </div>
       )}
 
+      {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Workforce" && (
         <Panel title="Workforce Performance">
@@ -88,5 +90,6 @@ export default function OwnerDashboard() {
     </DashboardShell>
   );
 }
+
 
 

@@ -1,4 +1,5 @@
 "use client";
+import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useEffect, useState } from "react";
 import { DoorOpen, Ticket, Megaphone, Building2 } from "lucide-react";
@@ -8,7 +9,7 @@ import TicketActionModal, { TicketAction } from "@/components/TicketActionModal"
 import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources", "Announcements", "GreenReserve"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources", "Announcements", "GreenReserve", "QR Attendance"];
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -74,6 +75,7 @@ export default function AdminDashboard() {
         </Panel>
       )}
 
+      {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "CR & Attendance" && <CRPanel actor={me} />}
 
@@ -121,5 +123,6 @@ export default function AdminDashboard() {
     </DashboardShell>
   );
 }
+
 
 
