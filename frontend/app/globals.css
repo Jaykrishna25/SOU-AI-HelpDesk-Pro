@@ -173,3 +173,40 @@ html, body { padding: 0; margin: 0; background: var(--bg); color: var(--text);
 @media (prefers-reduced-motion: reduce){
   .ir-rot,.ir-rot-r,.ir-breathe,.ir-hover,.ir-dash{animation:none!important}
 }
+
+/* ============ Silver Oak cinematic - scoped design system ============ */
+.sou-stage{
+  --maroon:#7B1220; --maroon-lt:#A3162A; --green:#0F5132;
+  --gold:#C9A227; --gold-soft:#E3C558;
+  --cream:#F5F1E8; --ink:#0B0806; --ink-2:#160E0C;
+  font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--cream);
+  background:radial-gradient(ellipse at 50% 46%,#1C110D 0%,var(--ink-2) 46%,var(--ink) 100%);
+  overflow:hidden;
+}
+.sou-eyebrow{font-size:clamp(.6rem,.8vw,.72rem);letter-spacing:.42em;text-transform:uppercase;color:var(--gold)}
+.sou-h1{font-size:clamp(1.7rem,4.2vw,3.4rem);line-height:1.14;font-weight:300}
+.sou-h2{font-size:clamp(1.1rem,2.2vw,1.65rem);line-height:1.26;font-weight:300}
+.sou-body{font-size:clamp(.85rem,1.05vw,.97rem);line-height:1.7;color:rgba(245,241,232,.72)}
+.sou-card{background:linear-gradient(158deg,rgba(245,241,232,.085),rgba(245,241,232,.02));
+  border:1px solid rgba(201,162,39,.24);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.sou-gpu{will-change:transform,opacity;backface-visibility:hidden}
+.sou-3d{transform-style:preserve-3d}
+
+/* layer discipline */
+.sou-z-bg{z-index:0}.sou-z-fx{z-index:10}.sou-z-obj{z-index:20}
+.sou-z-text{z-index:30}.sou-z-ui{z-index:40}
+
+@keyframes sou-rise{0%{transform:translate3d(0,26px,0);opacity:0}20%{opacity:.75}80%{opacity:.4}100%{transform:translate3d(0,-170px,0);opacity:0}}
+@keyframes sou-rot{to{transform:rotate(360deg)}}
+@keyframes sou-breathe{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.85;transform:scale(1.05)}}
+@keyframes sou-hover{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-10px,0)}}
+@keyframes sou-sweep{0%{transform:translateX(-140%) skewX(-16deg)}100%{transform:translateX(140%) skewX(-16deg)}}
+.sou-rot{animation:sou-rot 52s linear infinite}
+.sou-breathe{animation:sou-breathe 3.8s ease-in-out infinite}
+.sou-hover{animation:sou-hover 7s ease-in-out infinite}
+
+@media (prefers-reduced-motion: reduce){
+  .sou-rot,.sou-breathe,.sou-hover{animation:none!important}
+  .sou-stage *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}

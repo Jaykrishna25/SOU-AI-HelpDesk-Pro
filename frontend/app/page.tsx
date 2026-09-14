@@ -1,6 +1,6 @@
 "use client";
-import Journey from "./journey/page";
+import Story from "./story/page";
 
 export default function Home() {
-  return <Journey />;
+  return <Story />;
 }
