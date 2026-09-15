@@ -1,3 +1,5 @@
+import { verifyPassword, hashPassword, passwordProblem, isLocked, noteFailedLogin, clearFailedLogins, LOCK_POLICY } from "./server-auth";
+import { audit } from "./audit";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { signToken, getSession, stageForRole, isStaff, notifyUser } from "@/lib/server-auth";
@@ -67,7 +69,7 @@ export async function POST(req: Request, ctx: Ctx) {
 
   if (a === "auth" && b === "signup") {
     const { fullName, email, phone, birthdate, institute, course, role } = body as Record<string, string>;
-    const roleValue = ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER"].includes(String(role || "").toUpperCase()) ? String(role).toUpperCase() : "STUDENT";
+    const roleValue = "STUDENT"; // privileged roles are assigned by an administrator, never self-selected
     if (!fullName || !email || !birthdate) return bad("Name, email and date of birth are required");
     const existing = await prisma.user.findFirst({ where: { email } });
     if (existing) return bad("An account with this email already exists. Please log in.");
@@ -86,15 +88,67 @@ export async function POST(req: Request, ctx: Ctx) {
   }
 
   if (a === "auth" && b === "login") {
-    const { loginId, birthdate } = body as { loginId?: string; birthdate?: string };
-    if (!loginId || !birthdate) return bad("loginId and birthdate are required");
-    const user = await prisma.user.findUnique({ where: { loginId: loginId.trim() } });
-    if (!user || !user.isActive) return bad("Invalid ID or birthdate", 401);
-    if (user.birthdate.toISOString().slice(0, 10) !== birthdate) return bad("Invalid ID or birthdate", 401);
+    const { loginId, password, birthdate } = body as Record<string, string>;
+    if (!loginId) return bad("Login ID is required");
+    const user = await prisma.user.findUnique({ where: { loginId: String(loginId).trim() } });
+    if (!user || !user.isActive) return bad("Invalid credentials", 401);
+    if (isLocked(user)) {
+      return bad("Account locked after repeated failed attempts. Try again in " + LOCK_POLICY.LOCK_MINUTES + " minutes.", 423);
+    }
+    let passed = false;
+    let firstTime = false;
+    if (user.passwordHash) {
+      passed = !!password && (await verifyPassword(String(password), user.passwordHash));
+    } else {
+      passed = !!birthdate && user.birthdate.toISOString().slice(0, 10) === String(birthdate);
+      firstTime = passed;
+    }
+    if (!passed) {
+      await noteFailedLogin(user.id, user.failedLogins);
+      await audit({ action: "LOGIN_FAILED", entity: "User", entityId: user.id, req, summary: "Failed login for " + user.loginId });
+      return bad("Invalid credentials", 401);
+    }
+    await clearFailedLogins(user.id);
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    await prisma.auditLog.create({ data: { userId: user.id, action: "LOGIN", entity: "User" } });
-    const session = { userId: user.id, role: user.role, loginId: user.loginId, fullName: user.fullName };
-    return ok({ token: signToken(session), user: { id: user.id, role: user.role, fullName: user.fullName, loginId: user.loginId } });
+    const session = {
+      userId: user.id, role: user.role, loginId: user.loginId, fullName: user.fullName,
+      tv: user.tokenVersion, mcp: firstTime || user.mustChangePassword,
+    };
+    await audit({ action: "LOGIN", entity: "User", entityId: user.id, session, req, summary: user.loginId + " signed in" });
+    return ok({
+      token: signToken(session),
+      mustChangePassword: session.mcp,
+      user: { id: user.id, role: user.role, fullName: user.fullName, loginId: user.loginId },
+    });
+  }
+
+  if (a === "auth" && b === "set-password") {
+    const me = getSession(req);
+    if (!me) return bad("Unauthenticated", 401);
+    const { currentPassword, newPassword } = body as Record<string, string>;
+    const user = await prisma.user.findUnique({ where: { id: me.userId } });
+    if (!user) return bad("Account not found", 404);
+    if (user.passwordHash) {
+      const okCurrent = !!currentPassword && (await verifyPassword(String(currentPassword), user.passwordHash));
+      if (!okCurrent) return bad("Current password is incorrect", 401);
+    }
+    const problem = passwordProblem(String(newPassword || ""), user.loginId);
+    if (problem) return bad(problem);
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: await hashPassword(String(newPassword)),
+        mustChangePassword: false,
+        passwordChangedAt: new Date(),
+        tokenVersion: { increment: 1 },
+      },
+    });
+    await audit({ action: "PASSWORD_RESET", entity: "User", entityId: user.id, session: me, req, summary: user.loginId + " set a new password" });
+    const session = {
+      userId: user.id, role: user.role, loginId: user.loginId, fullName: user.fullName,
+      tv: updated.tokenVersion, mcp: false,
+    };
+    return ok({ token: signToken(session) });
   }
 
   const s = getSession(req);
@@ -228,6 +282,7 @@ export async function DELETE(req: Request, ctx: Ctx) {
 
   return bad("Unknown endpoint: " + path.join("/"), 404);
 }
+
 
 
 
