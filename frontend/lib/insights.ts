@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/server-auth";
+import { getLiveSession } from "@/lib/server-auth";
 
 const GRID = 0.71;
 const STAFF = ["FACULTY", "HOD", "HOI", "ADMIN", "SUPER_ADMIN", "OWNER"];
@@ -8,7 +8,7 @@ const MIN_ATTENDANCE = 75;
 
 function json(d: any, s = 200) { return NextResponse.json(d, { status: s }); }
 async function who(req: NextRequest) {
-  const s: any = await getSession(req as any);
+  const s: any = await getLiveSession(req as any);
   if (!s) return null;
   return { id: String(s.userId || s.id || s.sub || ""), role: String(s.role || s.roleCode || "STUDENT").toUpperCase() };
 }
@@ -156,3 +156,4 @@ export async function GET(req: NextRequest) {
 export async function POST() { return json({ error: "Read only" }, 405); }
 export async function PATCH() { return json({ error: "Read only" }, 405); }
 export async function DELETE() { return json({ error: "Read only" }, 405); }
+

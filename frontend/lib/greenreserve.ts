@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/server-auth";
+import { getLiveSession } from "@/lib/server-auth";
 
 // Central Electricity Authority grid emission factor for India (kg CO2 per kWh)
 const GRID_KG_PER_KWH = 0.71;
@@ -10,7 +10,7 @@ const APPROVERS = ["ADMIN", "SUPER_ADMIN", "OWNER"];
 function json(d: any, s = 200) { return NextResponse.json(d, { status: s }); }
 
 async function who(req: NextRequest) {
-  const s: any = await getSession(req as any);
+  const s: any = await getLiveSession(req as any);
   if (!s) return null;
   return {
     id: String(s.userId || s.id || s.sub || ""),
@@ -204,4 +204,5 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Use PATCH cancel" }, 405); }
+
 
