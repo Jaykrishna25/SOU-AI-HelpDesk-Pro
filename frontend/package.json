@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.17",
     "gsap": "^3.12.5",
@@ -30,6 +31,7 @@
     "three": "^0.170.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20.17.6",
     "@types/qrcode": "^1.5.6",

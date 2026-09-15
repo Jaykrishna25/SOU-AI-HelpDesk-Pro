@@ -19,6 +19,14 @@ enum Role {
 }
 
 model User {
+  passwordHash      String?
+  mustChangePassword Boolean  @default(true)
+  passwordChangedAt DateTime?
+  failedLogins      Int      @default(0)
+  lockedUntil       DateTime?
+  tokenVersion      Int      @default(0)
+  mfaEnabled        Boolean  @default(false)
+  mfaSecret         String?
   id           String   @id @default(cuid())
   loginId      String   @unique
   role         Role
@@ -475,4 +483,5 @@ model ReportExport {
 
   @@index([kind])
 }
+
 
