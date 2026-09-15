@@ -206,9 +206,20 @@ model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
+  actorRole String?
   action    String
   entity    String
+  entityId  String?
+  summary   String?
+  detail    String?
+  ip        String?
+  userAgent String?
   createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
 }
 
 
@@ -464,3 +475,4 @@ model ReportExport {
 
   @@index([kind])
 }
+
