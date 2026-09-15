@@ -73,6 +73,7 @@ export default function LoginPage() {
   const [newId, setNewId] = useState("");
   const [mailNote, setMailNote] = useState("");
   const [copied, setCopied] = useState(false);
+  const [password, setPassword] = useState("");
 
   const submitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,12 +81,13 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loginId: loginId.trim(), birthdate }),
+        body: JSON.stringify({ loginId: loginId.trim(), password, birthdate }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) { setErr(data.error || "Invalid ID or birthdate."); return; }
       sessionStorage.setItem("sou_token", data.token); try { localStorage.setItem("sou_token", data.token); } catch {} /* sou_token_mirrored */
       sessionStorage.setItem("sou_user", JSON.stringify(data.user));
+      if (data.mustChangePassword) { router.push("/account/password"); return; }
       const nx = new URLSearchParams(window.location.search).get("next");
         const safe = nx && nx.startsWith("/") && !nx.startsWith("//") ? nx : null;
         router.push(safe || ROLE_PATH[data.user.role] || "/student/dashboard");
@@ -152,9 +154,19 @@ export default function LoginPage() {
                   className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none" />
               </div>
               <div>
-                <label className="text-xs text-[var(--muted)]">Birthdate (this is your password)</label>
+                <label className="text-xs text-[var(--muted)]">Password</label>
+                <input type="password" value={password} autoComplete="current-password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Leave blank if signing in for the first time"
+                  className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none" />
+              </div>
+              <div>
+                <label className="text-xs text-[var(--muted)]">Date of birth (first sign-in only)</label>
                 <input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)}
                   className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none" />
+                <p className="text-[11px] text-[var(--muted)] mt-1">
+                  Used once to verify your account. You will then choose a password.
+                </p>
               </div>
               {err && <p className="text-rose-400 text-xs">{err}</p>}
               <button disabled={loading}
@@ -233,5 +245,6 @@ export default function LoginPage() {
     </main>
   );
 }
+
 
 
