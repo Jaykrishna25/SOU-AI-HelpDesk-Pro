@@ -1,3 +1,4 @@
+import { encryptField, decryptField } from "@/lib/crypto";
 import { parse, validationResponse, GrievanceInput } from "@/lib/validate";
 import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
@@ -88,7 +89,7 @@ export async function GET(req: NextRequest) {
     return json({
       items: items.map(g => {
         const { identityRef, ...rest } = g as any;
-        return showId ? { ...rest, identityRef } : rest;
+        return showId ? { ...rest, identityRef: decryptField(identityRef) } : rest;
       }),
       identityVisible: showId,
     });
@@ -145,7 +146,7 @@ export async function POST(req: NextRequest) {
       data: {
         code: code("GR"), category: gv.category,
         subject: gv.subject, body: gv.body,
-        identityRef: u.id + " | " + u.name + " | " + u.role,
+        identityRef: encryptField(u.id + " | " + u.name + " | " + u.role),
       },
     });
     return json({ code: g.code });
@@ -182,6 +183,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+
 
 
 
