@@ -1,3 +1,4 @@
+import { parse, validationResponse, BookingInput } from "@/lib/validate";
 import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -119,7 +120,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
 
   if (s[0] === "bookings") {
-    const { resourceId, date, startHour, endHour, purpose, attendees } = body;
+    let bk: any;
+    try { bk = parse(BookingInput, body); }
+    catch (e) { const vr = validationResponse(e); if (vr) return vr; throw e; }
+    const { resourceId, date, startHour, endHour, purpose, attendees } = bk;
     if (!resourceId || !date || startHour == null || endHour == null)
       return json({ error: "Missing fields" }, 400);
     if (Number(endHour) <= Number(startHour))
@@ -204,6 +208,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Use PATCH cancel" }, 405); }
+
 
 
 
