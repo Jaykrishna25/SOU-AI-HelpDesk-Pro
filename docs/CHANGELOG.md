@@ -88,3 +88,30 @@
    - then turn OFF typescript.ignoreBuildErrors (it hid today's ReferenceError)
 3. Phase 1 remainder: report builder, criteria admin UI, evidence export
 4. Phase 2: Outcome-Based Education (PO/CO/PSO, attainment, course files)
+
+## 2026-09-16 (late) - Phase 0 hardening
+### Added
+- Vitest + 14 tests: password hashing/verification, password policy, capability matrix,
+  visibility rules, sensitive-domain access, unknown-role fail-closed
+- npm test / npm run test:watch
+- frontend/types/three.d.ts
+
+### Changed
+- typescript.ignoreBuildErrors: true -> false. Type errors now fail the build.
+  (This setting hid the getLiveSession ReferenceError that cost four debugging rounds.)
+- Data-quality issue counts and list scoped to the selected academic year (they were
+  accumulating across years - 43 became 86)
+
+### Verified in production
+- Evidence workflow end to end: create, upload, duplicate refusal by checksum,
+  verify, approve, report draft, snapshot, IQAC approval, CSV export
+- Separation of duties confirmed: ADMIN can verify but cannot approve
+
+### RESUME HERE (next session)
+1. Input validation layer - endpoints still trust req.json() shapes (highest remaining risk)
+2. Encrypt Grievance.identityRef (currently plaintext beside the complaint body)
+3. MFA for OWNER/SUPER_ADMIN/HOI (schema fields exist, no implementation)
+4. Refresh-token rotation and password reset by email
+5. Backup and restore documentation
+6. More tests: approval ordering, data-quality rules, evidence visibility
+7. Then Phase 2 (Outcome-Based Education) or Phase 1 remainder (criteria admin UI)
