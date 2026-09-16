@@ -1,128 +1,170 @@
-# System Architecture — SOU AI HelpDesk Pro
+# Architecture - SOU AI HelpDesk Pro
 
-## 1. High-Level System Architecture
-
-```mermaid
-flowchart TB
-  subgraph Client["Client Layer"]
-    W[Next.js 15 Web App<br/>Framer Motion · GSAP · Three.js]
-  end
-  subgraph Edge["API Gateway / Edge"]
-    NG[Nginx / ALB]
-  end
-  subgraph App["Application Layer (Node.js + Express)"]
-    AUTH[Auth Service<br/>JWT + Refresh + RBAC]
-    TKT[Ticket Service<br/>Workflow + SLA]
-    NOTIF[Notification Service<br/>In-App + SES]
-    AI[AI Orchestrator<br/>12 Agents]
-    ANALYTICS[Analytics Service]
-  end
-  subgraph AILayer["AI / RAG Layer"]
-    NLP[NLP: intent · entities]
-    RAG[RAG Pipeline]
-    VEC[(Vector Store / pgvector)]
-    LLM[OpenAI GPT via LangChain]
-  end
-  subgraph Data["Data Layer"]
-    PG[(PostgreSQL / AWS RDS)]
-    S3[(AWS S3<br/>files, receipts, notes)]
-  end
-  W --> NG --> AUTH & TKT & NOTIF & AI & ANALYTICS
-  AI --> NLP --> RAG --> VEC
-  RAG --> LLM
-  AUTH & TKT & NOTIF & ANALYTICS --> PG
-  TKT --> S3
-  NOTIF --> SES[AWS SES]
-```
-
-## 2. Multi-Agent Architecture
+## 1. System context
 
 ```mermaid
-flowchart LR
-  Q[Student Query] --> A1[1. Intent Recognition]
-  A1 --> A2[2. Entity Extraction]
-  A2 --> A3[3. Knowledge Retrieval]
-  A3 --> A4[4. RAG Agent]
-  A4 --> A5[5. Sentiment]
-  A5 --> A6{6. Decision<br/>conf ≥ 90%?}
-  A6 -- Yes --> ANS[Direct Answer]
-  A6 -- No --> A7[7. Ticket Agent]
-  A7 --> A8[8. Faculty Routing]
-  A8 --> A9[9. Email Agent]
-  A9 --> A10[10. Learning Agent]
-  A10 --> A11[11. Analytics Agent]
-  A11 --> A12[12. Notification Orchestration]
-  ANS --> A11
+graph TB
+    S[Student] --> APP
+    F[Faculty / CR] --> APP
+    A[Admin] --> APP
+    H[HOD / HOI] --> APP
+    O[Owner / IQAC] --> APP
+    APP[Next.js application<br/>Vercel] --> DB[(PostgreSQL<br/>Neon)]
+    APP --> BLOB[Vercel Blob<br/>private evidence files]
+    APP --> MAIL[EmailJS<br/>account notifications]
+    APP -.mock only.-> MIS[SOU MIS<br/>no authorisation obtained]
 ```
 
-## 3. Ticket Workflow
+The SOU MIS link is deliberately mock. No credentials are requested from users
+and no scraping occurs; the adapter refuses live mode unless an API key is
+explicitly provisioned.
+
+## 2. Application structure
 
 ```mermaid
-flowchart TB
-  S[Student] --> C[AI Chatbot]
-  C --> CC{Confidence Check}
-  CC -- High --> ANS[Answer + KB]
-  CC -- Low --> T[Create Ticket]
-  T --> AD[Assign Admin]
-  AD --> F[Faculty]
-  F --> H[HOD]
-  H --> O[Owner]
-  O --> R[Resolution]
-  R --> KB[Knowledge Base Update]
-  KB --> N[Student Notification]
+graph LR
+    subgraph Pages
+        P1[Role dashboards]
+        P2[/iqac Evidence vault/]
+        P3[/bookings GreenReserve/]
+        P4[/attendance/qr/]
+        P5[/feedback /grievance/]
+    end
+    subgraph API["API routes (catch-all)"]
+        R1[/api - core, auth, tickets/]
+        R2[/api/gr - bookings/]
+        R3[/api/qr - attendance/]
+        R4[/api/inst - feedback, grievance/]
+        R5[/api/iqac - evidence/]
+        R6[/api/iqac-insight - dashboard, data quality/]
+        R7[/api/iqac-report - report builder/]
+        R8[/api/exam /api/insights /api/reports/]
+    end
+    subgraph Shared["Shared libraries"]
+        L1[server-auth.ts<br/>JWT, bcrypt, lockout]
+        L2[policy.ts<br/>capability matrix]
+        L3[validate.ts<br/>zod schemas]
+        L4[crypto.ts<br/>AES-256-GCM]
+        L5[audit.ts<br/>redacting writer]
+        L6[prisma.ts]
+    end
+    Pages --> API
+    API --> Shared
+    Shared --> DB[(PostgreSQL)]
 ```
 
-## 4. Sequence Diagram — Ask AI / Auto-Ticket
+Every API route is a catch-all (`[...path]`) re-exporting handlers from a
+library module. This keeps the number of route files small and puts all logic
+in testable modules rather than in route files.
+
+## 3. Authenticated request flow
 
 ```mermaid
 sequenceDiagram
-  participant U as Student
-  participant FE as Next.js
-  participant API as Express API
-  participant AG as Agent Pipeline
-  participant DB as PostgreSQL
-  participant SES as AWS SES
-  U->>FE: "When do Sem 7 exams begin?"
-  FE->>API: POST /api/ai/ask (JWT)
-  API->>AG: runAgentPipeline(query)
-  AG->>DB: semantic search KnowledgeBase
-  DB-->>AG: top docs + score
-  alt confidence >= 90%
-    AG-->>API: ANSWER + sources
-    API-->>FE: answer, trace
-  else confidence < 90%
-    AG->>DB: create Ticket + watchers
-    AG->>SES: email watchers
-    API-->>FE: TICKET created (code)
-  end
-  FE-->>U: response + agent trace
+    participant C as Client
+    participant R as API route
+    participant A as getLiveSession
+    participant P as policy.can()
+    participant V as validate.parse()
+    participant D as Prisma
+    participant L as audit()
+
+    C->>R: request + Bearer token
+    R->>A: verify JWT, check tokenVersion + isActive
+    A-->>R: Session or null
+    R->>P: can(session, capability)
+    P-->>R: allow / deny
+    R->>V: parse(schema, body)
+    V-->>R: typed data or 400
+    R->>D: query / mutate
+    R->>L: record action, actor, IP
+    R-->>C: response
 ```
 
-## 5. AWS Production Architecture
+Four gates before anything is written: authenticated, not revoked, permitted,
+and well-formed. Audit happens after the write so a failed action is not
+recorded as a successful one.
+
+## 4. Evidence lifecycle
 
 ```mermaid
-flowchart TB
-  U[Users] --> CF[CloudFront CDN]
-  CF --> ALB[Application Load Balancer]
-  ALB --> EC2A[EC2 · Frontend]
-  ALB --> EC2B[EC2 · Backend API]
-  EC2B --> RDS[(RDS PostgreSQL<br/>Multi-AZ)]
-  EC2B --> S3[(S3 Buckets)]
-  EC2B --> SES[SES Email]
-  EC2B --> BR[Bedrock · future]
-  COG[Cognito] --> EC2B
-  IAM[IAM Roles/Policies] --- EC2A & EC2B
-  CW[CloudWatch<br/>logs · metrics · alarms] --- EC2A & EC2B & RDS
+stateDiagram-v2
+    [*] --> DRAFT: created by owner
+    DRAFT --> SUBMITTED: submitted
+    SUBMITTED --> UNVERIFIED
+    UNVERIFIED --> IN_REVIEW: verifier opens
+    IN_REVIEW --> VERIFIED: ADMIN / HOD / HOI verifies
+    IN_REVIEW --> REJECTED: verification refused
+    VERIFIED --> APPROVED: HOI / OWNER approves
+    VERIFIED --> RETURNED: sent back
+    APPROVED --> RETURNED: re-upload forces reopen
+    RETURNED --> UNVERIFIED
+    APPROVED --> [*]: eligible for reports
 ```
 
-## 6. RBAC Matrix (summary)
+Two rules are enforced server-side and cannot be skipped from the UI:
+approval requires prior verification, and the verifying role is not the
+approving role.
 
-| Capability | Student | Admin | Faculty | HOD | Owner | Super Admin |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|
-| Raise/track tickets | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Assign tickets | | ✅ | | ✅ | | ✅ |
-| Resolve/escalate | | ✅ | ✅ | ✅ | | ✅ |
-| Mark attendance | | | ✅ | | | |
-| Add/remove members | | | | ✅ | | ✅ |
-| Revenue & forecasting | | | | | ✅ | ✅ |
-| SLA sweep / global config | | | | | ✅ | ✅ |
+## 5. Data model - principal entities
+
+```mermaid
+erDiagram
+    User ||--o{ EvidenceRecord : owns
+    AcademicYear ||--o{ EvidenceRecord : scopes
+    QualityCriterion ||--o{ KeyIndicator : contains
+    KeyIndicator ||--o{ QualityMetric : contains
+    QualityMetric ||--o{ EvidenceRecord : evidenced_by
+    EvidenceRecord ||--o{ EvidenceDocument : attachments
+    EvidenceRecord ||--o{ EvidenceVersion : history
+    EvidenceRecord ||--o{ EvidenceVerification : checks
+    EvidenceRecord ||--o{ EvidenceApproval : decisions
+    AcademicYear ||--o{ ReportSnapshot : covers
+    Resource ||--o{ Booking : reserved
+    QRSession ||--o{ QRScan : attendance
+    FeedbackForm ||--o{ FeedbackResponse : anonymous
+```
+
+Full schema: `frontend/prisma/schema.prisma` (33 models).
+
+New feature models reference `User` and `Department` by scalar ID rather than a
+Prisma relation. This was deliberate: it let each phase append to the schema
+without editing existing models, which reduced the risk of breaking a working
+system. The trade-off is no referential integrity on those links.
+
+## 6. Security model
+
+| Concern | Mechanism |
+|---|---|
+| Password storage | bcrypt, 12 rounds |
+| Brute force | 5 attempts, 15-minute lock, stored in DB (serverless-safe) |
+| Session lifetime | 8-hour JWT |
+| Revocation | `tokenVersion` on User, checked by `getLiveSession` |
+| Authorization | Central capability matrix, server-side only |
+| Input | zod schemas; `SignupInput` has no role field |
+| Sensitive fields | AES-256-GCM on `Grievance.identityRef` |
+| Evidence files | Private blob, served after session + visibility check |
+| Audit | Create, update, delete, approve, export, confidential view |
+| Secrets | Environment variables; `JWT_SECRET` throws in production if unset |
+
+## 7. Deployment
+
+```mermaid
+graph LR
+    G[GitHub main] -->|push| V[Vercel build]
+    V -->|prisma generate + next build| D[Production deployment]
+    D --> N[(Neon Postgres<br/>us-east-1)]
+    D --> B[Vercel Blob]
+```
+
+Build runs `prisma generate && next build` with TypeScript errors enabled, so a
+type error fails the deployment rather than reaching runtime.
+
+## 8. Known architectural limitations
+
+- Scalar foreign keys on newer models mean no database-level referential integrity
+- Evidence downloads load the whole file into browser memory; a signed short-lived
+  URL would be the correct design
+- No MFA, no refresh-token rotation
+- Data-quality scan is synchronous; it would need a queue at institutional scale
+- The assistant is a keyword matcher, not retrieval-augmented generation
