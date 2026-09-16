@@ -115,3 +115,34 @@
 5. Backup and restore documentation
 6. More tests: approval ordering, data-quality rules, evidence visibility
 7. Then Phase 2 (Outcome-Based Education) or Phase 1 remainder (criteria admin UI)
+
+## 2026-09-16 (night) - Phase 0 near-complete
+### Added
+- lib/validate.ts - zod schemas for auth, evidence, grievance, booking, QR attendance,
+  feedback and exam seating; ValidationError -> 400 with field-level detail
+- lib/crypto.ts - AES-256-GCM field encryption (tamper-evident, fails closed with no key)
+- tests/validate.test.ts, tests/crypto.test.ts (29 tests total, all passing)
+- scripts/encrypt-grievances.js, scripts/check-grievances.js
+- docs/BACKUP_AND_RESTORE.md
+
+### Changed
+- Validation wired into: evidence creation, grievance submission, bookings,
+  QR sessions and scans, feedback responses, exam seating
+- Grievance.identityRef now AES-256-GCM encrypted; 15/15 existing rows backfilled
+- Owner dashboard: removed "Rs 18.6 Cr Total Revenue", "92% Fees Collected",
+  "92% AI Accuracy" (all fabricated - no such measurements exist)
+- Landing page: replaced Auto-Resolution 68%, AI Accuracy 92%, Response SLA 48h,
+  AI Agents 12 with verifiable counts (7 portals, 7 criteria, 26 resources, 29 tests)
+- Student dashboard: removed hardcoded "Pending Fees: Rs 30k" shown to every student
+
+### Deliberate gaps (documented, not attempted)
+- MFA for privileged roles: schema fields exist, no implementation
+- Refresh-token rotation: 8h tokens with tokenVersion revocation instead
+- Password reset by email: set-password requires an authenticated session
+- Restore procedure has never been rehearsed (stated in BACKUP_AND_RESTORE.md)
+
+### RESUME HERE (next session)
+Choose one:
+  A. Phase 2 - Outcome-Based Education (PO/CO/PSO, attainment, course files)
+  B. Phase 1 remainder - criteria admin UI, evidence index export
+  C. Project documentation deliverables (SRS, architecture, test cases, viva sheet)
