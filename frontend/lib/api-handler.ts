@@ -1,9 +1,8 @@
-import { getLiveSession } from "./server-auth";
-import { verifyPassword, hashPassword, passwordProblem, isLocked, noteFailedLogin, clearFailedLogins, LOCK_POLICY } from "./server-auth";
+import { verifyPassword, hashPassword, passwordProblem, isLocked, noteFailedLogin, clearFailedLogins, LOCK_POLICY } from "@/lib/server-auth";
 import { audit } from "./audit";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { signToken, getSession, stageForRole, isStaff, notifyUser } from "@/lib/server-auth";
+import { signToken, getSession, getLiveSession, stageForRole, isStaff, notifyUser } from "@/lib/server-auth";
 
 type Ctx = { params: Promise<{ path: string[] }> };
 const ok = (data: unknown) => NextResponse.json({ success: true, ...(data as object) });
@@ -283,6 +282,7 @@ export async function DELETE(req: Request, ctx: Ctx) {
 
   return bad("Unknown endpoint: " + path.join("/"), 404);
 }
+
 
 
 
