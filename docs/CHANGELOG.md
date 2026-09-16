@@ -146,3 +146,50 @@ Choose one:
   A. Phase 2 - Outcome-Based Education (PO/CO/PSO, attainment, course files)
   B. Phase 1 remainder - criteria admin UI, evidence index export
   C. Project documentation deliverables (SRS, architecture, test cases, viva sheet)
+
+## 2026-09-16 (late night) - Documentation pass
+### Added
+- docs/VIVA_PREPARATION.md - stack rationale, how each feature works, expected
+  questions with answers, the four vulnerabilities found and fixed, known
+  limitations, defensible numbers
+- docs/ARCHITECTURE.md - rewritten with 5 Mermaid diagrams (context, components,
+  request flow, evidence lifecycle, ER overview, deployment)
+- docs/API.md - rewritten: ~40 endpoints across 8 namespaces, each with method,
+  required capability, validation schema; full capability matrix; status codes
+- docs/TESTING.md - rewritten: 29 automated tests mapped to what each proves,
+  21 manual cases verified on the deployed system, explicit "not tested" section
+- docs/BACKUP_AND_RESTORE.md - assets, key warning, pg_dump procedure,
+  restore drill marked as unrehearsed
+
+### Corrected (stale documents that contradicted the running system)
+- USER_MANUAL.md - login instructions said "enter Birthdate"
+- PRESENTATION.md - claimed revenue and AI accuracy analytics
+- PROJECT_REPORT.md - claimed birthdate login, revocable refresh tokens,
+  ~68% auto-resolution, ~92% AI accuracy, 12 agents (none of which exist)
+- API.md - login example used birthdate; KPI list cited aiAccuracy, revenueCollected
+- VIVA.md - superseded, now points to VIVA_PREPARATION.md
+
+### Discovered
+- Two Neon projects exist. Production is us-east-1 (Vercel-provisioned).
+  The personal "sou-helpdesk" project (us-east-2 Ohio) is STALE - it holds the
+  original 16 models only. Do not connect to it. Recommend renaming it.
+
+### RESUME HERE (next session)
+1. docs/ERD.md is stale - describes 16 models, schema now has 33. Needs rewrite.
+2. Read through remaining older docs for staleness: PROJECT_REPORT, ADMIN_MANUAL,
+   DEPLOYMENT, RUN_AND_DEPLOY, SOU_MIS_INTEGRATION, FUTURE_SCOPE, PRESENTATION
+3. Rehearse the demo path twice (see below)
+4. Back up GRIEVANCE_KEY outside Vercel
+5. Rename the stale Neon project to UNUSED-old-do-not-connect
+
+### Demo path (7 minutes)
+landing -> student books a room -> admin approves -> CR runs QR attendance ->
+faculty verifies -> student files anonymous grievance -> Owner resolves it and
+the identity decrypts -> IQAC evidence verified then approved -> report draft
+with per-statement sources -> export refused until IQAC approval -> approve ->
+export CSV
+
+### State at end of session
+Phase 0 ~92% | Phase 1 ~90% | Documentation ~80% | Overall ~26%
+29 tests passing | TypeScript build errors enabled | 15/15 grievance
+identities encrypted | 7 fabricated statistics removed
