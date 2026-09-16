@@ -456,7 +456,7 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
           {record.documents.length === 0 && <div className="text-sm opacity-50 mb-2">None attached.</div>}
           {record.documents.map((d: any) => (
             <div key={d.id} className="flex justify-between items-center text-sm bg-white/5 rounded px-3 py-2 mb-1.5">
-              <a href={d.blobUrl} target="_blank" rel="noreferrer" className="underline">
+              <a href={"/api/iqac/evidence/file?docId=" + d.id} target="_blank" rel="noreferrer" className="underline">
                 {d.fileName} <span className="opacity-50 text-xs">v{d.versionNo}{d.isCurrent ? " (current)" : ""}</span>
               </a>
               <span className="opacity-45 text-xs">{Math.round(d.sizeBytes / 1024)} KB</span>
@@ -515,3 +515,4 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
     </div>
   );
 }
+

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put, del } from "@vercel/blob";
+import { put, del, get } from "@vercel/blob";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getLiveSession, type Session } from "@/lib/server-auth";
@@ -123,6 +123,37 @@ export async function GET(req: NextRequest) {
     return json({ items, total, take, skip });
   }
 
+  if (p[0] === "evidence" && p[1] === "file") {
+    const docId = q.get("docId") || "";
+    const doc = await prisma.evidenceDocument.findUnique({
+      where: { id: docId },
+      include: { evidenceRecord: { select: { id: true, code: true, visibility: true } } },
+    });
+    if (!doc) return json({ error: "Document not found" }, 404);
+
+    const level = doc.evidenceRecord.visibility.toLowerCase() as Visibility;
+    if (!canSeeVisibility(s, level)) {
+      await audit({ action: "VIEW_CONFIDENTIAL", entity: "EvidenceDocument", entityId: doc.id,
+        session: s, req, summary: "DENIED download of " + doc.fileName + " (" + level + ")" });
+      return json({ error: "Not permitted to view this document" }, 403);
+    }
+    if (level === "confidential" || level === "restricted") {
+      await audit({ action: "VIEW_CONFIDENTIAL", entity: "EvidenceDocument", entityId: doc.id,
+        session: s, req, summary: s.loginId + " downloaded " + doc.fileName + " from " + doc.evidenceRecord.code });
+    }
+
+    const result = await get(doc.blobPathname, { access: "private" });
+    if (result === null) return json({ error: "File missing from storage" }, 404);
+
+    return new NextResponse(result.stream, {
+      headers: {
+        "Cache-Control": "private, no-cache, no-store",
+        "Content-Type": result.blob.contentType || doc.mimeType,
+        "Content-Disposition": 'inline; filename="' + doc.fileName.replace(/"/g, "") + '"',
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
   if (p[0] === "evidence" && p[1] === "one") {
     const rec = await prisma.evidenceRecord.findUnique({
       where: { id: q.get("id") || "" },
@@ -190,7 +221,7 @@ export async function POST(req: NextRequest) {
 
     let blob;
     try {
-      blob = await put(pathname, buf, { access: "public", contentType: file.type, addRandomSuffix: true });
+      blob = await put(pathname, buf, { access: "private", contentType: file.type, addRandomSuffix: true });
     } catch (e: any) {
       return json({ error: "Upload failed: " + (e?.message || "storage error") }, 502);
     }
@@ -352,9 +383,10 @@ export async function DELETE(req: NextRequest) {
   const rec = await prisma.evidenceRecord.findUnique({ where: { id }, include: { documents: true } });
   if (!rec) return json({ error: "Not found" }, 404);
 
-  for (const d of rec.documents) { try { await del(d.blobUrl); } catch {} }
+  for (const d of rec.documents) { try { await del(d.blobPathname); } catch {} }
   await prisma.evidenceRecord.delete({ where: { id } });
   await audit({ action: "DELETE", entity: "EvidenceRecord", entityId: id, session: s, req,
     summary: "Deleted evidence " + rec.code + " and " + rec.documents.length + " document(s)" });
   return json({ ok: true });
 }
+
