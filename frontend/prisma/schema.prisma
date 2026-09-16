@@ -485,3 +485,309 @@ model ReportExport {
 }
 
 
+
+// ===================== IQAC / Quality Evidence Vault =====================
+
+enum EvidenceType        { FILE URL STRUCTURED NARRATIVE }
+enum EvidenceVisibility  { PUBLIC INTERNAL CONFIDENTIAL RESTRICTED }
+enum VerificationStatus  { UNVERIFIED IN_REVIEW VERIFIED REJECTED }
+enum ApprovalStatus      { DRAFT SUBMITTED APPROVED REJECTED RETURNED }
+enum MetricKind          { COUNT PERCENTAGE RATIO CURRENCY TEXT BOOLEAN }
+enum ActionStatus        { PLANNED IN_PROGRESS BLOCKED DONE CANCELLED }
+enum IssueKind           { MISSING_EVIDENCE DUPLICATE INCONSISTENT_TOTAL INVALID_DATE UNVERIFIED_METRIC UNSOURCED_FIGURE EXPIRING_DOCUMENT }
+enum IssueSeverity       { INFO WARNING CRITICAL }
+enum DataSourceKind      { INTERNAL EXTERNAL MANUAL }
+
+model AcademicYear {
+  id          String   @id @default(cuid())
+  code        String   @unique          // "2025-26"
+  startsOn    DateTime
+  endsOn      DateTime
+  isCurrent   Boolean  @default(false)
+  locked      Boolean  @default(false)  // frozen once submitted
+  createdAt   DateTime @default(now())
+
+  targets     MetricTarget[]
+  evidence    EvidenceRecord[]
+  actionPlans ActionPlan[]
+  snapshots   ReportSnapshot[]
+  issues      DataQualityIssue[]
+}
+
+model QualityCriterion {
+  id          String   @id @default(cuid())
+  framework   String   @default("NAAC")  // configurable - never assumed in code
+  code        String                      // "1"
+  title       String
+  description String?
+  weightage   Float?
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  indicators  KeyIndicator[]
+  actionPlans ActionPlan[]
+
+  @@unique([framework, code])
+  @@index([framework, sortOrder])
+}
+
+model KeyIndicator {
+  id           String   @id @default(cuid())
+  criterionId  String
+  criterion    QualityCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  code         String            // "1.1"
+  title        String
+  description  String?
+  weightage    Float?
+  sortOrder    Int      @default(0)
+  active       Boolean  @default(true)
+
+  metrics      QualityMetric[]
+
+  @@unique([criterionId, code])
+}
+
+model QualityMetric {
+  id               String   @id @default(cuid())
+  keyIndicatorId   String
+  keyIndicator     KeyIndicator @relation(fields: [keyIndicatorId], references: [id], onDelete: Cascade)
+  code             String               // "1.1.1"
+  title            String
+  description      String?
+  kind             MetricKind @default(COUNT)
+  unit             String?
+  formula          String?              // human-readable definition, evaluated server-side only
+  requiredEvidence String?              // what documents satisfy this metric
+  sortOrder        Int      @default(0)
+  active           Boolean  @default(true)
+
+  targets   MetricTarget[]
+  owners    MetricOwner[]
+  evidence  EvidenceRecord[]
+  issues    DataQualityIssue[]
+
+  @@unique([keyIndicatorId, code])
+}
+
+model MetricTarget {
+  id             String   @id @default(cuid())
+  metricId       String
+  metric         QualityMetric @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  academicYearId String
+  academicYear   AcademicYear  @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  targetValue    Float?
+  targetText     String?
+  weightage      Float?
+  note           String?
+
+  @@unique([metricId, academicYearId])
+}
+
+model MetricOwner {
+  id           String  @id @default(cuid())
+  metricId     String
+  metric       QualityMetric @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  userId       String
+  userName     String
+  departmentId String?
+  note         String?
+
+  @@unique([metricId, userId])
+  @@index([userId])
+}
+
+model EvidenceRecord {
+  id                 String   @id @default(cuid())
+  code               String   @unique
+  metricId           String
+  metric             QualityMetric @relation(fields: [metricId], references: [id])
+  academicYearId     String
+  academicYear       AcademicYear  @relation(fields: [academicYearId], references: [id])
+  departmentId       String?
+  departmentName     String?
+
+  ownerUserId        String
+  ownerName          String
+
+  title              String
+  evidenceType       EvidenceType @default(FILE)
+  urlValue           String?
+  structuredJson     String?
+  narrative          String?
+  evidenceDate       DateTime
+  sourceSystem       String?
+  sourceReference    String?
+
+  visibility         EvidenceVisibility @default(INTERNAL)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  approvalStatus     ApprovalStatus     @default(DRAFT)
+  lastVerifiedAt     DateTime?
+  expiresAt          DateTime?
+  isDemo             Boolean  @default(false)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  documents     EvidenceDocument[]
+  versions      EvidenceVersion[]
+  verifications EvidenceVerification[]
+  approvals     EvidenceApproval[]
+  actionItems   ActionItem[]
+
+  @@index([metricId, academicYearId])
+  @@index([departmentId])
+  @@index([approvalStatus])
+  @@index([verificationStatus])
+  @@index([expiresAt])
+}
+
+model EvidenceDocument {
+  id               String   @id @default(cuid())
+  evidenceRecordId String
+  evidenceRecord   EvidenceRecord @relation(fields: [evidenceRecordId], references: [id], onDelete: Cascade)
+  fileName         String
+  mimeType         String
+  sizeBytes        Int
+  blobUrl          String
+  blobPathname     String
+  checksum         String?
+  versionNo        Int      @default(1)
+  isCurrent        Boolean  @default(true)
+  uploadedBy       String
+  uploadedAt       DateTime @default(now())
+
+  @@index([evidenceRecordId, isCurrent])
+}
+
+model EvidenceVersion {
+  id               String   @id @default(cuid())
+  evidenceRecordId String
+  evidenceRecord   EvidenceRecord @relation(fields: [evidenceRecordId], references: [id], onDelete: Cascade)
+  versionNo        Int
+  snapshotJson     String
+  changeNote       String?
+  changedBy        String
+  createdAt        DateTime @default(now())
+
+  @@unique([evidenceRecordId, versionNo])
+}
+
+model EvidenceVerification {
+  id               String   @id @default(cuid())
+  evidenceRecordId String
+  evidenceRecord   EvidenceRecord @relation(fields: [evidenceRecordId], references: [id], onDelete: Cascade)
+  checklistJson    String
+  result           VerificationStatus
+  comments         String?
+  verifiedBy       String
+  verifiedByRole   String?
+  verifiedAt       DateTime @default(now())
+
+  @@index([evidenceRecordId])
+}
+
+model EvidenceApproval {
+  id               String   @id @default(cuid())
+  evidenceRecordId String
+  evidenceRecord   EvidenceRecord @relation(fields: [evidenceRecordId], references: [id], onDelete: Cascade)
+  decision         ApprovalStatus
+  comments         String?
+  decidedBy        String
+  decidedByRole    String?
+  decidedAt        DateTime @default(now())
+
+  @@index([evidenceRecordId])
+}
+
+model ActionPlan {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  criterionId    String?
+  criterion      QualityCriterion? @relation(fields: [criterionId], references: [id])
+  departmentId   String?
+  departmentName String?
+  title          String
+  objective      String?
+  ownerUserId    String?
+  ownerName      String?
+  startsOn       DateTime?
+  dueOn          DateTime?
+  status         ActionStatus @default(PLANNED)
+  createdBy      String
+  createdAt      DateTime @default(now())
+
+  items ActionItem[]
+
+  @@index([academicYearId, status])
+}
+
+model ActionItem {
+  id               String   @id @default(cuid())
+  actionPlanId     String
+  actionPlan       ActionPlan @relation(fields: [actionPlanId], references: [id], onDelete: Cascade)
+  title            String
+  ownerName        String?
+  dueOn            DateTime?
+  status           ActionStatus @default(PLANNED)
+  completedAt      DateTime?
+  evidenceRecordId String?
+  evidenceRecord   EvidenceRecord? @relation(fields: [evidenceRecordId], references: [id])
+
+  @@index([actionPlanId, status])
+}
+
+model ReportSnapshot {
+  id                   String   @id @default(cuid())
+  code                 String   @unique
+  kind                 String
+  title                String
+  academicYearId       String?
+  academicYear         AcademicYear? @relation(fields: [academicYearId], references: [id])
+  periodFrom           DateTime
+  periodTo             DateTime
+  payloadJson          String
+  statementSourcesJson String?              // every statement mapped to its evidence IDs
+  generatedBy          String
+  approvedBy           String?
+  approvedAt           DateTime?
+  publishedAt          DateTime?
+  createdAt            DateTime @default(now())
+
+  @@index([kind, createdAt])
+}
+
+model DataSource {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  name         String
+  kind         DataSourceKind @default(INTERNAL)
+  description  String?
+  ownerName    String?
+  trusted      Boolean  @default(false)
+  lastSyncedAt DateTime?
+  createdAt    DateTime @default(now())
+}
+
+model DataQualityIssue {
+  id             String   @id @default(cuid())
+  kind           IssueKind
+  severity       IssueSeverity @default(WARNING)
+  entity         String
+  entityId       String?
+  metricId       String?
+  metric         QualityMetric? @relation(fields: [metricId], references: [id])
+  academicYearId String?
+  academicYear   AcademicYear?  @relation(fields: [academicYearId], references: [id])
+  message        String
+  detail         String?
+  resolved       Boolean  @default(false)
+  resolvedBy     String?
+  resolvedAt     DateTime?
+  detectedAt     DateTime @default(now())
+
+  @@index([kind, resolved])
+  @@index([severity, resolved])
+}
