@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
+import { hash as bcryptHash, compare as bcryptCompare } from "bcryptjs";
 import { prisma } from "./prisma";
 
 /* JWT_SECRET must be real. A silent dev fallback is how a demo secret
@@ -54,10 +54,10 @@ export async function getLiveSession(req: Request): Promise<Session | null> {
 
 /* ---------------- passwords ---------------- */
 export function hashPassword(plain: string): Promise<string> {
-  return bcrypt.hash(plain, BCRYPT_ROUNDS);
+  return bcryptHash(plain, BCRYPT_ROUNDS);
 }
 export function verifyPassword(plain: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(plain, hash);
+  return bcryptCompare(plain, hash);
 }
 
 /** Minimum policy. Returns null when acceptable, else the reason. */
@@ -106,3 +106,4 @@ export const isStaff = (role: string) => role !== "STUDENT";
 export async function notifyUser(userId: string, title: string, body: string) {
   try { await prisma.notification.create({ data: { userId, title, body } }); } catch {}
 }
+
