@@ -81,8 +81,8 @@ export async function GET(req: NextRequest) {
       prisma.actionPlan.count({ where: { academicYearId: year.id } }),
       prisma.actionItem.count({ where: { status: "DONE", actionPlan: { academicYearId: year.id } } }),
       prisma.actionItem.count({ where: { actionPlan: { academicYearId: year.id } } }),
-      prisma.dataQualityIssue.count({ where: { resolved: false } }),
-      prisma.dataQualityIssue.count({ where: { resolved: false, severity: "CRITICAL" } }),
+      prisma.dataQualityIssue.count({ where: { resolved: false, academicYearId: year.id } }),
+      prisma.dataQualityIssue.count({ where: { resolved: false, severity: "CRITICAL", academicYearId: year.id } }),
     ]);
 
     return json({
@@ -112,8 +112,9 @@ export async function GET(req: NextRequest) {
 
   if (p[0] === "issues") {
     const resolved = q.get("resolved") === "true";
+    const yid = q.get("yearId") || undefined;
     const items = await prisma.dataQualityIssue.findMany({
-      where: { resolved },
+      where: { resolved, ...(yid ? { academicYearId: yid } : {}) },
       orderBy: [{ severity: "asc" }, { detectedAt: "desc" }],
       take: 300,
       include: { metric: { select: { code: true, title: true } }, academicYear: { select: { code: true } } },
@@ -256,3 +257,4 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH() { return json({ error: "Not supported" }, 405); }
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+

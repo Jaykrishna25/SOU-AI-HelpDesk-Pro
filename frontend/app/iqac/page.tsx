@@ -70,9 +70,9 @@ export default function IQAC() {
   useEffect(() => { if (tab === "evidence") loadList(); }, [tab, loadList]);
 
   const loadIssues = useCallback(async () => {
-    const r = await fetch("/api/iqac-insight/issues?resolved=false", { headers: AUTH() });
+    const r = await fetch("/api/iqac-insight/issues?resolved=false&yearId=" + yearId, { headers: AUTH() });
     if (r.ok) setIssues((await r.json()).items || []);
-  }, []);
+  }, [yearId]);
   useEffect(() => { if (tab === "quality") loadIssues(); }, [tab, loadIssues]);
 
   async function openRecord(id: string) {
@@ -702,3 +702,4 @@ function ReportsTab({ yearId, setMsg }: { yearId: string; setMsg: (m: any) => vo
     </div>
   );
 }
+
