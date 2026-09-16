@@ -69,7 +69,7 @@ export default function StudentDashboard() {
       stats={[
         { label: "CGPA", value: "8.4", icon: GraduationCap },
         { label: isCR ? "CR Subjects" : "Courses", value: isCR ? String(myCr.length) : "4", icon: ClipboardCheck },
-        { label: "Pending Fees", value: "Rs 30k", icon: Wallet },
+        { label: "Pending Fees", value: "Check with accounts", icon: Wallet },
         { label: "My Tickets", value: String(mine.length), icon: CalendarDays },
       ]}>
 
@@ -159,6 +159,7 @@ export default function StudentDashboard() {
     </DashboardShell>
   );
 }
+
 
 
 
