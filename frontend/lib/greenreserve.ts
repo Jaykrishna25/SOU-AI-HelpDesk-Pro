@@ -1,3 +1,4 @@
+import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getLiveSession } from "@/lib/server-auth";
@@ -5,8 +6,7 @@ import { getLiveSession } from "@/lib/server-auth";
 // Central Electricity Authority grid emission factor for India (kg CO2 per kWh)
 const GRID_KG_PER_KWH = 0.71;
 const STAFF = ["ADMIN", "FACULTY", "HOD", "HOI", "OWNER", "SUPER_ADMIN"];
-const APPROVERS = ["ADMIN", "SUPER_ADMIN", "OWNER"];
-
+const APPROVERS = rolesWith("booking.approve");
 function json(d: any, s = 200) { return NextResponse.json(d, { status: s }); }
 
 async function who(req: NextRequest) {
@@ -204,5 +204,6 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Use PATCH cancel" }, 405); }
+
 
 

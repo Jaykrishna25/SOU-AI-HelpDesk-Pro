@@ -127,3 +127,9 @@ export function departmentScope(session: Session | null, dept?: string | null) {
   if (["HOI", "OWNER", "SUPER_ADMIN", "ADMIN"].includes(r)) return {};
   return dept ? { department: dept } : {};
 }
+
+/** The roles holding a capability. Lets existing modules keep their
+ *  array-shaped checks while sourcing them from one matrix. */
+export function rolesWith(cap: Capability): string[] {
+  return (MATRIX[cap] ?? []) as unknown as string[];
+}

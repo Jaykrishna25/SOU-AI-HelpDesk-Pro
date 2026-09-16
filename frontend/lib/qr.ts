@@ -1,11 +1,11 @@
+import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getLiveSession } from "@/lib/server-auth";
 
 const ROTATE_MS = 20000;
-const APPROVERS = ["FACULTY", "HOD", "HOI", "ADMIN", "SUPER_ADMIN", "OWNER"];
-
+const APPROVERS = rolesWith("attendance.verify");
 function json(d: any, s = 200) { return NextResponse.json(d, { status: s }); }
 
 async function who(req: NextRequest) {
@@ -154,4 +154,5 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Use PATCH" }, 405); }
+
 

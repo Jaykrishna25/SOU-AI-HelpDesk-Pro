@@ -1,9 +1,10 @@
+import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getLiveSession } from "@/lib/server-auth";
 
 const GRID = 0.71;
-const STAFF = ["FACULTY", "HOD", "HOI", "ADMIN", "SUPER_ADMIN", "OWNER"];
+const STAFF = rolesWith("insights.view");
 const MIN_ATTENDANCE = 75;
 
 function json(d: any, s = 200) { return NextResponse.json(d, { status: s }); }
@@ -156,4 +157,5 @@ export async function GET(req: NextRequest) {
 export async function POST() { return json({ error: "Read only" }, 405); }
 export async function PATCH() { return json({ error: "Read only" }, 405); }
 export async function DELETE() { return json({ error: "Read only" }, 405); }
+
 

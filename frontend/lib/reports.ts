@@ -1,10 +1,10 @@
+import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getLiveSession } from "@/lib/server-auth";
 
 const GRID = 0.71;
-const CELL = ["HOD", "HOI", "ADMIN", "OWNER", "SUPER_ADMIN"];
-
+const CELL = rolesWith("report.generate");
 function json(d: any, s = 200) { return NextResponse.json(d, { status: s }); }
 async function who(req: NextRequest) {
   const s: any = await getLiveSession(req as any);
@@ -233,4 +233,5 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH() { return json({ error: "Not supported" }, 405); }
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+
 
