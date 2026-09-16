@@ -31,7 +31,8 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "recharts": "^2.13.3",
-    "three": "^0.170.0"
+    "three": "^0.170.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
