@@ -115,3 +115,50 @@ export const BookingInput = z.object({
   message: "End time must be after start time", path: ["endHour"],
 });
 
+
+/* ---------------- attendance ---------------- */
+export const QRSessionInput = z.object({
+  subjectName: trimmed(2, 80),
+  className: z.string().trim().max(60).default(""),
+  expectedCount: z.coerce.number().int().min(0).max(2000).default(0),
+  minutes: z.coerce.number().int().min(2).max(60).default(10),
+});
+
+export const QRScanInput = z.object({
+  sessionId: cuid,
+  code: z.string().trim().regex(/^[A-Z0-9]{6}$/i, "Codes are six characters"),
+});
+
+/* ---------------- feedback ---------------- */
+const score = z.coerce.number().int().min(1).max(5);
+export const FeedbackResponseInput = z.object({
+  formId: cuid,
+  clarity: score, engagement: score, fairness: score,
+  availability: score, overall: score,
+  comment: z.string().trim().max(800).optional().nullable(),
+});
+
+export const FeedbackFormInput = z.object({
+  subjectName: trimmed(2, 80),
+  facultyName: z.string().trim().max(80).optional(),
+  facultyUserId: z.string().trim().max(40).optional().nullable(),
+  department: z.string().trim().max(60).optional(),
+  term: z.string().trim().max(30).optional(),
+  days: z.coerce.number().int().min(1).max(90).default(14),
+});
+
+/* ---------------- exam seating ---------------- */
+export const SeatingPlanInput = z.object({
+  examName: trimmed(3, 120),
+  examDate: z.coerce.date(),
+  rooms: z.array(z.object({
+    room: trimmed(1, 40),
+    rows: z.coerce.number().int().min(1).max(60),
+    cols: z.coerce.number().int().min(1).max(60),
+  })).min(1, "At least one hall is required"),
+  students: z.array(z.object({
+    name: trimmed(1, 120),
+    enrollment: z.string().trim().max(40).default(""),
+    course: z.string().trim().max(40).default("GENERAL"),
+  })).min(1, "At least one student is required").max(5000),
+});

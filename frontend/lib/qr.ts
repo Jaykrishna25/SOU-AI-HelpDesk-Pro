@@ -1,3 +1,4 @@
+import { parse, validationResponse, QRSessionInput, QRScanInput } from "@/lib/validate";
 import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
@@ -87,14 +88,17 @@ export async function POST(req: NextRequest) {
         if (!cr) return json({ error: "Only the Class Representative can start an attendance session" }, 403);
       } catch { /* assignment lookup unavailable - allow */ }
     }
-    const minutes = Math.min(60, Math.max(2, Number(body.minutes || 10)));
+    let qs: any;
+    try { qs = parse(QRSessionInput, body); }
+    catch (e) { const vr = validationResponse(e); if (vr) return vr; throw e; }
+    const minutes = qs.minutes;
     const ses = await prisma.qRSession.create({
       data: {
         token: crypto.randomBytes(24).toString("hex"),
-        subjectName: String(body.subjectName || "Untitled").slice(0, 80),
-        className: String(body.className || "").slice(0, 60),
+        subjectName: qs.subjectName,
+        className: qs.className,
         crUserId: u.id,
-        expectedCount: Number(body.expectedCount || 0),
+        expectedCount: qs.expectedCount,
         expiresAt: new Date(Date.now() + minutes * 60000),
         rotateSeconds: ROTATE_MS / 1000,
       },
@@ -103,7 +107,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (s[0] === "scan") {
-    const { sessionId, code } = body;
+    let sc: any;
+    try { sc = parse(QRScanInput, body); }
+    catch (e) { const vr = validationResponse(e); if (vr) return vr; throw e; }
+    const { sessionId, code } = sc;
     const ses = await prisma.qRSession.findUnique({ where: { id: String(sessionId || "") } });
     if (!ses) return json({ error: "Session not found" }, 404);
     if (ses.closed) return json({ error: "This attendance session is closed" }, 410);
@@ -154,5 +161,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Use PATCH" }, 405); }
+
+
 
 

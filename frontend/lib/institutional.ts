@@ -1,5 +1,5 @@
 import { encryptField, decryptField } from "@/lib/crypto";
-import { parse, validationResponse, GrievanceInput } from "@/lib/validate";
+import { parse, validationResponse, GrievanceInput, FeedbackResponseInput } from "@/lib/validate";
 import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
@@ -121,7 +121,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (s[0] === "responses") {
-    const { formId, clarity, engagement, fairness, availability, overall, comment } = b;
+    let fr: any;
+    try { fr = parse(FeedbackResponseInput, b); }
+    catch (e) { const vr = validationResponse(e); if (vr) return vr; throw e; }
+    const { formId, clarity, engagement, fairness, availability, overall, comment } = fr;
     const f = await prisma.feedbackForm.findUnique({ where: { id: String(formId || "") } });
     if (!f || !f.active) return json({ error: "Form is closed" }, 410);
     const n = (v: any) => Math.min(5, Math.max(1, Number(v || 3)));
@@ -183,6 +186,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+
+
 
 
 

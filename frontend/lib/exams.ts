@@ -1,3 +1,4 @@
+import { parse, validationResponse, SeatingPlanInput } from "@/lib/validate";
 import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -104,8 +105,11 @@ export async function POST(req: NextRequest) {
   if (!EXAM_CELL.includes(u.role)) return json({ error: "Exam cell access only" }, 403);
   const b = await req.json().catch(() => ({}));
 
-  const students: Stu[] = Array.isArray(b.students) ? b.students : [];
-  const rooms: Room[] = Array.isArray(b.rooms) ? b.rooms : [];
+  let sp: any;
+  try { sp = parse(SeatingPlanInput, b); }
+  catch (er) { const vr = validationResponse(er); if (vr) return vr; throw er; }
+  const students: Stu[] = sp.students;
+  const rooms: Room[] = sp.rooms;
   if (!students.length) return json({ error: "No students supplied" }, 400);
   if (!rooms.length) return json({ error: "No rooms configured" }, 400);
 
@@ -140,5 +144,7 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PATCH() { return json({ error: "Not supported" }, 405); }
+
+
 
 
