@@ -1,3 +1,4 @@
+import { parse, validationResponse, EvidenceCreateInput } from "@/lib/validate";
 import { NextRequest, NextResponse } from "next/server";
 import { put, del, get } from "@vercel/blob";
 import crypto from "crypto";
@@ -247,7 +248,9 @@ export async function POST(req: NextRequest) {
   /* ---- create an evidence record ---- */
   if (p[0] === "evidence") {
     if (!can(s, "evidence.upload")) return json({ error: "Not permitted to add evidence" }, 403);
-    const b = await req.json().catch(() => ({}));
+    let b: any;
+    try { b = parse(EvidenceCreateInput, await req.json().catch(() => ({}))); }
+    catch (e) { const vr = validationResponse(e); if (vr) return vr; throw e; }
     const evidenceDate = asDate(b.evidenceDate);
     if (!b.metricId || !b.academicYearId) return json({ error: "Metric and academic year are required" }, 400);
     if (!b.title || String(b.title).trim().length < 3) return json({ error: "A descriptive title is required" }, 400);
@@ -389,4 +392,5 @@ export async function DELETE(req: NextRequest) {
     summary: "Deleted evidence " + rec.code + " and " + rec.documents.length + " document(s)" });
   return json({ ok: true });
 }
+
 

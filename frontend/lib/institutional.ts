@@ -1,3 +1,4 @@
+import { parse, validationResponse, GrievanceInput } from "@/lib/validate";
 import { rolesWith } from "@/lib/policy";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
@@ -137,10 +138,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (s[0] === "grievances") {
+    let gv: any;
+    try { gv = parse(GrievanceInput, b); }
+    catch (e) { const vr = validationResponse(e); if (vr) return vr; throw e; }
     const g = await prisma.grievance.create({
       data: {
-        code: code("GR"), category: String(b.category || "Other").slice(0, 40),
-        subject: String(b.subject || "").slice(0, 120), body: String(b.body || "").slice(0, 4000),
+        code: code("GR"), category: gv.category,
+        subject: gv.subject, body: gv.body,
         identityRef: u.id + " | " + u.name + " | " + u.role,
       },
     });
@@ -178,6 +182,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+
 
 
 

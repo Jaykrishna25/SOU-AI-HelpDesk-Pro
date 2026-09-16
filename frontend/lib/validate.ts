@@ -87,7 +87,7 @@ export const VerifyInput = z.object({
   id: cuid,
   result: z.enum(["VERIFIED", "REJECTED", "IN_REVIEW"]),
   comments: z.string().trim().max(2000).optional().nullable(),
-  checklist: z.record(z.unknown()).optional().default({}),
+  checklist: z.record(z.string(), z.unknown()).optional().default({}),
 });
 
 export const ApproveInput = z.object({
@@ -114,3 +114,4 @@ export const BookingInput = z.object({
 }).refine(v => v.endHour > v.startHour, {
   message: "End time must be after start time", path: ["endHour"],
 });
+
