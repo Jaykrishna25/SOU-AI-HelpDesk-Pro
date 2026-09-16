@@ -17,7 +17,7 @@ const features = [
   { icon: BrainCircuit, title: "RAG Knowledge Engine", desc: "Semantic search over circulars, policies & FAQs with confidence-gated answers." },
   { icon: Ticket, title: "Smart Ticketing + SLA", desc: "Auto-ticketing below 90% confidence, 48h SLA, auto-escalation letters." },
   { icon: Bell, title: "Real-Time Notifications", desc: "Watchers auto-added across the chain; In-App + AWS SES email on every event." },
-  { icon: BarChart3, title: "Analytics Dashboards", desc: "Revenue, admissions, attendance, AI accuracy & workforce KPIs via Recharts." },
+  { icon: BarChart3, title: "Analytics Dashboards", desc: "Attendance, bookings, energy use and quality metrics, each shown with its source." },
   { icon: Workflow, title: "Workflow Automation", desc: "Student ??? AI ??? Admin ??? Faculty ??? HOD ??? Owner ??? Resolution ??? KB learning." },
   { icon: ShieldCheck, title: "RBAC + Audit Logs", desc: "JWT + refresh tokens, 7 role portals, full audit trail & responsible AI." },
   { icon: Cloud, title: "Cloud-Native (AWS)", desc: "EC2, RDS, S3, SES, Cognito, IAM, CloudWatch ??? Dockerized & CI/CD ready." },
@@ -75,7 +75,7 @@ export default function Home() {
 
         {/* stats */}
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[["Auto-Resolution", 68, "%"], ["AI Accuracy", 92, "%"], ["Response SLA", 48, "h"], ["AI Agents", 12, ""]].map(([l, n, s], i) => (
+          {[["Role portals", 7, ""], ["NAAC criteria tracked", 7, ""], ["Bookable resources", 26, ""], ["Automated tests", 29, ""]].map(([l, n, s], i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.1 }}
               className="glass p-6">
               <div className="text-4xl font-bold gradient-text"><Counter to={n as number} suffix={s as string} /></div>
@@ -179,6 +179,7 @@ export default function Home() {
     </main>
   );
 }
+
 
 
 

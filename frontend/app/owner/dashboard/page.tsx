@@ -31,10 +31,10 @@ export default function OwnerDashboard() {
   return (
     <DashboardShell role="Owner" name="Shital Aggrawal Sir" nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
-        { label: "Total Revenue", value: "Rs 18.6 Cr", icon: Wallet },
+        { label: "Total Revenue", value: "Not measured", icon: Wallet },
         { label: "My Tickets", value: String(tickets.length), icon: TrendingUp },
-        { label: "Fees Collected", value: "92%", icon: Users },
-        { label: "AI Accuracy", value: "92%", icon: Brain },
+        { label: "Fees Collected", value: "Not measured", icon: Users },
+        { label: "Assistant", value: "Rule-based", icon: Brain },
       ]}>
 
       <TicketActionModal open={modal.open} mode="resolve" ticketCode={modal.code}
@@ -102,6 +102,7 @@ export default function OwnerDashboard() {
     </DashboardShell>
   );
 }
+
 
 
 
