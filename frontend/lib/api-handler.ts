@@ -1,3 +1,4 @@
+import { getLiveSession } from "./server-auth";
 import { verifyPassword, hashPassword, passwordProblem, isLocked, noteFailedLogin, clearFailedLogins, LOCK_POLICY } from "./server-auth";
 import { audit } from "./audit";
 import { NextResponse } from "next/server";
@@ -282,6 +283,7 @@ export async function DELETE(req: Request, ctx: Ctx) {
 
   return bad("Unknown endpoint: " + path.join("/"), 404);
 }
+
 
 
 
