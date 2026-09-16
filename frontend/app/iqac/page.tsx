@@ -401,6 +401,21 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
   const [busy, setBusy] = useState(false);
   const [comments, setComments] = useState("");
 
+  async function openDoc(d: any) {
+    const r = await fetch("/api/iqac/evidence/file?docId=" + d.id, { headers: AUTH() });
+    if (!r.ok) {
+      let e = "Could not open the document";
+      try { e = (await r.json()).error || e; } catch {}
+      setMsg({ k: "err", t: e });
+      return;
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.target = "_blank"; a.rel = "noreferrer";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
   async function upload(file: File) {
     setBusy(true);
     const fd = new FormData();
@@ -456,9 +471,9 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
           {record.documents.length === 0 && <div className="text-sm opacity-50 mb-2">None attached.</div>}
           {record.documents.map((d: any) => (
             <div key={d.id} className="flex justify-between items-center text-sm bg-white/5 rounded px-3 py-2 mb-1.5">
-              <a href={"/api/iqac/evidence/file?docId=" + d.id} target="_blank" rel="noreferrer" className="underline">
+              <button onClick={() => openDoc(d)} className="underline text-left">
                 {d.fileName} <span className="opacity-50 text-xs">v{d.versionNo}{d.isCurrent ? " (current)" : ""}</span>
-              </a>
+              </button>
               <span className="opacity-45 text-xs">{Math.round(d.sizeBytes / 1024)} KB</span>
             </div>
           ))}
@@ -515,4 +530,5 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
     </div>
   );
 }
+
 
