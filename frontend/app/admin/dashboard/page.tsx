@@ -1,4 +1,5 @@
 "use client";
+import IQACPanel from "@/components/IQACPanel";
 import ReportsPanel from "@/components/ReportsPanel";
 import SeatingPanel from "@/components/SeatingPanel";
 import InsightsPanel from "@/components/InsightsPanel";
@@ -14,7 +15,7 @@ import TicketActionModal, { TicketAction } from "@/components/TicketActionModal"
 import CRPanel from "@/components/CRPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources", "Announcements", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Exam Seating", "Accreditation"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources", "Announcements", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Exam Seating", "Accreditation", "IQAC"];
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -80,6 +81,7 @@ export default function AdminDashboard() {
         </Panel>
       )}
 
+      {tab === "IQAC" && <IQACPanel />}
       {tab === "Accreditation" && <ReportsPanel />}
       {tab === "Exam Seating" && <SeatingPanel />}
       {tab === "Insights" && <InsightsPanel />}
@@ -133,6 +135,7 @@ export default function AdminDashboard() {
     </DashboardShell>
   );
 }
+
 
 
 
