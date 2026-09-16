@@ -27,7 +27,7 @@ const APPROVAL: Record<string, string> = {
 };
 
 export default function IQAC() {
-  const [tab, setTab] = useState<"overview" | "evidence" | "quality">("overview");
+  const [tab, setTab] = useState<"overview" | "evidence" | "quality" | "reports">("overview");
   const [years, setYears] = useState<any[]>([]);
   const [yearId, setYearId] = useState("");
   const [dash, setDash] = useState<any>(null);
@@ -115,7 +115,8 @@ export default function IQAC() {
 
       <div className="flex gap-2 mb-6 flex-wrap">
         {[["overview", "Overview"], ["evidence", "Evidence Vault"],
-          ["quality", "Data quality" + (dash?.dataQuality?.open ? " (" + dash.dataQuality.open + ")" : "")]].map(([k, l]) => (
+          ["quality", "Data quality" + (dash?.dataQuality?.open ? " (" + dash.dataQuality.open + ")" : "")],
+          ["reports", "Reports"]].map(([k, l]) => (
           <button key={k} onClick={() => setTab(k as any)}
             className={"px-4 py-2 rounded-lg text-sm border " +
               (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-white/10 hover:border-white/25")}>{l}</button>
@@ -293,6 +294,8 @@ export default function IQAC() {
           </div>
         </>
       )}
+
+      {tab === "reports" && <ReportsTab yearId={yearId} setMsg={setMsg} />}
 
       {open && <RecordDrawer record={open} onClose={() => setOpen(null)}
         onChanged={() => { openRecord(open.id); loadList(); loadDash(); }}
@@ -532,3 +535,170 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
 }
 
 
+
+/* ---------------- reports ---------------- */
+function ReportsTab({ yearId, setMsg }: { yearId: string; setMsg: (m: any) => void }) {
+  const [kind, setKind] = useState("SSR");
+  const [draft, setDraft] = useState<any>(null);
+  const [saved, setSaved] = useState<any[]>([]);
+  const [openIds, setOpenIds] = useState<Record<string, boolean>>({});
+  const [busy, setBusy] = useState(false);
+
+  const loadSaved = useCallback(async () => {
+    const r = await fetch("/api/iqac-report/saved", { headers: AUTH() });
+    if (r.ok) setSaved((await r.json()).items || []);
+  }, []);
+  useEffect(() => { loadSaved(); }, [loadSaved]);
+
+  async function generate() {
+    setBusy(true);
+    const r = await fetch("/api/iqac-report/draft?yearId=" + yearId + "&kind=" + kind, { headers: AUTH() });
+    const d = await r.json(); setBusy(false);
+    if (!r.ok) return setMsg({ k: "err", t: d.error });
+    setDraft(d.draft);
+  }
+
+  async function snapshot() {
+    setBusy(true);
+    const r = await fetch("/api/iqac-report/save", { method: "POST", headers: H(), body: JSON.stringify({ yearId, kind }) });
+    const d = await r.json(); setBusy(false);
+    setMsg(r.ok ? { k: "ok", t: "Saved snapshot " + d.code + " - " + d.coverage.evidenced + "/" + d.coverage.totalMetrics + " metrics evidenced" }
+                : { k: "err", t: d.error });
+    loadSaved();
+  }
+
+  async function act(id: string, path: string, label: string) {
+    const r = await fetch("/api/iqac-report/" + path, { method: "POST", headers: H(), body: JSON.stringify({ id }) });
+    const d = await r.json();
+    if (!r.ok) return setMsg({ k: "err", t: d.error });
+    if (path === "export") { downloadCsv(d.payload, d.meta.code); setMsg({ k: "ok", t: "Exported " + d.meta.code }); }
+    else setMsg({ k: "ok", t: label });
+    loadSaved();
+  }
+
+  function downloadCsv(p: any, codeStr: string) {
+    const rows: string[][] = [[p.title], [p.institution], ["Academic year", p.academicYear],
+      ["Basis", p.basis], [],
+      ["Criterion", "Indicator", "Metric", "Evidenced", "Statement", "Evidence codes", "Source system"]];
+    p.criteria.forEach((c: any) => c.indicators.forEach((i: any) => i.metrics.forEach((m: any) => {
+      rows.push([c.code, i.code, m.code, m.evidenced ? "Yes" : "No",
+        m.statement || m.note || "",
+        (m.sources || []).map((s: any) => s.code).join(" | "),
+        Array.from(new Set((m.sources || []).map((s: any) => s.sourceSystem).filter(Boolean))).join(" | ")]);
+    })));
+    const blob = new Blob([rows.map(r => r.map(v => '"' + String(v ?? "").replace(/"/g, '""') + '"').join(",")).join("\n")],
+      { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = codeStr + ".csv"; a.click();
+  }
+
+  return (
+    <div>
+      <style>{"@media print{.no-print{display:none!important}body{background:#fff!important;color:#000!important}.rep *{color:#000!important}}"}</style>
+
+      <div className="panel-solid rounded-xl p-4 mb-5 flex gap-3 flex-wrap items-end no-print">
+        <label className="text-xs opacity-70">Report type
+          <select value={kind} onChange={e => setKind(e.target.value)}
+            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+            <option value="SSR">SSR data annexure (draft)</option>
+            <option value="DVV">DVV evidence index</option>
+          </select>
+        </label>
+        <button onClick={generate} disabled={busy || !yearId}
+          className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-sm">
+          {busy ? "Compiling..." : "Generate draft"}
+        </button>
+        {draft && <>
+          <button onClick={snapshot} disabled={busy}
+            className="px-4 py-2 rounded-lg border border-white/20 text-sm">Save as snapshot</button>
+          <button onClick={() => window.print()} className="px-4 py-2 rounded-lg border border-white/20 text-sm">Print</button>
+        </>}
+      </div>
+
+      {draft && (
+        <div className="rep">
+          <div className="panel-solid rounded-xl p-5 mb-4">
+            <div className="text-lg font-medium">{draft.title}</div>
+            <div className="text-sm opacity-60">{draft.institution} - {draft.academicYear} ({draft.periodFrom} to {draft.periodTo})</div>
+            <div className="text-[12px] opacity-70 mt-3 leading-relaxed">{draft.basis}</div>
+            <div className="flex gap-3 mt-4 flex-wrap text-sm">
+              <span className="px-3 py-1 rounded-full border border-emerald-500/40 text-emerald-300">
+                {draft.coverage.evidenced} evidenced
+              </span>
+              <span className="px-3 py-1 rounded-full border border-amber-500/40 text-amber-300">
+                {draft.coverage.gaps} gaps
+              </span>
+              <span className="px-3 py-1 rounded-full border border-white/20 opacity-70">
+                {draft.coverage.totalMetrics} metrics total
+              </span>
+            </div>
+          </div>
+
+          {draft.criteria.map((c: any) => (
+            <div key={c.code} className="panel-solid rounded-xl p-5 mb-3">
+              <div className="font-medium mb-3">{c.code}. {c.title}</div>
+              {c.indicators.map((i: any) => (
+                <div key={i.code} className="mb-4">
+                  <div className="text-sm opacity-75 mb-2">{i.code} {i.title}</div>
+                  {i.metrics.map((m: any) => (
+                    <div key={m.code} className={"rounded-lg px-3 py-2 mb-1.5 border " +
+                      (m.evidenced ? "border-emerald-500/25 bg-emerald-500/5" : "border-amber-500/25 bg-amber-500/5")}>
+                      <div className="text-[13px]">
+                        <span className="font-mono opacity-60 mr-2">{m.code}</span>
+                        {m.evidenced ? m.statement : m.title + " - " + m.note}
+                      </div>
+                      {m.note && m.evidenced && <div className="text-[11px] text-amber-300/80 mt-1">{m.note}</div>}
+                      {m.evidenced && (
+                        <button onClick={() => setOpenIds({ ...openIds, [m.statementId]: !openIds[m.statementId] })}
+                          className="text-[11px] underline opacity-55 hover:opacity-100 mt-1 no-print">
+                          {openIds[m.statementId] ? "Hide" : "Show"} {m.sources.length} source record(s)
+                        </button>
+                      )}
+                      {m.evidenced && openIds[m.statementId] && (
+                        <div className="mt-2 space-y-1">
+                          {m.sources.map((sc: any) => (
+                            <div key={sc.id} className="text-[11px] bg-white/5 rounded px-2 py-1.5">
+                              <span className="font-mono opacity-70">{sc.code}</span> - {sc.title} - {sc.evidenceDate}
+                              {" - "}{sc.documents} doc(s){sc.verifiedAt ? " - verified " + sc.verifiedAt : ""}
+                              {sc.sourceSystem ? " - " + sc.sourceSystem : ""}
+                              {sc.sourceReference ? " / " + sc.sourceReference : ""}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-6 no-print">
+        <div className="text-xs uppercase tracking-wider opacity-55 mb-2">Saved snapshots</div>
+        {saved.length === 0 && <div className="text-sm opacity-50">None yet.</div>}
+        {saved.map(s => (
+          <div key={s.id} className="panel-solid rounded-xl p-4 mb-2 flex justify-between items-center gap-3 flex-wrap">
+            <div>
+              <div className="text-sm font-medium">{s.title} <span className="opacity-45 font-mono text-xs">{s.code}</span></div>
+              <div className="text-xs opacity-55 mt-0.5">
+                {s.kind} - {new Date(s.periodFrom).toLocaleDateString()} to {new Date(s.periodTo).toLocaleDateString()}
+                {" - drafted by "}{s.generatedBy}
+                {s.approvedAt ? " - approved by " + s.approvedBy : " - awaiting IQAC approval"}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {!s.approvedAt && (
+                <button onClick={() => act(s.id, "approve", "Approved for export")}
+                  className="px-3 py-1.5 rounded text-xs bg-emerald-600/80 hover:bg-emerald-500">Approve</button>
+              )}
+              <button onClick={() => act(s.id, "export", "")}
+                className="px-3 py-1.5 rounded text-xs border border-white/20">Export CSV</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
