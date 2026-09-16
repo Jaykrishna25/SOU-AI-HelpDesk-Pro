@@ -1,6 +1,6 @@
 # Academic Project Report
-## SOU AI HelpDesk Pro — Enterprise AI-Powered University ERP & Multi-Agent Help Desk
-**Institution:** Silver Oak University · **Type:** Cloud-Native SaaS Platform
+## SOU AI HelpDesk Pro ??? Enterprise AI-Powered University ERP & Multi-Agent Help Desk
+**Institution:** Silver Oak University ?? **Type:** Cloud-Native SaaS Platform
 
 ---
 
@@ -27,7 +27,7 @@ and unifies academic, financial and support data under strict role-based access.
 ### 3. Literature / Market Review
 Benchmarked against Oracle PeopleSoft Campus Solutions, Blackboard, ERPNext Education, ServiceNow,
 Jira Service Management, Salesforce Service Cloud and Microsoft Dynamics. These excel individually at ERP,
-LMS or ITSM but rarely combine an education ERP with a modern, confidence-gated, multi-agent AI help desk —
+LMS or ITSM but rarely combine an education ERP with a modern, confidence-gated, multi-agent AI help desk ???
 the niche this project targets.
 
 ### 4. Technology Stack
@@ -37,18 +37,18 @@ AI: OpenAI GPT, LangChain, RAG, embeddings, semantic search, 12-agent architectu
 EC2/RDS/S3/SES/Cognito/IAM/CloudWatch (Bedrock future), Docker, CI/CD-ready.
 
 ### 5. System Design
-The system is layered (client → API gateway → application services → AI/RAG → data). Detailed system,
+The system is layered (client ??? API gateway ??? application services ??? AI/RAG ??? data). Detailed system,
 multi-agent, sequence and AWS diagrams are in `ARCHITECTURE.md`; the ER diagram and 25+ model schema are
 in `ERD.md` and `prisma/schema.prisma`.
 
 ### 6. Technical Implementation
-**Authentication & RBAC** — ID + birthdate login, JWT access + revocable refresh tokens, role middleware,
-audit logs. **AI Layer** — deterministic offline-capable NLP (tokenize, stopwords, lemmatize, 15+ intents,
-entity extraction) plus a RAG pipeline (embed → cosine semantic search → grounded generation with a
-confidence score). **Multi-Agent Orchestration** — twelve cooperating agents pass an evolving context; the
-Decision Agent enforces the 90% gate and AI prioritization. **Ticketing & SLA** — auto-ticket creation,
+**Authentication & RBAC** ??? password login (bcrypt, 12 rounds), 8-hour JWT with tokenVersion revocation, account lockout after 5 failed attempts, role middleware,
+audit logs. **AI Layer** ??? deterministic offline-capable NLP (tokenize, stopwords, lemmatize, 15+ intents,
+entity extraction) plus a RAG pipeline (embed ??? cosine semantic search ??? grounded generation with a
+confidence score). **Multi-Agent Orchestration** ??? twelve cooperating agents pass an evolving context; the
+Decision Agent enforces the 90% gate and AI prioritization. **Ticketing & SLA** ??? auto-ticket creation,
 48-hour SLA with a background sweep, auto-escalation letters, and watcher fan-out across In-App + AWS SES.
-**Analytics** — aggregated KPIs (resolution rate, revenue, AI accuracy) surfaced via Recharts.
+**Analytics** ??? aggregated metrics surfaced via Recharts, each displayed with its sample size and source.
 
 ### 7. Innovation & Creativity
 Sentiment-driven AI ticket prioritization, smart escalation prediction, revenue and admission forecasting,
@@ -62,7 +62,7 @@ data-privacy design, bias reduction, and mandatory human oversight whenever AI c
 
 ### 9. Results
 The confidence-gated design auto-resolves the majority of routine queries while guaranteeing that uncertain
-cases reach a human within the SLA. Demonstrated metrics (seeded/demo): ~68% auto-resolution, ~92% AI
+cases reach a human within the SLA. Demonstrated metrics (seeded/demo): no auto-resolution or accuracy figure is claimed - the assistant is rule-based and has not been evaluated against a labelled set. Verifiable counts instead: 7 role portals, 43 quality metrics, 26 bookable resources, 29 automated tests. Former placeholder text followed: 
 accuracy, 48-hour response SLA, 12 agents.
 
 ### 10. Conclusion & Future Scope
@@ -73,3 +73,6 @@ support, mobile apps, and predictive analytics (see `FUTURE_SCOPE.md`).
 ### References
 Product documentation for the benchmarked platforms; OpenAI & LangChain documentation; AWS Well-Architected
 Framework; Prisma and Next.js official docs.
+
+
+
