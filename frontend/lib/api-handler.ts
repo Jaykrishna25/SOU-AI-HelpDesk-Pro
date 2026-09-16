@@ -15,7 +15,7 @@ function ticketCode() {
 export async function GET(req: Request, ctx: Ctx) {
   const { path } = await ctx.params;
   const [a, b] = path;
-  const s = getSession(req);
+  const s = await getLiveSession(req);
 
   if (a === "soumis" && b === "status") {
     const live = Boolean(process.env.SOUMIS_BASE_URL && process.env.SOUMIS_API_KEY);
@@ -123,7 +123,7 @@ export async function POST(req: Request, ctx: Ctx) {
   }
 
   if (a === "auth" && b === "set-password") {
-    const me = getSession(req);
+    const me = await getLiveSession(req);
     if (!me) return bad("Unauthenticated", 401);
     const { currentPassword, newPassword } = body as Record<string, string>;
     const user = await prisma.user.findUnique({ where: { id: me.userId } });
@@ -151,7 +151,7 @@ export async function POST(req: Request, ctx: Ctx) {
     return ok({ token: signToken(session) });
   }
 
-  const s = getSession(req);
+  const s = await getLiveSession(req);
   if (!s) return bad("Unauthenticated", 401);
 
   if (a === "tickets") {
@@ -209,7 +209,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const { path } = await ctx.params;
   const [a, b] = path;
   const body = await req.json().catch(() => ({}));
-  const s = getSession(req);
+  const s = await getLiveSession(req);
   if (!s) return bad("Unauthenticated", 401);
 
   if (a === "tickets" && b) {
@@ -271,7 +271,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
 export async function DELETE(req: Request, ctx: Ctx) {
   const { path } = await ctx.params;
   const [a, b] = path;
-  const s = getSession(req);
+  const s = await getLiveSession(req);
   if (!s) return bad("Unauthenticated", 401);
 
   if (a === "cr" && b) {
@@ -282,6 +282,7 @@ export async function DELETE(req: Request, ctx: Ctx) {
 
   return bad("Unknown endpoint: " + path.join("/"), 404);
 }
+
 
 
 
