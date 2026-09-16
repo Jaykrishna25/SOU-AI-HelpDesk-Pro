@@ -488,15 +488,65 @@ model ReportExport {
 
 // ===================== IQAC / Quality Evidence Vault =====================
 
-enum EvidenceType        { FILE URL STRUCTURED NARRATIVE }
-enum EvidenceVisibility  { PUBLIC INTERNAL CONFIDENTIAL RESTRICTED }
-enum VerificationStatus  { UNVERIFIED IN_REVIEW VERIFIED REJECTED }
-enum ApprovalStatus      { DRAFT SUBMITTED APPROVED REJECTED RETURNED }
-enum MetricKind          { COUNT PERCENTAGE RATIO CURRENCY TEXT BOOLEAN }
-enum ActionStatus        { PLANNED IN_PROGRESS BLOCKED DONE CANCELLED }
-enum IssueKind           { MISSING_EVIDENCE DUPLICATE INCONSISTENT_TOTAL INVALID_DATE UNVERIFIED_METRIC UNSOURCED_FIGURE EXPIRING_DOCUMENT }
-enum IssueSeverity       { INFO WARNING CRITICAL }
-enum DataSourceKind      { INTERNAL EXTERNAL MANUAL }
+enum EvidenceType {
+  FILE
+  URL
+  STRUCTURED
+  NARRATIVE
+}
+enum EvidenceVisibility {
+  PUBLIC
+  INTERNAL
+  CONFIDENTIAL
+  RESTRICTED
+}
+enum VerificationStatus {
+  UNVERIFIED
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+}
+enum ApprovalStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  RETURNED
+}
+enum MetricKind {
+  COUNT
+  PERCENTAGE
+  RATIO
+  CURRENCY
+  TEXT
+  BOOLEAN
+}
+enum ActionStatus {
+  PLANNED
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELLED
+}
+enum IssueKind {
+  MISSING_EVIDENCE
+  DUPLICATE
+  INCONSISTENT_TOTAL
+  INVALID_DATE
+  UNVERIFIED_METRIC
+  UNSOURCED_FIGURE
+  EXPIRING_DOCUMENT
+}
+enum IssueSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+enum DataSourceKind {
+  INTERNAL
+  EXTERNAL
+  MANUAL
+}
 
 model AcademicYear {
   id          String   @id @default(cuid())
@@ -791,3 +841,4 @@ model DataQualityIssue {
   @@index([kind, resolved])
   @@index([severity, resolved])
 }
+
