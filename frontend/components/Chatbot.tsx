@@ -168,12 +168,18 @@ export default function Chatbot() {
   const [stats, setStats] = useState({ answered: 0, ticketed: 0 });
 
   /* ---- voice and language ---- */
-  const [lang, setLang] = useState<LangCode>("en-IN");
+  const [lang, setLang] = useState<LangCode>(() => {
+    if (typeof window === "undefined") return "en-IN";
+    try { return (localStorage.getItem("sou_lang") as LangCode) || "en-IN"; } catch { return "en-IN"; }
+  });
   const [listening, setListening] = useState(false);
   const [speakOn, setSpeakOn] = useState(false);
   const [voiceNote, setVoiceNote] = useState("");
   const recRef = useRef<Recognizer | null>(null);
   const spokenCount = useRef(0);
+  const replyLang = useRef<LangCode>("en-IN");
+
+  useEffect(() => { try { localStorage.setItem("sou_lang", lang); } catch {} }, [lang]);
 
   // Read out the newest assistant reply when the speaker is on.
   useEffect(() => {
@@ -181,7 +187,7 @@ export default function Chatbot() {
     const last = msgs[msgs.length - 1];
     spokenCount.current = msgs.length;
     if (last.role !== "ai") return;
-    const r = speak(last.text, lang);
+    const r = speak(last.text, replyLang.current || lang);
     setVoiceNote(r.reason || "");
   }, [msgs, speakOn, lang]);
 
@@ -220,13 +226,18 @@ export default function Chatbot() {
    */
   const askAssistant = async (q: string): Promise<Msg | null> => {
     if (PERSONAL.test(q) || COMPLEX.test(q)) return null;
+    // Detect from the message itself. setLang is asynchronous, so reading the
+    // lang state here would use the value from before the user typed.
+    const qLang = detectLanguage(q, lang);
+    replyLang.current = qLang;
+    if (qLang !== lang) setLang(qLang);
     try {
       const token = (typeof window !== "undefined" &&
         (sessionStorage.getItem("sou_token") || localStorage.getItem("sou_token"))) || "";
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ message: q, lang, sessionId: aiSession.current || undefined }),
+        body: JSON.stringify({ message: q, lang: qLang, sessionId: aiSession.current || undefined }),
       });
       if (!res.ok) return null;
       const d = await res.json();
@@ -394,6 +405,7 @@ export default function Chatbot() {
     </>
   );
 }
+
 
 
 
