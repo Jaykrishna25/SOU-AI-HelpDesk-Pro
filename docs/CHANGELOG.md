@@ -193,3 +193,54 @@ export CSV
 Phase 0 ~92% | Phase 1 ~90% | Documentation ~80% | Overall ~26%
 29 tests passing | TypeScript build errors enabled | 15/15 grievance
 identities encrypted | 7 fabricated statistics removed
+
+## 2026-09-17 - Voice, multilingual, LangChain RAG and biometric sign-in
+### Added
+- lib/speech.ts - Web Speech API wrapper: recognition, synthesis, script-based
+  language detection (English / Hindi / Gujarati). No audio leaves the device.
+- lib/ai.ts - LangChain chain over Gemini: retrieval, chunking, cosine similarity,
+  cross-lingual query translation, grounded prompt. Embeddings called via direct
+  REST because LangChain resolved a different model for embedQuery.
+- lib/kb-content.ts - 20 curated help-desk entries. Deliberately contain NO figures:
+  process only, because fee amounts and dates are not known to this system.
+- lib/ai-api.ts + /api/ai/* - chat with conversation memory, ingestion, status
+- lib/webauthn.ts + lib/webauthn-api.ts + /api/webauthn/* - passkey registration
+  and sign-in (face / fingerprint via platform authenticators)
+- app/account/passkeys - register and remove devices
+- tests/speech.test.ts, tests/ai.test.ts
+
+### Changed
+- Chatbot.tsx - microphone, spoken replies, automatic language detection,
+  asks the RAG assistant before falling back to a ticket
+- login page - "Sign in with fingerprint or face"; subtitle corrected from
+  "ID and birthdate" to "ID and password"
+- schema - KnowledgeChunk, ChatSession, ChatTurn, Passkey, WebAuthnChallenge
+
+### Problems found and fixed during this work
+- Reply language was read from React state, which had not updated by the time
+  send() ran. Now detected from the message itself at send time.
+- gemini-1.5-flash, gemini-2.5-flash and text-embedding-004 are all retired for
+  newly created API keys, failing with silent 404s. Added scripts/list-gemini-models.js
+  to ask the API what a key actually supports rather than guessing.
+- The type checker caught an invalid modelName parameter before deployment.
+
+### Known limitations
+- Three languages by request (English, Hindi, Gujarati). Detection is by Unicode
+  block, so it cannot separate two languages sharing a script.
+- Spoken replies depend on voices installed in the operating system. Hindi and
+  Gujarati TTS are often absent on Windows; the UI says so rather than failing silently.
+- Web Speech API: best in Chrome and Edge. Firefox support is limited.
+- Passkeys are bound to an origin. A credential registered on localhost will not
+  work on the deployed site, and vice versa.
+- The knowledge base is 20 process entries. It contains no institutional figures
+  and must be extended by the administration before real use.
+- Cosine similarity runs in application code. Correct at this scale; pgvector
+  would be needed past a few thousand chunks.
+- No automated tests cover the LLM calls themselves - they need network and a key.
+
+### RESUME HERE (unchanged from 2026-09-16)
+1. docs/ERD.md is stale - describes 16 models, schema now has 38
+2. Read through remaining older docs for staleness
+3. Rehearse the demo path twice
+4. Back up GRIEVANCE_KEY outside Vercel
+5. Rename the stale Neon project to UNUSED-old-do-not-connect
