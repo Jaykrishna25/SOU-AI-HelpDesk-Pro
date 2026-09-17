@@ -210,6 +210,39 @@ export default function Chatbot() {
     if (rec) { rec.start(); setListening(true); }
   };
 
+  /* ---- retrieval-augmented assistant ---- */
+  const aiSession = useRef<string>("");
+
+  /**
+   * Asks the RAG assistant. Returns a message to display, or null to fall
+   * through to the existing ticket logic. Personal and complex questions are
+   * never sent to the model - those belong with a human.
+   */
+  const askAssistant = async (q: string): Promise<Msg | null> => {
+    if (PERSONAL.test(q) || COMPLEX.test(q)) return null;
+    try {
+      const token = (typeof window !== "undefined" &&
+        (sessionStorage.getItem("sou_token") || localStorage.getItem("sou_token"))) || "";
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ message: q, lang, sessionId: aiSession.current || undefined }),
+      });
+      if (!res.ok) return null;
+      const d = await res.json();
+      if (d.sessionId) aiSession.current = d.sessionId;
+      if (!d.configured || !d.confident || !d.answer) return null;
+      const titles = (d.sources || []).slice(0, 2).map((s: any) => s.title).join("; ");
+      return {
+        role: "ai",
+        text: d.answer,
+        meta: titles ? "Answered from: " + titles : "Answered by the assistant",
+      };
+    } catch {
+      return null;   // network or model failure falls back to a ticket
+    }
+  };
+
   const pickInstitute = (name: string) => { setInstitute(name); setStep("course"); };
   const pickCourse = (name: string) => {
     if (!name.trim()) return;
@@ -223,6 +256,16 @@ export default function Chatbot() {
     if (!input.trim()) return;
     const q = input; setInput("");
     setMsgs((m) => [...m, { role: "user", text: q }]);
+
+    // Ask the assistant first, unless the student explicitly requested a ticket.
+    if (!/raise ticket|raise a ticket/i.test(q)) {
+      const ai = await askAssistant(q);
+      if (ai) {
+        setMsgs((m) => [...m, ai]);
+        setStats((s) => ({ ...s, answered: s.answered + 1 }));
+        return;
+      }
+    }
 
     const forced = /raise ticket|raise a ticket/i.test(q);
     const d = forced
@@ -351,6 +394,7 @@ export default function Chatbot() {
     </>
   );
 }
+
 
 
 
