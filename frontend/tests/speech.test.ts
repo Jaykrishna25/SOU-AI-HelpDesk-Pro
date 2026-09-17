@@ -1,0 +1,36 @@
+import { describe, it, expect } from "vitest";
+import { detectLanguage, LANGUAGES } from "@/lib/speech";
+
+describe("language detection", () => {
+  it("detects English", () => {
+    expect(detectLanguage("How do I pay my fees?")).toBe("en-IN");
+    expect(detectLanguage("hello")).toBe("en-IN");
+  });
+
+  it("detects Marathi by marker words", () => {
+    expect(detectLanguage("\u092E\u0932\u093E \u092B\u0940 \u092D\u0930\u093E\u092F\u091A\u0940 \u0906\u0939\u0947")).toBe("mr-IN");
+    expect(detectLanguage("\u092A\u0930\u0940\u0915\u094D\u0937\u093E \u0915\u0927\u0940 \u0906\u0939\u0947")).toBe("mr-IN");
+  });
+
+  it("detects Hindi by marker words", () => {
+    expect(detectLanguage("\u092E\u0941\u091D\u0947 \u092B\u0940\u0938 \u091C\u092E\u093E \u0915\u0930\u0928\u0940 \u0939\u0948")).toBe("hi-IN");
+    expect(detectLanguage("\u092A\u0930\u0940\u0915\u094D\u0937\u093E \u0915\u092C \u0939\u0948")).toBe("hi-IN");
+  });
+
+  it("prefers Marathi for ambiguous Devanagari", () => {
+    expect(detectLanguage("\u092A\u0930\u0940\u0915\u094D\u0937\u093E")).toBe("mr-IN");
+  });
+
+  it("detects Gujarati by script", () => {
+    expect(detectLanguage("\u0AAB\u0AC0 \u0A95\u0AC7\u0AB5\u0AC0 \u0AB0\u0AC0\u0AA4\u0AC7 \u0AAD\u0AB0\u0AB5\u0AC0")).toBe("gu-IN");
+  });
+
+  it("falls back for empty input", () => {
+    expect(detectLanguage("")).toBe("en-IN");
+    expect(detectLanguage("   ", "mr-IN")).toBe("mr-IN");
+  });
+
+  it("offers four languages with Marathi second", () => {
+    expect(LANGUAGES.map(l => l.code)).toEqual(["en-IN", "mr-IN", "hi-IN", "gu-IN"]);
+  });
+});
