@@ -370,13 +370,10 @@ export default function Chatbot() {
                 </div>
                 <div className="flex items-center gap-1 pt-2 flex-wrap">
                   <span className="text-[9px] text-[var(--muted)] mr-1" title="Detected from what you type or say">auto</span>
-                  <select value={lang} onChange={(e) => setLang(e.target.value as LangCode)}
-                    title="Detected automatically from what you type or say"
-                    className="text-[10px] bg-transparent border border-[var(--border)] rounded-full px-2 py-0.5 outline-none">
-                    {LANGUAGES.map((l) => (
-                      <option key={l.code} value={l.code}>{l.native}</option>
-                    ))}
-                  </select>
+                  <span title="Detected automatically from what you type or say"
+                    className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border)] text-[var(--muted)]">
+                    {LANGUAGES.find((l) => l.code === lang)?.native || "English"}
+                  </span>
                   <button onClick={() => { const next = !speakOn; setSpeakOn(next); if (!next) stopSpeaking(); }}
                     title={speakOn ? "Stop reading replies aloud" : "Read replies aloud"}
                     className={"ml-auto p-1.5 rounded-full border transition-colors " +
@@ -405,6 +402,7 @@ export default function Chatbot() {
     </>
   );
 }
+
 
 
 

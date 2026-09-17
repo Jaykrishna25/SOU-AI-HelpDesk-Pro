@@ -141,7 +141,6 @@ const prompt = ChatPromptTemplate.fromMessages([
 
 const LANG_NAME: Record<string, string> = {
   "en-IN": "English",
-  "mr-IN": "Marathi (\u092E\u0930\u093E\u0920\u0940, Devanagari script)",
   "hi-IN": "Hindi (\u0939\u093F\u0928\u094D\u0926\u0940, Devanagari script)",
   "gu-IN": "Gujarati (\u0A97\u0AC1\u0A9C\u0AB0\u0ABE\u0AA4\u0AC0 script)",
 };
@@ -269,6 +268,7 @@ export async function ingest(docs: {
   }
   return { upserted, skipped };
 }
+
 
 
 
