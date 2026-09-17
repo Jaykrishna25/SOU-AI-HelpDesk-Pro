@@ -72,6 +72,9 @@ export async function POST(req: NextRequest) {
       console.error("[ai] answer failed", e);
       return json({
         configured: true, error: "assistant_unavailable",
+        // Surfaced so failures are diagnosable from the client without reading
+        // server logs. Authenticated endpoint; remove if this ever becomes public.
+        detail: String(e?.message || e).slice(0, 400),
         answer: "The assistant could not be reached just now. Your question can be raised as a ticket instead.",
         confident: false, sources: [], sessionId,
       }, 200);
@@ -118,6 +121,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH() { return json({ error: "Not supported" }, 405); }
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+
 
 
 
