@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     return json({
       configured: aiConfigured(),
       chunks,
-      chatModel: process.env.AI_CHAT_MODEL || "gemini-2.5-flash",
+      chatModel: process.env.AI_CHAT_MODEL || "gemini-3.6-flash",
       embedModel: process.env.AI_EMBED_MODEL || "gemini-embedding-001",
     });
   }
@@ -121,6 +121,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH() { return json({ error: "Not supported" }, 405); }
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+
 
 
 

@@ -14,7 +14,7 @@ import { prisma } from "@/lib/prisma";
    Credentials come from the environment. Nothing is hard-coded.
    ============================================================ */
 
-const CHAT_MODEL = process.env.AI_CHAT_MODEL || "gemini-2.5-flash";
+const CHAT_MODEL = process.env.AI_CHAT_MODEL || "gemini-3.6-flash";
 const EMBED_MODEL = process.env.AI_EMBED_MODEL || "gemini-embedding-001";
 const TOP_K = Number(process.env.AI_TOP_K || 5);
 /** Below this best-match score we do not trust the retrieval. */
@@ -269,6 +269,7 @@ export async function ingest(docs: {
   }
   return { upserted, skipped };
 }
+
 
 
 
