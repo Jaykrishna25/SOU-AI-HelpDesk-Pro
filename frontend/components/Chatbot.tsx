@@ -1,5 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import {
+  LANGUAGES, detectLanguage, speak, stopSpeaking, createRecognizer,
+  supportsSpeechInput, type LangCode, type Recognizer,
+} from "@/lib/speech";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, X, Sparkles, ArrowLeft } from "lucide-react";
 import { addTicket } from "@/lib/tickets";
@@ -162,6 +167,49 @@ export default function Chatbot() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [stats, setStats] = useState({ answered: 0, ticketed: 0 });
 
+  /* ---- voice and language ---- */
+  const [lang, setLang] = useState<LangCode>("en-IN");
+  const [listening, setListening] = useState(false);
+  const [speakOn, setSpeakOn] = useState(false);
+  const [voiceNote, setVoiceNote] = useState("");
+  const recRef = useRef<Recognizer | null>(null);
+  const spokenCount = useRef(0);
+
+  // Read out the newest assistant reply when the speaker is on.
+  useEffect(() => {
+    if (!speakOn || msgs.length === 0 || msgs.length === spokenCount.current) return;
+    const last = msgs[msgs.length - 1];
+    spokenCount.current = msgs.length;
+    if (last.role !== "ai") return;
+    const r = speak(last.text, lang);
+    setVoiceNote(r.reason || "");
+  }, [msgs, speakOn, lang]);
+
+  useEffect(() => () => { stopSpeaking(); recRef.current?.stop(); }, []);
+
+  const toggleMic = () => {
+    if (listening) { recRef.current?.stop(); setListening(false); return; }
+    if (!supportsSpeechInput()) {
+      setVoiceNote("Voice input is not supported in this browser. Chrome or Edge works best.");
+      return;
+    }
+    setVoiceNote("");
+    const rec = createRecognizer({
+      lang,
+      onResult: (text, isFinal) => {
+        setInput(text);
+        if (isFinal) {
+          const d = detectLanguage(text, lang);
+          if (d !== lang) setLang(d);
+        }
+      },
+      onError: (m) => { setVoiceNote(m); setListening(false); },
+      onEnd: () => setListening(false),
+    });
+    recRef.current = rec;
+    if (rec) { rec.start(); setListening(true); }
+  };
+
   const pickInstitute = (name: string) => { setInstitute(name); setStep("course"); };
   const pickCourse = (name: string) => {
     if (!name.trim()) return;
@@ -266,9 +314,32 @@ export default function Chatbot() {
                 <div className="text-[10px] text-[var(--muted)] pt-2 border-t border-[var(--border)] leading-relaxed">
                   Not solved here? Call {CONTACT}
                 </div>
+                <div className="flex items-center gap-1 pt-2 flex-wrap">
+                  {LANGUAGES.map((l) => (
+                    <button key={l.code} onClick={() => setLang(l.code)} title={l.label}
+                      className={"px-2 py-0.5 rounded-full text-[10px] border transition-colors " +
+                        (lang === l.code ? "bg-brand text-white border-transparent" : "border-[var(--border)] text-[var(--muted)]")}>
+                      {l.native}
+                    </button>
+                  ))}
+                  <button onClick={() => { const next = !speakOn; setSpeakOn(next); if (!next) stopSpeaking(); }}
+                    title={speakOn ? "Stop reading replies aloud" : "Read replies aloud"}
+                    className={"ml-auto p-1.5 rounded-full border transition-colors " +
+                      (speakOn ? "bg-brand text-white border-transparent" : "border-[var(--border)] text-[var(--muted)]")}>
+                    {speakOn ? <Volume2 size={13} /> : <VolumeX size={13} />}
+                  </button>
+                </div>
+                {voiceNote && (
+                  <div className="text-[10px] text-amber-400 pt-1 leading-snug">{voiceNote}</div>
+                )}
                 <div className="flex gap-2 pt-2">
-                  <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
+                  <input value={input} onChange={(e) => { setInput(e.target.value); const d = detectLanguage(e.target.value, lang); if (d !== lang) setLang(d); }} onKeyDown={(e) => e.key === "Enter" && send()}
                     placeholder="Ask about fees, exams, hostel, library..." className="flex-1 bg-transparent outline-none text-sm px-2" />
+                  <button onClick={toggleMic} title={listening ? "Stop listening" : "Speak your question"}
+                    className={"p-2 rounded-full transition-colors " +
+                      (listening ? "bg-rose-600 text-white animate-pulse" : "border border-[var(--border)] text-[var(--muted)]")}>
+                    {listening ? <MicOff size={16} /> : <Mic size={16} />}
+                  </button>
                   <button onClick={send} className="p-2 rounded-full bg-brand text-white"><Send size={16} /></button>
                 </div>
               </>
@@ -279,6 +350,7 @@ export default function Chatbot() {
     </>
   );
 }
+
 
 
 
