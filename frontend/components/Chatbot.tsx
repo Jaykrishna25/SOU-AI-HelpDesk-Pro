@@ -359,13 +359,13 @@ export default function Chatbot() {
                 </div>
                 <div className="flex items-center gap-1 pt-2 flex-wrap">
                   <span className="text-[9px] text-[var(--muted)] mr-1" title="Detected from what you type or say">auto</span>
-                  {LANGUAGES.map((l) => (
-                    <button key={l.code} onClick={() => setLang(l.code)} title={l.label}
-                      className={"px-2 py-0.5 rounded-full text-[10px] border transition-colors " +
-                        (lang === l.code ? "bg-brand text-white border-transparent" : "border-[var(--border)] text-[var(--muted)]")}>
-                      {l.native}
-                    </button>
-                  ))}
+                  <select value={lang} onChange={(e) => setLang(e.target.value as LangCode)}
+                    title="Detected automatically from what you type or say"
+                    className="text-[10px] bg-transparent border border-[var(--border)] rounded-full px-2 py-0.5 outline-none">
+                    {LANGUAGES.map((l) => (
+                      <option key={l.code} value={l.code}>{l.native}</option>
+                    ))}
+                  </select>
                   <button onClick={() => { const next = !speakOn; setSpeakOn(next); if (!next) stopSpeaking(); }}
                     title={speakOn ? "Stop reading replies aloud" : "Read replies aloud"}
                     className={"ml-auto p-1.5 rounded-full border transition-colors " +
@@ -394,6 +394,7 @@ export default function Chatbot() {
     </>
   );
 }
+
 
 
 

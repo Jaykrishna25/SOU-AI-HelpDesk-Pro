@@ -10,13 +10,37 @@
    this and fall back rather than failing silently.
    ============================================================ */
 
-export type LangCode = "en-IN" | "hi-IN" | "mr-IN" | "gu-IN";
+export type LangCode =
+  | "en-IN" | "hi-IN" | "mr-IN" | "gu-IN" | "bn-IN" | "pa-IN" | "or-IN"
+  | "ta-IN" | "te-IN" | "kn-IN" | "ml-IN" | "ur-IN" | "as-IN" | "ne-NP";
 
 export const LANGUAGES: { code: LangCode; label: string; native: string }[] = [
-  { code: "en-IN", label: "English", native: "English" },
-  { code: "mr-IN", label: "Marathi", native: "\u092E\u0930\u093E\u0920\u0940" },
-  { code: "hi-IN", label: "Hindi", native: "\u0939\u093F\u0928\u094D\u0926\u0940" },
-  { code: "gu-IN", label: "Gujarati", native: "\u0A97\u0AC1\u0A9C\u0AB0\u0ABE\u0AA4\u0AC0" },
+  { code: "en-IN", label: "English",   native: "English" },
+  { code: "mr-IN", label: "Marathi",   native: "\u092E\u0930\u093E\u0920\u0940" },
+  { code: "hi-IN", label: "Hindi",     native: "\u0939\u093F\u0928\u094D\u0926\u0940" },
+  { code: "gu-IN", label: "Gujarati",  native: "\u0A97\u0AC1\u0A9C\u0AB0\u0ABE\u0AA4\u0AC0" },
+  { code: "bn-IN", label: "Bengali",   native: "\u09AC\u09BE\u0982\u09B2\u09BE" },
+  { code: "ta-IN", label: "Tamil",     native: "\u0BA4\u0BAE\u0BBF\u0BB4\u0BCD" },
+  { code: "te-IN", label: "Telugu",    native: "\u0C24\u0C46\u0C32\u0C41\u0C17\u0C41" },
+  { code: "kn-IN", label: "Kannada",   native: "\u0C95\u0CA8\u0CCD\u0CA8\u0CA1" },
+  { code: "ml-IN", label: "Malayalam", native: "\u0D2E\u0D32\u0D2F\u0D3E\u0D33\u0D02" },
+  { code: "pa-IN", label: "Punjabi",   native: "\u0A2A\u0A70\u0A1C\u0A3E\u0A2C\u0A40" },
+  { code: "or-IN", label: "Odia",      native: "\u0B13\u0B21\u0B3C\u0B3F\u0B06" },
+  { code: "as-IN", label: "Assamese",  native: "\u0985\u09B8\u09AE\u09C0\u09AF\u09BC\u09BE" },
+  { code: "ur-IN", label: "Urdu",      native: "\u0627\u0631\u062F\u0648" },
+];
+
+/** Unicode blocks that identify a script unambiguously. */
+const SCRIPTS: { re: RegExp; lang: LangCode }[] = [
+  { re: /[\u0980-\u09FF]/, lang: "bn-IN" },  // Bengali / Assamese
+  { re: /[\u0A00-\u0A7F]/, lang: "pa-IN" },  // Gurmukhi
+  { re: /[\u0A80-\u0AFF]/, lang: "gu-IN" },  // Gujarati
+  { re: /[\u0B00-\u0B7F]/, lang: "or-IN" },  // Odia
+  { re: /[\u0B80-\u0BFF]/, lang: "ta-IN" },  // Tamil
+  { re: /[\u0C00-\u0C7F]/, lang: "te-IN" },  // Telugu
+  { re: /[\u0C80-\u0CFF]/, lang: "kn-IN" },  // Kannada
+  { re: /[\u0D00-\u0D7F]/, lang: "ml-IN" },  // Malayalam
+  { re: /[\u0600-\u06FF\u0750-\u077F]/, lang: "ur-IN" }, // Arabic script
 ];
 
 /* ---------------- language detection ---------------- */
@@ -62,7 +86,7 @@ function countMarkers(text: string, markers: string[]): number {
 export function detectLanguage(text: string, fallback: LangCode = "en-IN"): LangCode {
   const t = (text || "").trim();
   if (!t) return fallback;
-  if (GUJARATI.test(t)) return "gu-IN";
+  for (const s of SCRIPTS) if (s.re.test(t)) return s.lang;
   if (DEVANAGARI.test(t)) {
     const mr = countMarkers(t, MARATHI_MARKERS);
     const hi = countMarkers(t, HINDI_MARKERS);
@@ -194,3 +218,4 @@ export function speak(text: string, lang: LangCode): SpeakResult {
 export function stopSpeaking(): void {
   if (supportsSpeechOutput()) window.speechSynthesis.cancel();
 }
+
