@@ -887,3 +887,35 @@ model ChatTurn {
 
   @@index([sessionId, createdAt])
 }
+
+// ===================== WebAuthn: passkeys, face and fingerprint unlock =====================
+// Stores public keys only. No biometric data is transmitted or stored - the
+// fingerprint or face template never leaves the user's device.
+
+model Passkey {
+  id             String   @id @default(cuid())
+  userId         String
+  credentialId   String   @unique          // base64url
+  publicKey      String                    // base64url COSE key
+  counter        BigInt   @default(0)      // replay protection
+  deviceType     String?                   // singleDevice | multiDevice
+  backedUp       Boolean  @default(false)
+  transports     String?                   // JSON array: internal, hybrid, usb...
+  label          String                    // "Windows Hello on my laptop"
+  lastUsedAt     DateTime?
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+}
+
+model WebAuthnChallenge {
+  id        String   @id @default(cuid())
+  loginId   String
+  challenge String
+  purpose   String                          // register | authenticate
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([loginId, purpose])
+  @@index([expiresAt])
+}
