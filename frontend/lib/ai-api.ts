@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
     return json({
       configured: aiConfigured(),
       chunks,
-      model: process.env.AI_CHAT_MODEL || "gemini-1.5-flash",
+      chatModel: process.env.AI_CHAT_MODEL || "gemini-2.5-flash",
+      embedModel: process.env.AI_EMBED_MODEL || "gemini-embedding-001",
     });
   }
   return json({ error: "Not found" }, 404);
@@ -117,4 +118,5 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH() { return json({ error: "Not supported" }, 405); }
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+
 
