@@ -1,4 +1,4 @@
-import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { prisma } from "@/lib/prisma";
@@ -34,23 +34,48 @@ function chatModel() {
   });
 }
 
-function embedder() {
-  return new GoogleGenerativeAIEmbeddings({
-    apiKey: process.env.GEMINI_API_KEY,
-    model: EMBED_MODEL,
-  });
-}
 
 /* ---------------- vectors ---------------- */
 
+/* Direct REST calls to the embedding API.
+
+   LangChain's GoogleGenerativeAIEmbeddings resolved a different model for
+   embedQuery than for embedDocuments in this version, which produced a 404 on
+   every question while ingestion succeeded. Calling the endpoint ourselves
+   removes that ambiguity - the model name below is the one that is used. */
+
+const EMBED_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+
+async function embedOne(text: string): Promise<number[]> {
+  const url = EMBED_BASE + EMBED_MODEL + ":embedContent?key=" + process.env.GEMINI_API_KEY;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "models/" + EMBED_MODEL,
+      content: { parts: [{ text: text.slice(0, 8000) }] },
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error("Embedding failed (" + res.status + ") using model " + EMBED_MODEL + ": " + body.slice(0, 300));
+  }
+  const data = await res.json();
+  const values = data?.embedding?.values;
+  if (!Array.isArray(values)) throw new Error("Embedding response had no values");
+  return values as number[];
+}
+
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (!aiConfigured()) throw new Error("GEMINI_API_KEY is not configured");
-  return embedder().embedDocuments(texts);
+  const out: number[][] = [];
+  for (const t of texts) out.push(await embedOne(t));   // sequential: stays inside free-tier rate limits
+  return out;
 }
 
 export async function embedQuery(text: string): Promise<number[]> {
   if (!aiConfigured()) throw new Error("GEMINI_API_KEY is not configured");
-  return embedder().embedQuery(text);
+  return embedOne(text);
 }
 
 export function cosine(a: number[], b: number[]): number {
@@ -244,5 +269,6 @@ export async function ingest(docs: {
   }
   return { upserted, skipped };
 }
+
 
 
