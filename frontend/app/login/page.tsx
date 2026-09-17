@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+import { startAuthentication, browserSupportsWebAuthn } from "@simplewebauthn/browser";
+import { Fingerprint } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { GraduationCap, LogIn, ShieldCheck, UserPlus, Copy, CheckCircle2 } from "lucide-react";
@@ -75,6 +77,49 @@ export default function LoginPage() {
   const [copied, setCopied] = useState(false);
   const [password, setPassword] = useState("");
 
+  /* ---- fingerprint / face sign-in (optional; password still works) ---- */
+  const [pkSupported, setPkSupported] = useState(false);
+  const [pkBusy, setPkBusy] = useState(false);
+  useEffect(() => { setPkSupported(browserSupportsWebAuthn()); }, []);
+
+  async function signInWithPasskey() {
+    setErr("");
+    const id = loginId.trim();
+    if (!id) { setErr("Enter your Login ID first, then use fingerprint or face."); return; }
+    setPkBusy(true);
+    try {
+      const o = await fetch("/api/webauthn/login/options", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loginId: id }),
+      });
+      const od = await o.json();
+      if (!o.ok) throw new Error(od.error || "No passkey is registered for that login ID.");
+
+      // The device prompts for fingerprint, face or PIN here.
+      const response = await startAuthentication({ optionsJSON: od.options });
+
+      const v = await fetch("/api/webauthn/login/verify", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loginId: id, response }),
+      });
+      const data = await v.json();
+      if (!v.ok) throw new Error(data.error || "Could not verify this device.");
+
+      sessionStorage.setItem("sou_token", data.token);
+      try { localStorage.setItem("sou_token", data.token); } catch {}
+      sessionStorage.setItem("sou_user", JSON.stringify(data.user));
+      if (data.mustChangePassword) { router.push("/account/password"); return; }
+      const nx = new URLSearchParams(window.location.search).get("next");
+      const safe = nx && nx.startsWith("/") && !nx.startsWith("//") ? nx : null;
+      router.push(safe || ROLE_PATH[data.user.role] || "/student/dashboard");
+    } catch (e: any) {
+      const m = String(e?.message || e);
+      setErr(m.includes("NotAllowed") || m.toLowerCase().includes("cancel")
+        ? "Fingerprint or face sign-in was cancelled."
+        : m);
+    } finally { setPkBusy(false); }
+  }
+
   const submitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(""); setLoading(true);
@@ -146,7 +191,7 @@ export default function LoginPage() {
 
         {tab === "login" && (
           <>
-            <p className="text-center text-xs text-[var(--muted)] mb-4">Sign in with your ID and birthdate</p>
+            <p className="text-center text-xs text-[var(--muted)] mb-4">Sign in with your ID and password</p>
             <form onSubmit={submitLogin} className="space-y-4">
               <div>
                 <label className="text-xs text-[var(--muted)]">Login ID / Enrollment No.</label>
@@ -174,6 +219,17 @@ export default function LoginPage() {
                 <LogIn size={18} /> {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
+      {pkSupported && (
+        <div className="mt-3">
+          <button type="button" onClick={signInWithPasskey} disabled={pkBusy}
+            className="w-full py-3 rounded-full border border-[var(--border)] text-sm flex items-center justify-center gap-2 hover:border-brand transition-colors disabled:opacity-50">
+            <Fingerprint size={16} /> {pkBusy ? "Waiting for your device..." : "Sign in with fingerprint or face"}
+          </button>
+          <p className="text-[11px] text-[var(--muted)] mt-2 text-center">
+            Type your Login ID above first. <a href="/account/passkeys" className="underline">Set up this device</a>
+          </p>
+        </div>
+      )}
             <div className="mt-6">
               <p className="text-xs text-[var(--muted)] mb-2 flex items-center gap-1"><ShieldCheck size={12} /> Quick demo logins</p>
               <div className="grid grid-cols-3 gap-2">
@@ -245,6 +301,8 @@ export default function LoginPage() {
     </main>
   );
 }
+
+
 
 
 
