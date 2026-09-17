@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     let result;
     try {
-      result = await answerQuestion({ question: message, history });
+      result = await answerQuestion({ question: message, lang: String(b.lang || "en-IN"), history });
     } catch (e: any) {
       console.error("[ai] answer failed", e);
       return json({
@@ -117,3 +117,4 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH() { return json({ error: "Not supported" }, 405); }
 export async function DELETE() { return json({ error: "Not supported" }, 405); }
+

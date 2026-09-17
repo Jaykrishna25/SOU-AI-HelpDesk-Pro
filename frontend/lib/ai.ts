@@ -18,7 +18,7 @@ const CHAT_MODEL = process.env.AI_CHAT_MODEL || "gemini-1.5-flash";
 const EMBED_MODEL = process.env.AI_EMBED_MODEL || "text-embedding-004";
 const TOP_K = Number(process.env.AI_TOP_K || 5);
 /** Below this best-match score we do not trust the retrieval. */
-const CONFIDENCE_FLOOR = Number(process.env.AI_CONFIDENCE_FLOOR || 0.62);
+const CONFIDENCE_FLOOR = Number(process.env.AI_CONFIDENCE_FLOOR || 0.55);
 const HISTORY_TURNS = 6;
 
 export function aiConfigured(): boolean {
@@ -95,9 +95,9 @@ RULES, in order of importance:
 1. Answer ONLY from the CONTEXT below. Never invent fees, dates, deadlines,
    policies, marks, or contact details. If the context does not contain the
    answer, say so plainly.
-2. Reply in the SAME language the student used. If they wrote in Marathi,
-   reply in Marathi. Hindi to Hindi. Gujarati to Gujarati. English to English.
-   Match their script, not just their language.
+2. You MUST write your entire answer in {language} and in that language's own
+   script. This is not optional. Do not answer in English unless {language} is
+   English. Do not mix languages or transliterate.
 3. Be brief. Two to four sentences unless steps are genuinely needed.
 4. When the context is insufficient, reply in the student's language with a
    short apology and say the query is being raised as a ticket. Do not guess.
@@ -114,6 +114,32 @@ const prompt = ChatPromptTemplate.fromMessages([
   ["human", "{question}"],
 ]);
 
+const LANG_NAME: Record<string, string> = {
+  "en-IN": "English",
+  "mr-IN": "Marathi (\u092E\u0930\u093E\u0920\u0940, Devanagari script)",
+  "hi-IN": "Hindi (\u0939\u093F\u0928\u094D\u0926\u0940, Devanagari script)",
+  "gu-IN": "Gujarati (\u0A97\u0AC1\u0A9C\u0AB0\u0ABE\u0AA4\u0AC0 script)",
+};
+
+/**
+ * Stored knowledge is in English. A non-English question is restated in English
+ * purely to improve retrieval; the answer is still generated from the original
+ * question and written in the student's language.
+ */
+async function englishSearchQuery(question: string, lang: string): Promise<string> {
+  if (lang === "en-IN" || !/[^\u0000-\u024F]/.test(question)) return question;
+  try {
+    const out = await chatModel().invoke(
+      "Translate this university help desk question into short, plain English. " +
+      "Reply with the translation only, no commentary.\n\n" + question
+    );
+    const text = typeof out === "string" ? out : String((out as any)?.content ?? "");
+    return text.trim() || question;
+  } catch {
+    return question;
+  }
+}
+
 export interface AnswerResult {
   answer: string;
   confident: boolean;
@@ -124,11 +150,25 @@ export interface AnswerResult {
 
 export async function answerQuestion(opts: {
   question: string;
+  lang?: string;
   history?: { role: string; text: string }[];
 }): Promise<AnswerResult> {
   const started = Date.now();
 
-  const hits = await retrieve(opts.question);
+  const lang = opts.lang || "en-IN";
+  const searchQuery = await englishSearchQuery(opts.question, lang);
+
+  const primary = await retrieve(searchQuery);
+  let hits = primary;
+  if (searchQuery !== opts.question) {
+    const secondary = await retrieve(opts.question);
+    const byId = new Map<string, Retrieved>();
+    [...primary, ...secondary].forEach(h => {
+      const prev = byId.get(h.id);
+      if (!prev || h.score > prev.score) byId.set(h.id, h);
+    });
+    hits = Array.from(byId.values()).sort((a, b) => b.score - a.score).slice(0, TOP_K);
+  }
   const best = hits[0]?.score ?? 0;
   const usable = hits.filter(h => h.score >= CONFIDENCE_FLOOR * 0.8);
 
@@ -142,7 +182,10 @@ export async function answerQuestion(opts: {
     .join("\n") || "(start of conversation)";
 
   const chain = prompt.pipe(chatModel()).pipe(new StringOutputParser());
-  const answer = await chain.invoke({ context, history, question: opts.question });
+  const answer = await chain.invoke({
+    context, history, question: opts.question,
+    language: LANG_NAME[lang] || "English",
+  });
 
   return {
     answer: (answer || "").trim(),
@@ -201,3 +244,4 @@ export async function ingest(docs: {
   }
   return { upserted, skipped };
 }
+
