@@ -315,6 +315,7 @@ export default function Chatbot() {
                   Not solved here? Call {CONTACT}
                 </div>
                 <div className="flex items-center gap-1 pt-2 flex-wrap">
+                  <span className="text-[9px] text-[var(--muted)] mr-1" title="Detected from what you type or say">auto</span>
                   {LANGUAGES.map((l) => (
                     <button key={l.code} onClick={() => setLang(l.code)} title={l.label}
                       className={"px-2 py-0.5 rounded-full text-[10px] border transition-colors " +
@@ -350,6 +351,7 @@ export default function Chatbot() {
     </>
   );
 }
+
 
 
 

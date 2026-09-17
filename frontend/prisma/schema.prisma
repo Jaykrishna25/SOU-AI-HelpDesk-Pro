@@ -842,3 +842,48 @@ model DataQualityIssue {
   @@index([severity, resolved])
 }
 
+
+// ===================== AI assistant: RAG + conversation memory =====================
+
+model KnowledgeChunk {
+  id         String   @id @default(cuid())
+  sourceType String                     // KB | DOC | POLICY | FAQ
+  sourceKey  String                     // stable id, e.g. "kb:fees" or "doc:ARCHITECTURE.md#3"
+  title      String
+  content    String
+  embedding  Float[]                    // cosine similarity computed in application code
+  lang       String   @default("en")
+  charCount  Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([sourceKey])
+  @@index([sourceType, active])
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String?
+  userName  String?
+  language  String   @default("en-IN")
+  createdAt DateTime @default(now())
+  turns     ChatTurn[]
+
+  @@index([userId])
+}
+
+model ChatTurn {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role        String                    // user | ai
+  text        String
+  language    String?
+  sourcesJson String?                   // chunk ids and titles used for this answer
+  confidence  Float?
+  latencyMs   Int?
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+}
