@@ -208,6 +208,57 @@ asked to calculate. An HOD is pinned to their own department server-side, so a
 `department` value in the request body cannot widen their scope. Uploaded rows
 are held per request and are never written to the `Fee` table.
 
+## /api/study - study plan adviser (lib/study-api.ts)
+
+| Method | Path | Capability | Notes |
+|---|---|---|---|
+| GET | `/api/study/status` | authenticated | Which study capabilities the caller holds |
+| GET | `/api/study/me?threshold=` | `study.viewOwn` | The caller's own prioritised plan |
+| GET | `/api/study/cohort?threshold=` | `study.viewCohort` | Per-subject cohort averages; audited as `VIEW_CONFIDENTIAL` |
+| POST | `/api/study/summary` | `study.viewOwn` | Plain-language rewrite of the exact figures |
+| POST | `/api/study/ask` | `study.viewOwn` or `study.viewCohort` | Tool-calling adviser; returns `toolsUsed` |
+
+All arithmetic is in `lib/study-math.ts`, which imports neither Prisma nor a
+model. The adviser is instructed never to calculate and never to predict a
+grade. An HOD is pinned to their own department server-side.
+
+## /api/audit - audit trail viewer (lib/audit-api.ts)
+
+| Method | Path | Capability | Notes |
+|---|---|---|---|
+| GET | `/api/audit/list` | `audit.view` | Entries, newest first, filterable by action or entity |
+| GET | `/api/audit/summary` | `audit.view` | Totals and per-action counts |
+| POST/PATCH/DELETE | any | — | **405.** The log is append-only by design. |
+
+## /api/admin - account recovery (lib/admin-api.ts)
+
+| Method | Path | Capability | Notes |
+|---|---|---|---|
+| GET | `/api/admin/users?q=` | `user.manage` | Search accounts; returns whether a password exists, never the hash |
+| POST | `/api/admin/reset-password` | `user.manage` | Clears the password, forces a change, revokes sessions |
+| POST | `/api/admin/unlock` | `user.manage` | Clears a lockout without touching the password |
+
+Reset is permitted **strictly downwards by role rank**. A reset account signs in
+with its date of birth, which is not a secret, so without that rule an ADMIN
+could reset the OWNER and then sign in as them. Equal ranks cannot reset each
+other. Denied attempts are audited.
+
+## /api/fun - Fun Zone (lib/fun-api.ts)
+
+| Method | Path | Capability | Notes |
+|---|---|---|---|
+| GET | `/api/fun/status` | `fun.play` | Window state, games, today's plays, minutes used |
+| GET | `/api/fun/puzzle?game=` | `fun.play` | Today's puzzle. **423** when the window is closed |
+| GET | `/api/fun/leaderboard?game=&week=` | `fun.play` | Weekly board, optionally per game |
+| POST | `/api/fun/guess` | `fun.play` | Judges one Concept Ladder guess; records no score |
+| POST | `/api/fun/submit` | `fun.play` | Server decides whether it was solved, then scores |
+| DELETE | any | — | **405.** Scores cannot be deleted. |
+
+Two things the server enforces rather than trusting the client with: the access
+window (12:00-14:00 and 17:00-20:00, returning 423 with no puzzle outside it),
+and the answers — the grid solution, ladder target and quiz answers never leave
+the server. One scoring run per puzzle per day, enforced by a unique constraint.
+
 ## Capability reference
 
 Defined in `lib/policy.ts`. Roles: STUDENT, FACULTY, ADMIN, HOD, HOI, OWNER,
@@ -232,6 +283,9 @@ SUPER_ADMIN.
 | report.publish | HOI, OWNER, SUPER_ADMIN |
 | finance.viewOwn / finance.analyseStatement | all |
 | finance.viewInstitutional | ADMIN, HOD, HOI, OWNER, SUPER_ADMIN |
+| study.viewOwn | all |
+| study.viewCohort | FACULTY, HOD, HOI, ADMIN, OWNER, SUPER_ADMIN |
+| fun.play | all |
 | user.manage | ADMIN, OWNER, SUPER_ADMIN |
 | role.assign / audit.view | OWNER, SUPER_ADMIN |
 

@@ -18,7 +18,7 @@ export const GAMES: { id: GameId; name: string; blurb: string }[] = [
   { id: "scramble", name: "Word Scramble", blurb: "Unscramble the word. Fewer guesses scores higher." },
   { id: "sequence", name: "Sequence Recall", blurb: "Watch the pattern, repeat it back. It gets longer." },
   { id: "ladder", name: "Concept Ladder", blurb: "Guess the hidden subject term. Every guess shows you how close and why." },
-  { id: "culture", name: "Culture Desk", blurb: "Today's internet-culture entry, then three questions on it." },
+  { id: "culture", name: "Meme Desk", blurb: "Meme of the day - where it came from, what it means, then three questions." },
 ];
 
 /* ---------------- access window ---------------- */

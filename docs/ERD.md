@@ -1,7 +1,7 @@
 # Entity relationship reference
 
 Generated from `frontend/prisma/schema.prisma`.
-**49 models, 15 enums.**
+**50 models, 15 enums.**
 
 > This document previously described 16 models, which was the schema as it stood
 > before the IQAC, RAG and WebAuthn work. It has been rebuilt from the schema
@@ -167,6 +167,18 @@ Actions: `CREATE`, `UPDATE`, `DELETE`, `APPROVE`, `REJECT`, `VERIFY`, `EXPORT`,
 
 There is no `READ` action, deliberately — auditing every read would bury the
 entries that matter. Sensitive reads use `VIEW_CONFIDENTIAL` or `VIEW_IDENTITY`.
+
+## 8. Fun Zone
+
+```
+GameScore                  (standalone by design)
+```
+
+Deliberately carries no foreign key to `User`. A play record is not academic
+data and should not widen the `User` model's blast radius; `userId` is stored
+plainly so the leaderboard can group by it, with a display name captured at play
+time. `@@unique([userId, game, puzzleDate])` enforces one scoring run per puzzle
+per day, and `weekKey` makes a weekly board a single indexed lookup.
 
 ## Other standalone models
 

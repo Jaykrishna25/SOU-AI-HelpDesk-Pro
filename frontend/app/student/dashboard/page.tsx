@@ -12,6 +12,7 @@ import ClassroomPanel from "@/components/ClassroomPanel";
 import CRAttendance from "@/components/CRAttendance";
 import StudyPanel from "@/components/StudyPanel";
 import FunPanel from "@/components/FunPanel";
+import ResultsPanel, { useMyResults, averageLabel } from "@/components/ResultsPanel";
 import { useTickets, addTicket, updateTicket, statusColor } from "@/lib/tickets";
 import { useCRs, CRAssignment } from "@/lib/attendance";
 
@@ -20,6 +21,7 @@ export default function StudentDashboard() {
   const [me, setMe] = useState({ name: "Navlani Jaykrishna", enrollmentNo: "SOU2023CSE69" });
   const tickets = useTickets();
   const crs = useCRs();
+  const myResults = useMyResults();
 
   useEffect(() => {
     try {
@@ -64,13 +66,12 @@ export default function StudentDashboard() {
   };
 
   const timetable = [["09:00", "Data Structures", "Akshay Sir", "A-301"], ["10:00", "DBMS", "Sagar Sir", "A-302"], ["11:00", "OS Lab", "Akshay Sir", "Lab-2"]];
-  const results = [["Data Structures", 28, 66, "A"], ["DBMS", 26, 71, "A"], ["Operating Systems", 24, 58, "B+"]];
   const notes = [["DSA - Trees.pdf", "PDF"], ["DBMS Normalization.ppt", "PPT"], ["OS Scheduling.mp4", "VIDEO"], ["Assignment 3.pdf", "ASSIGNMENT"]];
 
   return (
     <DashboardShell role="Student" name={me.name} nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
-        { label: "CGPA", value: "8.4", icon: GraduationCap },
+        { label: "Average score", value: averageLabel(myResults.plan), icon: GraduationCap },
         { label: isCR ? "CR Subjects" : "Courses", value: isCR ? String(myCr.length) : "4", icon: ClipboardCheck },
         { label: "Pending Fees", value: "Check with accounts", icon: Wallet },
         { label: "My Tickets", value: String(mine.length), icon: CalendarDays },
@@ -114,15 +115,7 @@ export default function StudentDashboard() {
         </>
       )}
 
-      {tab === "Results" && (
-        <Panel title="Results - Semester 5">
-          <table className="w-full text-sm">
-            <thead><tr className="text-[var(--muted)] text-left"><th className="py-2">Subject</th><th>Internal</th><th>External</th><th>Grade</th></tr></thead>
-            <tbody>{results.map((r, i) => <tr key={i} className="border-t border-[var(--border)]"><td className="py-2">{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td className="text-brand-light">{r[3]}</td></tr>)}</tbody>
-          </table>
-          <div className="mt-4 flex gap-6 text-sm"><span>SGPA: <b className="text-brand-light">8.4</b></span><span>CGPA: <b className="text-brand-light">8.4</b></span></div>
-        </Panel>
-      )}
+      {tab === "Results" && <ResultsPanel />}
 
       {tab === "Exams" && (
         <Panel title="Exam Timetable">

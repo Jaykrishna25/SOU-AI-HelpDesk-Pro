@@ -168,7 +168,7 @@ export default function FunPanel() {
         <h1 className="text-2xl font-semibold tracking-tight mt-3">
           {game === "grid" ? "Mini Grid" : game === "scramble" ? "Word Scramble"
             : game === "ladder" ? "Concept Ladder"
-            : game === "culture" ? "Culture Desk" : "Sequence Recall"}
+            : game === "culture" ? "Meme Desk" : "Sequence Recall"}
         </h1>
         <p className="opacity-55 text-sm mt-1">Puzzle for {puzzle.date}. Everyone gets the same one today.</p>
 
@@ -339,7 +339,7 @@ export default function FunPanel() {
         {game === "culture" && (
           <div className="mt-6">
             <div className="panel-solid rounded-xl p-5">
-              <div className="text-[11px] uppercase tracking-wider opacity-50">Entry of the day</div>
+              <div className="text-[11px] uppercase tracking-wider opacity-50">Meme of the day</div>
               <div className="text-xl font-semibold mt-1">{puzzle.puzzle.entry.name}</div>
               <div className="flex gap-1.5 flex-wrap mt-2">
                 <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/20 opacity-70">{puzzle.puzzle.entry.year}</span>
@@ -408,7 +408,7 @@ export default function FunPanel() {
             <Gamepad2 size={20} className="opacity-70" /> Fun Zone
           </h1>
           <p className="opacity-55 text-sm mt-1">
-            Three puzzles a day. Same puzzle for everyone, so the board is a fair comparison.
+            Five puzzles a day, the same for everyone, so the board is a fair comparison.
           </p>
         </div>
         {w?.open && (

@@ -1,5 +1,60 @@
 # Changelog
 
+## 2026-09-18 (evening) - Study plan adviser and Fun Zone
+
+### Added
+- **Study plan adviser.** `lib/study-math.ts` (pure arithmetic, no Prisma),
+  `lib/study-db.ts` (queries only), `lib/study-agent.ts` (tool-calling agent),
+  `lib/study-api.ts`, `components/StudyPanel.tsx`. A student's weak subjects are
+  ranked worst-first from their real `Result` records, with study hours scaled by
+  how far below the line each one sits. Staff get an aggregate cohort view.
+  Same three principles as the fee agent: the model never calculates, tools are
+  bound by role, and it degrades to exact figures when the model is unavailable.
+  One rule specific to this domain: **it will not predict a grade**, because
+  nothing in the system produces a forecast.
+- Capabilities `study.viewOwn` and `study.viewCohort`.
+- **Fun Zone.** `GameScore` model, `lib/fun-core.ts` (window rules, deterministic
+  puzzle generation, scoring), `lib/fun-ladder.ts`, `lib/fun-vocab.ts`,
+  `lib/fun-memes.ts`, `lib/fun-api.ts`, `components/FunPanel.tsx`.
+  Five daily puzzles: Mini Grid, Word Scramble, Sequence Recall, Concept Ladder
+  and Meme Desk. Weekly leaderboard with per-game filtering, and a notification
+  to both the new leader and the person overtaken.
+- Capability `fun.play`.
+- `tests/fun.test.ts` - 30 cases covering window boundaries, grid validity,
+  score forgery, ladder ranking and quiz construction.
+
+### Design decisions worth defending
+- **The Fun Zone opens twice a day** (12:00-14:00, 17:00-20:00) with a 30-minute
+  daily budget. A campus portal offering unlimited games during lecture hours is
+  a portal the institution blocks. The window is enforced server-side: a closed
+  window returns **423 with no puzzle**, so leaving the tab open achieves nothing.
+- **Puzzle answers never reach the client.** The grid solution, the ladder target
+  and the quiz answers all stay on the server; the client posts an attempt and
+  the server decides. That is the difference between a leaderboard and an
+  honour system.
+- **Concept Ladder ranks by definition overlap, not embeddings.** Contexto uses a
+  word-embedding model; calling an embedding API per guess would burn quota and
+  break when it ran out. TF-IDF cosine over the terms' own definitions is local,
+  deterministic and free - and it means every guess can show *why* two concepts
+  are close, which turns a guessing game into revision.
+- **The games are original.** Classic puzzle types, not clones of LinkedIn's Zip,
+  Tango or Queens, which are their specific designs.
+
+### Changed
+- **Student CGPA tile and Results tab now read real data.** Both previously
+  showed hard-coded figures - a CGPA of 8.4 and three invented subjects - sitting
+  next to a Study Plan computed from the actual records, so the two screens
+  contradicted each other. These were the eighth and ninth fabricated statistics
+  removed from this project.
+- SGPA and CGPA are no longer displayed at all: the credit weights needed to
+  compute them are not in the schema, and a weighted average without weights is
+  a fabrication.
+
+### Known gaps
+- `Subject` has no credits column, so the portal's study plan cannot weight
+  priority by credit value the way the standalone version does. Stated in the
+  code rather than papered over with an invented weighting.
+
 ## 2026-09-18 (later) - QA pass, account recovery, step-up authentication
 
 A QA review of the security-critical paths. Eleven findings, six fixed.

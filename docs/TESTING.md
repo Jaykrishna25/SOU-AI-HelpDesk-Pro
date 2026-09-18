@@ -3,7 +3,7 @@
 ## Automated tests
 
 Framework: Vitest. Run with `npm test` from `frontend/`.
-Current state: **57 tests across 7 files, all passing.**
+Current state: **87 tests across 8 files, all passing.**
 
 | File | Tests | Covers |
 |---|---|---|
@@ -14,6 +14,7 @@ Current state: **57 tests across 7 files, all passing.**
 | `ai.test.ts` | 7 | Retrieval, chunking, language handling |
 | `speech.test.ts` | 6 | Language detection by script |
 | `finance.test.ts` | 11 | Fee arithmetic and statement parsing |
+| `fun.test.ts` | 30 | Access window, puzzle validity, score forgery, ladder ranking |
 
 ### tests/auth.test.ts (6)
 
