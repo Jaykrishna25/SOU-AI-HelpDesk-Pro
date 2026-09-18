@@ -16,12 +16,14 @@ import TicketActionModal, { TicketAction } from "@/components/TicketActionModal"
 import FinancePanel from "@/components/FinancePanel";
 import AuditPanel from "@/components/AuditPanel";
 import AccountsPanel from "@/components/AccountsPanel";
+import { useInstitutionalMoney } from "@/components/useInstitutionalMoney";
 import { useTickets, updateTicket, statusColor } from "@/lib/tickets";
 
 const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Fee Analysis", "Accounts", "Audit Trail", "Exam Seating", "Accreditation", "IQAC"];
 
 export default function OwnerDashboard() {
   const [tab, setTab] = useState("Dashboard");
+  const money = useInstitutionalMoney();
   const all = useTickets();
   const tickets = all.filter((t) => t.stage === "OWNER");
   const [modal, setModal] = useState<{ open: boolean; code: string }>({ open: false, code: "" });
@@ -29,14 +31,24 @@ export default function OwnerDashboard() {
     updateTicket(modal.code, { status: "Resolved", note: `Resolved by Owner. Solution sent to ${a.recipient}: "${a.solution}"` });
     setModal({ open: false, code: "" });
   };
-  const forecasts = [["Admissions (Next Yr)", "+18%", "AI forecast"], ["Revenue (Q4)", "Rs 4.2 Cr", "projected"], ["Ticket Volume", "-12%", "trending down"], ["Faculty Workload", "Balanced", "optimal"]];
+  /* The four figures previously shown here ("+18% admissions", "Rs 4.2 Cr Q4
+     revenue") were hard-coded strings presented as AI forecasts. No forecasting
+     model exists in this system. They have been removed rather than relabelled:
+     a fabricated number with a caveat is still a fabricated number, and
+     claiming a capability the code does not have is worse than showing none. */
+  const forecastInputs = [
+    ["Admissions", "Application and enrolment history by year and programme"],
+    ["Fee collection", "Available now - see Fee Analysis, computed not forecast"],
+    ["Ticket volume", "Ticket history with seasonality, at least two years"],
+    ["Faculty workload", "Subject allocation and teaching hours per faculty"],
+  ];
 
   return (
     <DashboardShell role="Owner" name="Shital Aggrawal Sir" nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
-        { label: "Total Revenue", value: "Not measured", icon: Wallet },
+        { label: "Fees Outstanding", value: money.outstanding, icon: Wallet },
         { label: "My Tickets", value: String(tickets.length), icon: TrendingUp },
-        { label: "Fees Collected", value: "Not measured", icon: Users },
+        { label: "Fees Collected", value: money.collected, icon: Users },
         { label: "Assistant", value: "Rule-based", icon: Brain },
       ]}>
 
@@ -70,16 +82,25 @@ export default function OwnerDashboard() {
 
       {(tab === "Dashboard" || tab === "Forecasting") && (
         <div className="mt-6">
-          <Panel title="Strategic AI Forecasting">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-              {forecasts.map((f, i) => (
+          <Panel title="Strategic forecasting">
+            <p className="text-sm text-[var(--muted)] mb-4">
+              Not implemented. No forecasting model exists in this system, so no projection is
+              shown. The figures that once appeared here were placeholders, and a placeholder
+              presented as a forecast is worse than an empty panel - it is a number someone
+              might act on.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-3 text-sm">
+              {forecastInputs.map((f, i) => (
                 <div key={i} className="glass p-4">
-                  <div className="text-lg font-bold gradient-text">{f[1]}</div>
-                  <div>{f[0]}</div>
-                  <div className="text-xs text-[var(--muted)]">{f[2]}</div>
+                  <div className="font-medium">{f[0]}</div>
+                  <div className="text-xs text-[var(--muted)] mt-1">Needs: {f[1]}</div>
                 </div>
               ))}
             </div>
+            <p className="text-xs text-[var(--muted)] mt-4">
+              Fee collection is the one figure here that is real, and it is measured rather than
+              predicted - see Fee Analysis.
+            </p>
           </Panel>
         </div>
       )}

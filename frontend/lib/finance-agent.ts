@@ -155,6 +155,10 @@ export async function askFinanceAgent(opts: {
   uploaded?: FeeRow[] | null;
   department?: string | null;
   history?: { role: string; text: string }[];
+  /** Institutional figures additionally require recent re-authentication.
+      Without it the tool is simply not bound, so the agent cannot reach the
+      data by being asked nicely - the same mechanism that gates it by role. */
+  allowInstitutional?: boolean;
 }): Promise<FinanceAnswer> {
   const started = Date.now();
 
@@ -171,7 +175,7 @@ export async function askFinanceAgent(opts: {
   if (can(opts.session, "finance.viewOwn")) {
     tools.push(ownFeesTool(opts.session.userId, opts.uploaded || null));
   }
-  if (can(opts.session, "finance.viewInstitutional")) {
+  if (can(opts.session, "finance.viewInstitutional") && opts.allowInstitutional) {
     tools.push(institutionalTool(opts.department || null));
   }
 

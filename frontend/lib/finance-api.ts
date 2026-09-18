@@ -8,6 +8,7 @@ import {
   type FeeRow,
 } from "@/lib/finance";
 import { askFinanceAgent, openingSummary, financeAiConfigured } from "@/lib/finance-agent";
+import { issueStepUp, verifyStepUp, checkPassword, STEP_UP_MINUTES } from "@/lib/stepup";
 
 /* ============================================================
    Fee assistant endpoints.
@@ -74,6 +75,19 @@ export async function GET(req: NextRequest) {
   /* ---- institution-wide aggregate ---- */
   if (p[0] === "institutional") {
     if (!can(s, "finance.viewInstitutional")) return json({ error: "Not permitted" }, 403);
+
+    /* Holding the capability is not enough. Institutional money figures need
+       proof that the person at the keyboard is still the account holder. */
+    const step = await verifyStepUp(req, s);
+    if (!step.ok) {
+      return json({
+        error: "Re-enter your password to view institutional financial figures.",
+        stepUpRequired: true,
+        reason: step.reason,
+        minutes: STEP_UP_MINUTES,
+      }, 401);
+    }
+
     const requested = new URL(req.url).searchParams.get("department");
     const dept = await scopeDepartment(s.userId, s.role, requested);
     const a = await analyseInstitutionalFees(dept);
@@ -128,6 +142,31 @@ export async function POST(req: NextRequest) {
     return json({ raw, summary });
   }
 
+  /* ---- re-authenticate to unlock institutional figures ---- */
+  if (p[0] === "step-up") {
+    if (!can(s, "finance.viewInstitutional")) return json({ error: "Not permitted" }, 403);
+
+    const result = await checkPassword(s.userId, String(b.password || ""));
+    if (!result.ok) {
+      await audit({
+        action: "LOGIN_FAILED", entity: "User", entityId: s.userId, session: s, req,
+        summary: s.loginId + " failed re-authentication for institutional finance",
+      });
+      return json({ error: result.error }, result.status);
+    }
+
+    await audit({
+      action: "VIEW_CONFIDENTIAL", entity: "Fee", session: s, req,
+      summary: s.loginId + " re-authenticated to unlock institutional financial figures",
+    });
+
+    return json({
+      ok: true,
+      stepUpToken: issueStepUp(s.userId, result.tokenVersion),
+      minutes: STEP_UP_MINUTES,
+    });
+  }
+
   /* ---- ask the agent ---- */
   if (p[0] === "ask") {
     const question = String(b.question || "").trim().slice(0, 1200);
@@ -137,12 +176,17 @@ export async function POST(req: NextRequest) {
     }
 
     const dept = await scopeDepartment(s.userId, s.role, b.department);
+
+    // Elevation decides whether the institutional tool is bound at all.
+    const elevated = await verifyStepUp(req, s);
+
     const result = await askFinanceAgent({
       session: s,
       question,
       uploaded: readUploaded(b),
       department: dept,
       history: Array.isArray(b.history) ? b.history.slice(-6) : [],
+      allowInstitutional: elevated.ok,
     });
 
     // Only aggregate finance access is worth an audit row; auditing every

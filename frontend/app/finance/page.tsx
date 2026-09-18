@@ -5,8 +5,10 @@ import {
 } from "recharts";
 import {
   Upload, FileText, AlertTriangle, CheckCircle2, Wrench, Send, Building2, Loader2, Info,
+  Lock, ShieldCheck,
 } from "lucide-react";
 import { DataBadge } from "@/components/Metric";
+import { setStepUp, getStepUp, clearStepUp, stepUpMinutesLeft } from "@/lib/stepup-client";
 
 /* ============================================================
    Fee Statement Simplifier.
@@ -21,8 +23,19 @@ import { DataBadge } from "@/components/Metric";
    ============================================================ */
 
 const tok = () => { try { return sessionStorage.getItem("sou_token") || localStorage.getItem("sou_token") || ""; } catch { return ""; } };
-const H = () => ({ "Content-Type": "application/json", Authorization: "Bearer " + tok() });
-const AUTH = () => ({ Authorization: "Bearer " + tok() });
+
+const H = () => {
+  const h: Record<string, string> = { "Content-Type": "application/json", Authorization: "Bearer " + tok() };
+  const su = getStepUp();
+  if (su) h["x-step-up"] = su;
+  return h;
+};
+const AUTH = () => {
+  const h: Record<string, string> = { Authorization: "Bearer " + tok() };
+  const su = getStepUp();
+  if (su) h["x-step-up"] = su;
+  return h;
+};
 
 const TT = {
   contentStyle: { background: "#15121f", border: "1px solid rgba(255,255,255,.18)", borderRadius: 8, color: "#fff" },
@@ -55,6 +68,10 @@ export default function Finance() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [q, setQ] = useState("");
   const [showRaw, setShowRaw] = useState(false);
+  const [needsStepUp, setNeedsStepUp] = useState(false);
+  const [pw, setPw] = useState("");
+  const [stepUpErr, setStepUpErr] = useState("");
+  const [elevatedFor, setElevatedFor] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   /* ---------- capability probe ---------- */
@@ -109,17 +126,48 @@ export default function Finance() {
     } finally { setBusy(""); if (fileRef.current) fileRef.current.value = ""; }
   }
 
-  /* ---------- institutional view ---------- */
+  /* ---------- institutional view, behind step-up ---------- */
   async function loadInstitutional() {
     setErr(""); setBusy("Aggregating institutional fee position...");
     try {
       const r = await fetch("/api/finance/institutional", { headers: AUTH() });
       const d = await r.json();
+      if (r.status === 401 && d?.stepUpRequired) {
+        // Not an error - the server is asking us to prove who we are.
+        setNeedsStepUp(true); setInst(null); setBusy(""); return;
+      }
       if (!r.ok) throw new Error(d?.error || "Not permitted");
-      setInst(d.analysis); setInstScope(d.scope || "");
+      setInst(d.analysis); setInstScope(d.scope || ""); setNeedsStepUp(false);
     } catch (e: any) {
       setErr(String(e?.message || e));
     } finally { setBusy(""); }
+  }
+
+  async function unlock() {
+    setStepUpErr(""); setBusy("Verifying...");
+    try {
+      const r = await fetch("/api/finance/step-up", {
+        method: "POST", headers: H(), body: JSON.stringify({ password: pw }),
+      });
+      const d = await r.json();
+      if (!r.ok) { setStepUpErr(d?.error || "Verification failed"); setBusy(""); return; }
+
+      setStepUp(d.stepUpToken, d.minutes);
+      setPw("");
+      setElevatedFor(d.minutes);
+      setNeedsStepUp(false);
+
+      // Elevation is short-lived; drop the figures from the screen when it
+      // lapses rather than leaving stale numbers on a walked-away laptop.
+      window.setTimeout(() => {
+        clearStepUp(); setElevatedFor(0); setInst(null); setNeedsStepUp(true);
+      }, d.minutes * 60_000);
+
+      setBusy("");
+      await loadInstitutional();
+    } catch (e: any) {
+      setStepUpErr(String(e?.message || e)); setBusy("");
+    }
   }
 
   /* ---------- ask the agent ---------- */
@@ -357,12 +405,58 @@ export default function Finance() {
         </>
       )}
 
+      {/* ---------- locked: re-authentication required ---------- */}
+      {needsStepUp && !inst && (
+        <div className="panel-solid rounded-xl p-6 mt-8 max-w-lg">
+          <div className="flex items-center gap-2">
+            <Lock size={17} className="opacity-70" />
+            <h2 className="text-lg font-medium">Confirm it is you</h2>
+          </div>
+          <p className="text-sm opacity-60 mt-2">
+            Institutional financial figures need your password again. Being signed in shows you
+            authenticated at some point today; it does not show you are still the one at this
+            screen.
+          </p>
+
+          <input
+            type="password" value={pw} autoComplete="current-password"
+            onChange={e => setPw(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && pw) unlock(); }}
+            placeholder="Your password"
+            className="w-full mt-4 px-4 py-3 rounded-xl bg-white/5 border border-white/15 outline-none focus:border-white/35 text-sm"
+          />
+
+          {stepUpErr && (
+            <div className="mt-3 px-4 py-2.5 rounded-lg text-sm border border-rose-500/40 bg-rose-500/10">
+              {stepUpErr}
+            </div>
+          )}
+
+          <button onClick={unlock} disabled={!pw || !!busy}
+            className="mt-4 px-4 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm disabled:opacity-40 flex items-center gap-2">
+            {busy === "Verifying..." ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
+            Unlock for 5 minutes
+          </button>
+
+          <p className="text-[11px] opacity-40 mt-4">
+            Access expires by itself. Both the unlock and any failed attempt are written to the
+            audit trail. Until you unlock, the assistant is not given the institutional tool
+            either — so it cannot reach these figures by being asked.
+          </p>
+        </div>
+      )}
+
       {/* ---------- institutional analysis ---------- */}
       {inst && (
         <>
-          <div className="flex items-center gap-2 mt-10 mb-3">
+          <div className="flex items-center gap-2 mt-10 mb-3 flex-wrap">
             <h2 className="text-lg font-medium">Institutional position</h2>
             <span className="text-xs opacity-50">({instScope})</span>
+            {elevatedFor > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/40 text-emerald-300 bg-emerald-500/10 flex items-center gap-1">
+                <ShieldCheck size={10} /> unlocked for {elevatedFor} min
+              </span>
+            )}
           </div>
 
           <div className="grid sm:grid-cols-4 gap-3">
