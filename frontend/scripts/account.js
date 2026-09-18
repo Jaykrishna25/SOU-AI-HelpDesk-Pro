@@ -29,9 +29,15 @@ async function main() {
   if (reset) {
     await db.user.update({
       where: { loginId: id },
-      data: { passwordHash: null, mustChangePassword: true, failedLogins: 0, lockedUntil: null },
+      data: {
+        passwordHash: null, mustChangePassword: true, failedLogins: 0, lockedUntil: null,
+        // Match the admin endpoint: a reset must kill every existing session,
+        // otherwise an old token outlives the password it was issued against.
+        tokenVersion: { increment: 1 },
+      },
     });
     console.log(id + " reset. Sign in with date of birth once, then choose a password.");
+    console.log("All existing sessions for this account have been revoked.");
   }
 
   const u = await db.user.findUnique({ where: { loginId: id }, select: SELECT });
