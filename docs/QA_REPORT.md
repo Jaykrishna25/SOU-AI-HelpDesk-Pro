@@ -15,7 +15,8 @@ Not covered: browser interaction. The nine checks in
 |---|---|---|---|
 | 1 | **High** | Token revocation could be bypassed | Fixed |
 | 2 | **Medium** | Identity reveals were never audited | Fixed |
-| 3 | Medium | No rate limiting on AI endpoints | Open — accepted |
+| 3 | **Medium** | Audit log was write-only, unreadable | Fixed |
+| 3b | Medium | No rate limiting on AI endpoints | Open — accepted |
 | 4 | Low | Agent will analyse client-supplied fee rows | Open — by design |
 | 5 | Low | Grievance code acts as a bearer credential | Open — by design |
 | 6 | Info | Institutional figures are seed data | Open — disclose in demo |
@@ -66,7 +67,23 @@ it would have failed.
 **Fixed** — one `VIEW_IDENTITY` row per request, with the count of identities
 revealed and the role that revealed them.
 
-### 3. No rate limiting on AI endpoints — MEDIUM, accepted
+### 3. Audit log was write-only — MEDIUM, fixed
+
+Nothing anywhere read `AuditLog`. No endpoint, no UI, no script. The
+`audit.view` capability sat in the policy matrix unused. Every entry the system
+wrote — including denied evidence downloads and confidential reads — was
+invisible without opening Postgres directly.
+
+An audit trail nobody can read is storage, not accountability. For a platform
+whose pitch is IQAC governance, the question "how would you know if an Owner
+looked at a complainant's identity?" had no answer from inside the product.
+
+**Fixed** — `GET /api/audit/list` and `/api/audit/summary`, gated on
+`audit.view`, plus an **Audit Trail** panel in the Owner dashboard with filters
+for sensitive actions. Deliberately read-only: `POST`, `PATCH` and `DELETE`
+return 405. An audit log the application can rewrite proves nothing.
+
+### 3b. No rate limiting on AI endpoints — MEDIUM, accepted
 
 `/api/ai/chat`, `/api/finance/ask` and `/api/finance/summary` have no
 per-user throttle. Any authenticated user can call them in a loop and exhaust
