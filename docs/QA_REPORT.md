@@ -193,6 +193,21 @@ The UI carries the warning that identity must be verified first, because
 between the reset and the new password a date of birth is the only thing
 protecting the account. That copy is part of the control.
 
+### 10b. No SUPER_ADMIN account exists — INFO, deliberate
+
+`SUPER_ADMIN` is defined in the role enum but no account holds it. Because reset
+is permitted strictly downwards and OWNER is the highest role in use, **an owner
+account cannot be recovered through the interface** — only through
+`node scripts/account.js <LOGIN_ID> --reset`, which needs `DATABASE_URL`.
+
+This is the right shape, not a gap. If an owner could reset another owner, then
+compromising any one owner account would compromise all of them. Recovery for
+the highest privilege level deliberately sits outside the application, with
+whoever operates the deployment.
+
+Verified in practice during testing: an owner locked out of `OWN001` could not
+be recovered by the other owner and was restored through the script.
+
 ### 11. Account pages were unreachable — LOW, fixed
 
 `/account/password` and `/account/passkeys` existed and worked, but nothing in

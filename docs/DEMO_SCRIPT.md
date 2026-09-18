@@ -109,6 +109,24 @@ arithmetic path never touches Gemini.
 No, and it is built to refuse. It explains what the numbers say; it never
 recommends a course of action. The disclaimer is on screen, not buried.
 
+**"What if a student forgets their password?"**
+An administrator clears it from the Accounts screen. The account falls back to
+date-of-birth sign-in and must choose a new password immediately; every existing
+session is revoked. Reset only works downwards, so an administrator cannot reset
+a principal or owner and then sign in as them — a reset account is protected only
+by a date of birth, which is not a secret.
+
+**"And if an owner forgets theirs?"**
+Not through the interface, deliberately. No account outranks OWNER, so owner
+recovery requires database access held by whoever operates the deployment. If one
+owner could reset another, compromising a single owner account would compromise
+all of them.
+
+**"How would you know if someone looked at a complainant's identity?"**
+The Audit Trail screen, filtered to sensitive access. Every reveal is logged with
+the role that did it. The audit API is read-only — POST, PATCH and DELETE all
+return 405.
+
 **"What would you do next?"**
 PDF statements, instalment plans, and a payment-history view. Bank integration
 deliberately stays out of scope — this reads and explains, it never moves money.
