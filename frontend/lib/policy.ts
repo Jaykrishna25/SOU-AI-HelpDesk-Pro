@@ -32,6 +32,8 @@ export type Capability =
   | "criteria.configure"
   // finance (fee statement simplifier)
   | "finance.viewOwn" | "finance.viewInstitutional" | "finance.analyseStatement"
+  // academic (study plan adviser)
+  | "study.viewOwn" | "study.viewCohort"
   // administration
   | "user.manage" | "role.assign" | "audit.view";
 
@@ -70,6 +72,11 @@ const MATRIX: Record<Capability, Role[]> = {
   "finance.viewOwn": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
   "finance.viewInstitutional": ["ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
   "finance.analyseStatement": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
+
+  // A student sees only their own record. The cohort view is aggregate-only and
+  // is enforced by which tools get bound to the adviser, not by prompt wording.
+  "study.viewOwn": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
+  "study.viewCohort": ["FACULTY", "HOD", "HOI", "ADMIN", "OWNER", "SUPER_ADMIN"],
 
   "user.manage": ["ADMIN", "OWNER", "SUPER_ADMIN"],
   "role.assign": ["OWNER", "SUPER_ADMIN"],

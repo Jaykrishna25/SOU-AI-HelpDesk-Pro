@@ -10,6 +10,7 @@ import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
 import ClassroomPanel from "@/components/ClassroomPanel";
 import CRAttendance from "@/components/CRAttendance";
+import StudyPanel from "@/components/StudyPanel";
 import { useTickets, addTicket, updateTicket, statusColor } from "@/lib/tickets";
 import { useCRs, CRAssignment } from "@/lib/attendance";
 
@@ -29,7 +30,7 @@ export default function StudentDashboard() {
   const myCr: CRAssignment[] = crs.filter((c) => c.enrollmentNo.toLowerCase() === me.enrollmentNo.toLowerCase());
   const isCR = myCr.length > 0;
 
-  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Exams", "Notes", "My Tickets", "GreenReserve", "QR Attendance", "Feedback", "Grievance"];
+  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Study Plan", "Exams", "Notes", "My Tickets", "GreenReserve", "QR Attendance", "Feedback", "Grievance"];
   if (isCR) NAV.splice(2, 0, "Mark Attendance");
 
   const first = me.name.split(" ")[0].toLowerCase();
@@ -89,6 +90,8 @@ export default function StudentDashboard() {
       )}
 
       {tab === "Feedback" && <FeedbackPanel />}
+
+      {tab === "Study Plan" && <StudyPanel />}
       {tab === "Grievance" && <GrievancePanel />}
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
