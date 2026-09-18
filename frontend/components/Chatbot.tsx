@@ -247,7 +247,7 @@ export default function Chatbot() {
       return {
         role: "ai",
         text: d.answer,
-        meta: titles ? "Answered from: " + titles : "Answered by the assistant",
+        meta: titles ? "Answered from: " + titles : "Answered by OakMitra",
       };
     } catch {
       return null;   // network or model failure falls back to a ticket
@@ -313,7 +313,8 @@ export default function Chatbot() {
             className="fixed bottom-28 right-6 z-[60] w-[92vw] max-w-sm p-4 flex flex-col h-[28rem] panel-solid shadow-2xl">
             <div className="flex items-center gap-2 pb-3 border-b border-[var(--border)]">
               <Sparkles size={18} className="text-brand-light" />
-              <b>AI Help Desk</b>
+              <b>OakMitra</b>
+              <span className="text-[10px] text-[var(--muted)]">SOU help desk</span>
               {step === "chat"
                 ? <button onClick={restart} className="ml-auto text-xs text-[var(--muted)] flex items-center gap-1"><ArrowLeft size={12} /> Change</button>
                 : <span className="ml-auto text-xs text-[var(--muted)]">{KB.length} topics</span>}
@@ -386,7 +387,7 @@ export default function Chatbot() {
                 )}
                 <div className="flex gap-2 pt-2">
                   <input value={input} onChange={(e) => { setInput(e.target.value); const d = detectLanguage(e.target.value, lang); if (d !== lang) setLang(d); }} onKeyDown={(e) => e.key === "Enter" && send()}
-                    placeholder="Ask about fees, exams, hostel, library..." className="flex-1 bg-transparent outline-none text-sm px-2" />
+                    placeholder="Ask OakMitra about fees, exams, hostel, library..." className="flex-1 bg-transparent outline-none text-sm px-2" />
                   <button onClick={toggleMic} title={listening ? "Stop listening" : "Speak your question"}
                     className={"p-2 rounded-full transition-colors " +
                       (listening ? "bg-rose-600 text-white animate-pulse" : "border border-[var(--border)] text-[var(--muted)]")}>

@@ -114,7 +114,9 @@ export async function retrieve(query: string, k = TOP_K): Promise<Retrieved[]> {
 
 /* ---------------- prompt ---------------- */
 
-const SYSTEM = `You are the Silver Oak University help desk assistant.
+const SYSTEM = `You are OakMitra, the Silver Oak University help desk assistant.
+If a student asks who or what you are, say you are OakMitra, the university's
+help desk assistant. Do not claim to be a person or a member of staff.
 
 RULES, in order of importance:
 1. Answer ONLY from the CONTEXT below. Never invent fees, dates, deadlines,
