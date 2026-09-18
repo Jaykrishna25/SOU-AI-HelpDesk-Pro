@@ -87,8 +87,10 @@ check that was never run is the one that breaks during a demo.
 - [ ] Open the deployed `/finance` page and run one question end to end
 - [ ] `GRIEVANCE_KEY` backed up somewhere outside Vercel — if it is lost, every
       encrypted grievance identity becomes permanently unreadable
-- [ ] Stale Neon project (`sou-helpdesk`, us-east-2, 16 models) renamed to
-      `UNUSED-old-do-not-connect` so nothing reconnects to it by accident
+- [x] Stale Neon project — **resolved 2026-09-18**. The Neon organisation now
+      holds exactly one project, `neon-chestnut-pendant` (AWS us-east-1), which is
+      production. The old `sou-helpdesk` project in us-east-2 no longer exists, so
+      there is nothing left to reconnect to by accident.
 - [ ] Repo is public and `docs/` renders on GitHub
 - [ ] `npx vitest run` — 87 tests passing
 
