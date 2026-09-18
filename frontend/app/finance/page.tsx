@@ -204,8 +204,11 @@ export default function Finance() {
     : ["How much do I still owe?", "Am I overdue on anything?",
        "What is the late fee policy?", "When is my next payment due?"];
 
-  /* ---------- empty state ---------- */
-  if (!analysis && !inst) {
+  /* ---------- empty state ----------
+     Also leave the empty state once the server has asked for re-authentication,
+     otherwise clicking "Institutional fee position" here sets needsStepUp but
+     renders this branch again and the password panel is never shown. */
+  if (!analysis && !inst && !needsStepUp) {
     return (
       <div className="max-w-5xl mx-auto px-5 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Fee Statement Simplifier</h1>
@@ -500,6 +503,7 @@ export default function Finance() {
       )}
 
       {/* ---------- chat ---------- */}
+      {(analysis || inst) && (
       <div className="mt-10 border-t border-white/10 pt-7">
         <h2 className="text-lg font-medium">Ask about this</h2>
         <p className="text-sm opacity-55 mt-1">
@@ -557,6 +561,7 @@ export default function Finance() {
           </button>
         </div>
       </div>
+      )}
 
       <p className="text-xs opacity-40 mt-8 border-t border-white/10 pt-5">
         Informational only and not personalised financial advice. Figures come from your portal fee record or the
