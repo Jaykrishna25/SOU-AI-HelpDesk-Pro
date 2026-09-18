@@ -15,9 +15,10 @@ import AnalyticsCharts from "@/components/AnalyticsCharts";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
 import FinancePanel from "@/components/FinancePanel";
 import AuditPanel from "@/components/AuditPanel";
+import AccountsPanel from "@/components/AccountsPanel";
 import { useTickets, updateTicket, statusColor } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Fee Analysis", "Audit Trail", "Exam Seating", "Accreditation", "IQAC"];
+const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Fee Analysis", "Accounts", "Audit Trail", "Exam Seating", "Accreditation", "IQAC"];
 
 export default function OwnerDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -86,6 +87,8 @@ export default function OwnerDashboard() {
       {tab === "IQAC" && <IQACPanel />}
 
       {tab === "Fee Analysis" && <FinancePanel />}
+
+      {tab === "Accounts" && <AccountsPanel />}
 
       {tab === "Audit Trail" && <AuditPanel />}
       {tab === "Accreditation" && <ReportsPanel />}

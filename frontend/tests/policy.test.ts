@@ -17,6 +17,34 @@ describe("capability matrix", () => {
     }
   });
 
+  /* The fee assistant binds its tools from this matrix. If a student ever gains
+     finance.viewInstitutional, their agent is handed the institutional tool and
+     the "structural authorisation" claim silently stops being true. These are
+     regression guards for exactly that. */
+  it("lets every role read their own fees", () => {
+    for (const role of ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"]) {
+      expect(can(asRole(role), "finance.viewOwn")).toBe(true);
+      expect(can(asRole(role), "finance.analyseStatement")).toBe(true);
+    }
+  });
+
+  it("keeps institutional finance away from students and faculty", () => {
+    expect(can(asRole("STUDENT"), "finance.viewInstitutional")).toBe(false);
+    expect(can(asRole("FACULTY"), "finance.viewInstitutional")).toBe(false);
+  });
+
+  it("grants institutional finance to the roles that run the institution", () => {
+    for (const role of ["ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"]) {
+      expect(can(asRole(role), "finance.viewInstitutional")).toBe(true);
+    }
+  });
+
+  it("gives an unknown role own-fee access only, never institutional", () => {
+    // normaliseRole falls back to STUDENT, so a typo must fail closed.
+    expect(can(asRole("FINANCE_HEAD"), "finance.viewOwn")).toBe(true);
+    expect(can(asRole("FINANCE_HEAD"), "finance.viewInstitutional")).toBe(false);
+  });
+
   it("restricts grievance identity to the Owner", () => {
     expect(can(asRole("HOD"), "grievance.handle")).toBe(true);
     expect(can(asRole("HOD"), "grievance.viewIdentity")).toBe(false);

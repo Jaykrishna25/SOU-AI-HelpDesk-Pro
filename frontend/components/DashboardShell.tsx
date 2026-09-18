@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink } from "lucide-react";
+import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
 import { useTickets, Ticket } from "@/lib/tickets";
@@ -114,6 +114,19 @@ export default function DashboardShell({
           </a>
         </div>
         )}
+
+        {/* These pages existed but were reachable only by typing the URL. */}
+        <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-1">
+          <p className="text-[10px] uppercase tracking-wide text-[var(--muted)] px-4 mb-1">Your account</p>
+          <Link href="/account/password"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-[var(--muted)] hover:bg-brand/10">
+            <KeyRound size={14} /> Change password
+          </Link>
+          <Link href="/account/passkeys"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-[var(--muted)] hover:bg-brand/10">
+            <Fingerprint size={14} /> Passkeys
+          </Link>
+        </div>
 
         <div className="mt-4 pt-3 border-t border-[var(--border)]">
           <p className="text-[10px] uppercase tracking-wide text-[var(--muted)] mb-1">Need help?</p>

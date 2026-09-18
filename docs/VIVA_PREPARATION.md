@@ -22,7 +22,7 @@ every statement links to the source record it came from.
 | ORM | Prisma | Schema is source-controlled; migrations are reproducible |
 | Auth | JWT, bcrypt (12 rounds) | Stateless; no session store needed on serverless |
 | Files | Vercel Blob (private) | No writable filesystem exists on serverless functions |
-| Tests | Vitest | 53 tests covering auth, permissions, validation, encryption, retrieval, language detection and fee arithmetic |
+| Tests | Vitest | 57 tests covering auth, permissions, validation, encryption, retrieval, language detection and fee arithmetic |
 
 ## 3. How each feature actually works
 
@@ -136,7 +136,7 @@ Say these before you are asked. Finding and fixing them is the stronger story.
 
 - 7 role portals, 7 quality criteria, 30 key indicators, 43 metrics
 - 26 bookable resources across 7 types
-- 53 automated tests, all passing
+- 57 automated tests, all passing
 - 15 of 15 grievance identities encrypted at rest
 - bcrypt at 12 rounds; AES-256-GCM for identity fields
 - CO2 figures use 0.71 kg/kWh (CEA India grid emission factor)

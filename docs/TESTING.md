@@ -3,12 +3,12 @@
 ## Automated tests
 
 Framework: Vitest. Run with `npm test` from `frontend/`.
-Current state: **53 tests across 7 files, all passing.**
+Current state: **57 tests across 7 files, all passing.**
 
 | File | Tests | Covers |
 |---|---|---|
 | `auth.test.ts` | 6 | Password hashing and policy |
-| `policy.test.ts` | 8 | Capability matrix and separation of duties |
+| `policy.test.ts` | 12 | Capability matrix, separation of duties, finance capabilities |
 | `validate.test.ts` | 11 | Zod schemas |
 | `crypto.test.ts` | 4 | AES-256-GCM field encryption |
 | `ai.test.ts` | 7 | Retrieval, chunking, language handling |
@@ -29,7 +29,7 @@ Current state: **53 tests across 7 files, all passing.**
 These exist because a bcryptjs v3 import change silently broke every password
 operation in production and took three debugging rounds to find.
 
-### tests/policy.test.ts (8)
+### tests/policy.test.ts (12)
 
 | Test | Proves |
 |---|---|
@@ -42,8 +42,18 @@ operation in production and took three debugging rounds to find.
 | counselling and ICC restricted to Owner | Sensitive domains isolated |
 | rolesWith returns the expected sets | ADMIN and FACULTY absent from approval |
 
-The last one is a regression guard: if anyone widens the approval set later,
-this test fails and the separation of duties is protected.
+| every role can read their own fees | finance.viewOwn is universal |
+| institutional finance is denied to STUDENT and FACULTY | The fee agent's role gating holds |
+| institutional finance granted to ADMIN, HOD, HOI, OWNER, SUPER_ADMIN | The intended set, no wider |
+| an unknown role gets own-fee access only | A typo cannot grant institutional finance |
+
+The `rolesWith` case is a regression guard: if anyone widens the approval set
+later, this test fails and the separation of duties is protected.
+
+The four finance cases guard the fee assistant's central claim. Its tools are
+bound from this matrix, so if a student ever gained `finance.viewInstitutional`
+their agent would silently be handed the institutional tool. That now fails the
+test suite instead of failing quietly in production.
 
 ### tests/validate.test.ts (11)
 

@@ -78,7 +78,7 @@ check that was never run is the one that breaks during a demo.
 - [ ] Stale Neon project (`sou-helpdesk`, us-east-2, 16 models) renamed to
       `UNUSED-old-do-not-connect` so nothing reconnects to it by accident
 - [ ] Repo is public and `docs/` renders on GitHub
-- [ ] `npx vitest run` — 53 tests passing
+- [ ] `npx vitest run` — 57 tests passing
 
 ## If a check fails
 
