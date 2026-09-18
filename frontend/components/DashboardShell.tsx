@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint } from "lucide-react";
+import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint, Sparkles } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
 import { useTickets, Ticket } from "@/lib/tickets";
@@ -114,6 +114,13 @@ export default function DashboardShell({
           </a>
         </div>
         )}
+
+        <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-1">
+          <Link href="/assistant"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm bg-brand/15 border border-brand/30 text-brand-light hover:bg-brand/25">
+            <Sparkles size={15} /> Ask OakMitra
+          </Link>
+        </div>
 
         {/* These pages existed but were reachable only by typing the URL. */}
         <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-1">
