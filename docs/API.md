@@ -169,6 +169,45 @@ buckets - linear regression, not machine learning.
 | GET | /api/reports/one | `report.generate` |
 | POST | /api/reports | `report.generate` |
 
+## /api/ai - retrieval assistant (lib/ai-api.ts)
+
+| Method | Path | Capability | Notes |
+|---|---|---|---|
+| GET | `/api/ai/status` | none | Whether AI is configured, chunk count, model names |
+| POST | `/api/ai/chat` | authenticated | RAG answer with conversation memory, sources and confidence |
+| POST | `/api/ai/ingest` | `criteria.configure` | Embed and upsert knowledge chunks |
+
+Answers are generated only from retrieved portal content. Below the confidence
+floor the assistant says so and offers a ticket rather than guessing.
+
+## /api/webauthn - passkeys (lib/webauthn-api.ts)
+
+| Method | Path | Capability | Notes |
+|---|---|---|---|
+| POST | `/api/webauthn/register/options` | authenticated | Issue a registration challenge |
+| POST | `/api/webauthn/register/verify` | authenticated | Store the credential |
+| POST | `/api/webauthn/login/options` | none | Issue an authentication challenge |
+| POST | `/api/webauthn/login/verify` | none | Verify and issue a session |
+
+Challenges are single-use, expire in 5 minutes and are origin-bound. The
+signature counter must advance, which detects a cloned authenticator.
+
+## /api/finance - fee statement simplifier (lib/finance-api.ts)
+
+| Method | Path | Capability | Notes |
+|---|---|---|---|
+| GET | `/api/finance/status` | authenticated | Which finance capabilities the caller holds |
+| GET | `/api/finance/me` | `finance.viewOwn` | The caller's own fee analysis |
+| GET | `/api/finance/institutional` | `finance.viewInstitutional` | Aggregate position; audited as `VIEW_CONFIDENTIAL` |
+| POST | `/api/finance/parse` | `finance.analyseStatement` | Parse and analyse an uploaded statement |
+| POST | `/api/finance/summary` | `finance.viewOwn` | Plain-language summary of exact figures |
+| POST | `/api/finance/ask` | `finance.viewOwn` or `finance.viewInstitutional` | Tool-calling agent; returns `toolsUsed` |
+
+All arithmetic happens server-side in `lib/finance-math.ts`. The model is never
+asked to calculate. An HOD is pinned to their own department server-side, so a
+`department` value in the request body cannot widen their scope. Uploaded rows
+are held per request and are never written to the `Fee` table.
+
 ## Capability reference
 
 Defined in `lib/policy.ts`. Roles: STUDENT, FACULTY, ADMIN, HOD, HOI, OWNER,
@@ -191,11 +230,17 @@ SUPER_ADMIN.
 | insights.view | FACULTY, HOD, HOI, ADMIN, OWNER, SUPER_ADMIN |
 | report.generate | HOD, HOI, ADMIN, OWNER, SUPER_ADMIN |
 | report.publish | HOI, OWNER, SUPER_ADMIN |
+| finance.viewOwn / finance.analyseStatement | all |
+| finance.viewInstitutional | ADMIN, HOD, HOI, OWNER, SUPER_ADMIN |
 | user.manage | ADMIN, OWNER, SUPER_ADMIN |
 | role.assign / audit.view | OWNER, SUPER_ADMIN |
 
 Note that `evidence.verify` and `evidence.approve` deliberately do not overlap
 at ADMIN level: the role that checks evidence cannot be the role that accepts it.
+
+`finance.viewInstitutional` is enforced twice over. The endpoint checks it, and
+the fee agent uses it to decide which tools to bind — a student's model is never
+given the institutional function at all, so there is no prompt to talk around.
 
 ## Status codes
 

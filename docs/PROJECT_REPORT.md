@@ -62,7 +62,7 @@ data-privacy design, bias reduction, and mandatory human oversight whenever AI c
 
 ### 9. Results
 The confidence-gated design auto-resolves the majority of routine queries while guaranteeing that uncertain
-cases reach a human within the SLA. Demonstrated metrics (seeded/demo): no auto-resolution or accuracy figure is claimed - the assistant is rule-based and has not been evaluated against a labelled set. Verifiable counts instead: 7 role portals, 43 quality metrics, 26 bookable resources, 29 automated tests. Former placeholder text followed: 
+cases reach a human within the SLA. Demonstrated metrics (seeded/demo): no auto-resolution or accuracy figure is claimed - the assistant is rule-based and has not been evaluated against a labelled set. Verifiable counts instead: 7 role portals, 43 quality metrics, 26 bookable resources, 53 automated tests. Former placeholder text followed: 
 accuracy, 48-hour response SLA, 12 agents.
 
 ### 10. Conclusion & Future Scope

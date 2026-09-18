@@ -3,7 +3,17 @@
 ## Automated tests
 
 Framework: Vitest. Run with `npm test` from `frontend/`.
-Current state: **29 tests across 4 files, all passing.**
+Current state: **53 tests across 7 files, all passing.**
+
+| File | Tests | Covers |
+|---|---|---|
+| `auth.test.ts` | 6 | Password hashing and policy |
+| `policy.test.ts` | 8 | Capability matrix and separation of duties |
+| `validate.test.ts` | 11 | Zod schemas |
+| `crypto.test.ts` | 4 | AES-256-GCM field encryption |
+| `ai.test.ts` | 7 | Retrieval, chunking, language handling |
+| `speech.test.ts` | 6 | Language detection by script |
+| `finance.test.ts` | 11 | Fee arithmetic and statement parsing |
 
 ### tests/auth.test.ts (6)
 
@@ -59,6 +69,37 @@ this test fails and the separation of duties is protected.
 | produces different ciphertext each time | Random IV per record |
 | returns null for tampered ciphertext | GCM auth tag detects modification |
 | passes through legacy plaintext unchanged | Backfill can run safely on mixed data |
+
+### tests/ai.test.ts (7)
+
+Covers chunking boundaries, cosine similarity, the cross-lingual search-query
+path, and the confidence floor below which retrieval is not trusted.
+
+### tests/speech.test.ts (6)
+
+Covers Unicode-block language detection for English, Hindi and Gujarati,
+including mixed-script input and the fallback when no script matches.
+
+### tests/finance.test.ts (11)
+
+| Test | Proves |
+|---|---|
+| computes outstanding, totals and percentage paid | Core arithmetic is correct |
+| flags an unpaid row past its due date, with the day count | Overdue detection and day arithmetic |
+| does not call a fully paid row overdue | A passed date alone is not overdue |
+| never reports a negative balance when overpaid | Outstanding floors at zero |
+| treats unreadable amounts as zero, not NaN | One bad cell cannot poison every total |
+| identifies the next payment due | Correct ordering by due date |
+| reads a well-formed statement | Happy path |
+| matches column names loosely, strips currency formatting | Real statements vary in wording |
+| counts unreadable rows instead of guessing | Partial parses are visible, not silent |
+| returns nothing when required columns are absent | Fails closed rather than inventing rows |
+| labels the source in rendered output | The model cannot confuse uploaded with portal data |
+
+The eighth of these caught a live bug: the parser split on every candidate
+delimiter at once, so `"1,50,000"` in a semicolon-separated file was read as
+`1`. A student would have been told they owed one rupee. Fixed by detecting one
+delimiter per file and respecting quoted fields.
 
 ## Manual verification performed on the deployed system
 

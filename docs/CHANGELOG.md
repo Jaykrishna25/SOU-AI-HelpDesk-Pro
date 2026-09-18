@@ -1,5 +1,75 @@
 # Changelog
 
+## 2026-09-18 - Fee Statement Simplifier (agentic pipeline)
+
+### Added
+- `lib/finance-math.ts` - all fee arithmetic and statement parsing. No Prisma
+  and no model imports, so it is unit testable in isolation. This separation is
+  the point of the feature, not an incidental tidy-up.
+- `lib/finance-db.ts` - Prisma queries feeding the arithmetic. Fetches rows,
+  calculates nothing.
+- `lib/finance.ts` - public entry point re-exporting both.
+- `lib/finance-agent.ts` - tool-calling agent over Gemini with three tools:
+  `analyse_fee_statement`, `analyse_institutional_fees`, `search_fee_policy`.
+  Explicit tool loop rather than a prebuilt agent, so the tools that ran are
+  returned to the caller and shown in the UI.
+- `lib/finance-api.ts` + `app/api/finance/[...path]/route.ts` - six endpoints.
+- `app/finance/page.tsx` + `components/FinancePanel.tsx` - upload-first screen.
+- `tests/finance.test.ts` - 11 tests over arithmetic and parsing.
+- `docs/FINANCE_AGENT.md`, `docs/DEMO_SCRIPT.md`, `docs/sample-fee-statement.csv`.
+- Capabilities `finance.viewOwn`, `finance.viewInstitutional`,
+  `finance.analyseStatement` in the policy matrix.
+- Nav entries: student **Fees**, and **Fee Analysis** for ADMIN, HOD and OWNER.
+
+### Changed
+- The student Fees tab previously rendered hard-coded figures
+  (`Rs 1.2L / Rs 90k / Rs 30k`). These were fabricated placeholders of the same
+  kind removed from the dashboards on 2026-09-16, and are now replaced by the
+  student's real fee record, analysed server-side.
+- `docs/ERD.md` rebuilt from the schema. It described 16 models; there are 49.
+- Test counts corrected across TESTING.md, VIVA_PREPARATION.md and
+  PROJECT_REPORT.md - 29 across 4 files was stale, the real figure is 53 across 7.
+- API.md gained the `/api/ai`, `/api/webauthn` and `/api/finance` families, none
+  of which had ever been documented.
+
+### Fixed
+- **Statement parser read `"1,50,000"` as `1`.** The splitter used
+  `/[,;\t|]/`, so a semicolon-separated file was also split on the thousands
+  separators inside a quoted amount. A student would have been shown a balance
+  of one rupee. Now the delimiter is detected once from the header row and
+  quoted fields are respected. Found by a unit test before it ever ran on real
+  data.
+- Audit calls used a non-existent `READ` action; TypeScript would have failed
+  the build. Institutional reads now record `VIEW_CONFIDENTIAL`.
+
+### Design decisions worth defending
+- **The model never calculates.** Every figure comes from `analyseFeeRows()`.
+  The opening summary runs the analysis function directly and asks the model
+  only to reword it, so the figures cannot be wrong even if the model ignores
+  its tools.
+- **Authorisation is structural.** Tools are bound per role from the existing
+  capability matrix. A student's model does not receive the institutional
+  function, so there is no prompt to jailbreak. HOD scope is pinned server-side.
+- **It degrades instead of failing.** When Gemini is rate-limited or over quota,
+  the agent runs the analysis tool directly and returns exact figures with a
+  note. Verified in practice during a 429.
+
+### Known gaps
+- The nine portal verification checks are still unrun, now with ~22 commits
+  since the last end-to-end walkthrough.
+- Statement upload accepts CSV and text only; PDF is not parsed.
+- The seed data holds one department, so the by-department chart is a single
+  bar. Do not seed fictional departments to improve it.
+
+### RESUME HERE (next session)
+1. Add `AI_CHAT_MODEL` to the Vercel environment and redeploy - `.env.local`
+   is local-only, so production still uses the `.env` default.
+2. Run the nine verification checks.
+3. Back up `GRIEVANCE_KEY` outside Vercel. Losing it makes every encrypted
+   grievance identity permanently unreadable.
+4. Rename the stale Neon project (`sou-helpdesk`, us-east-2, 16 models) to
+   `UNUSED-old-do-not-connect`.
+
 ## [Unreleased] - Phase 0a
 ### Added
 - docs/IMPLEMENTATION_PLAN.md
