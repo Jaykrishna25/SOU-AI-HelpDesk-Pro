@@ -1,5 +1,68 @@
 # Changelog
 
+## 2026-09-18 (later) - QA pass, account recovery, step-up authentication
+
+A QA review of the security-critical paths. Eleven findings, six fixed.
+
+### Security fixed
+- **Token revocation could be bypassed.** `getLiveSession` only compared token
+  versions when the token carried a `tv` claim, so a token without one was
+  accepted and could not be revoked by bumping `tokenVersion`. Now fails closed.
+- **Identity reveals were never audited.** `VIEW_IDENTITY` was declared in the
+  audit enum and called from nowhere; `institutional.ts` decrypted complainant
+  identities without importing the audit writer. Every reveal is now logged.
+- **The audit log was unreadable.** Nothing in the codebase read `AuditLog`, and
+  `audit.view` was unused. An audit trail nobody can read is storage, not
+  accountability.
+
+### Added
+- `lib/audit-api.ts` + Audit Trail panel - read-only viewer gated on
+  `audit.view`, with filters for sensitive actions. `POST`, `PATCH` and `DELETE`
+  return 405: an audit log the application can rewrite proves nothing.
+- `lib/admin-api.ts` + Accounts panel - admin-mediated password recovery and
+  lockout clearing. Reset is permitted **strictly downwards** by role rank,
+  because a reset account is protected only by a date of birth; without that
+  rule an ADMIN could reset the OWNER and then sign in as them.
+- `lib/stepup.ts` + `lib/stepup-client.ts` - step-up authentication. Institutional
+  financial figures require re-entering the password; elevation is a separate
+  five-minute token, held in memory only, bound to `tokenVersion` so a password
+  change or forced sign-out drops it. **The agent is affected too: without
+  elevation the institutional tool is not bound**, so the figures cannot be
+  reached by asking nicely.
+- `scripts/create-super-admin.js` - creates the SUPER_ADMIN operator account,
+  the only role that outranks OWNER. Sets no password; the account signs in once
+  with its date of birth and chooses its own.
+- `scripts/qa-smoke.js` - API smoke test across unauthenticated, student and
+  owner, asserting role separation on the live deployment.
+- Sidebar links for Change password and Passkeys. Both pages existed but were
+  reachable only by typing the URL.
+- Four policy tests pinning the finance capabilities.
+
+### Changed
+- Owner dashboard money tiles now show real figures behind step-up:
+  **Fees Collected** and **Fees Outstanding**, replacing "Total Revenue", which
+  had no source data anywhere in the schema.
+- `scripts/account.js --reset` now bumps `tokenVersion`, matching the endpoint.
+
+### Removed
+- **The "Strategic AI Forecasting" panel.** It displayed four hard-coded strings
+  as AI forecasts, including "+18% admissions" and "Rs 4.2 Cr Q4 revenue". No
+  forecasting model exists in this system. Replaced with a statement that it is
+  not implemented and a list of the data each forecast would require. This was
+  the ninth fabricated statistic removed from this project.
+
+### Fixed
+- Step-up prompt was unreachable from the finance page's empty state: the
+  component returned the empty branch before rendering the password panel, so
+  the click was a silent no-op. The server check was correct throughout.
+
+### Known gaps carried forward
+- No rate limiting on the AI endpoints. Documented in `docs/QA_REPORT.md` with
+  the reasoning; the quota fallback mitigates the practical risk.
+- Booking clash detection is not atomic - correct predicate, but a read followed
+  by a write with no database constraint behind it.
+- The nine verification checks in `docs/VERIFICATION_CHECKLIST.md`.
+
 ## 2026-09-18 - Fee Statement Simplifier (agentic pipeline)
 
 ### Added

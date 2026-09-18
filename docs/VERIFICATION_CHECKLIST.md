@@ -1,6 +1,6 @@
 # Pre-demo verification checklist
 
-Nine checks. Run them against the **deployed** site, not localhost — that is
+Ten checks. Run them against the **deployed** site, not localhost — that is
 what judges will see. Roughly 30 minutes.
 
 Record the result honestly. A check that fails and is known about is safe; a
@@ -59,7 +59,19 @@ check that was never run is the one that breaks during a demo.
 - [ ] Owner can reveal the identity
 - [ ] The reveal appears in the audit log as `VIEW_IDENTITY`
 
-### 9. IQAC evidence and report export
+### 9. Step-up authentication and account recovery
+
+- [ ] Owner dashboard money tiles read **Locked**
+- [ ] Fee Analysis → Institutional fee position asks for the password
+- [ ] A wrong password is refused, and the attempt appears in the Audit Trail
+- [ ] The correct password reveals the figures with an "unlocked" badge
+- [ ] Dashboard tiles now show real amounts
+- [ ] Before unlocking, the assistant cannot answer "what is our collection rate?"
+- [ ] After five minutes the figures disappear and it asks again
+- [ ] Accounts → search a student → **Reset password** is offered
+- [ ] Accounts → search another owner → **outranks you**, no button
+
+### 10. IQAC evidence and report export
 
 - [ ] Upload an evidence document
 - [ ] Opening it without permission is refused (403), not silently served

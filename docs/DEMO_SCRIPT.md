@@ -62,6 +62,24 @@ Switch back to the student window.
 > bound, and an HOD is pinned to their own department server-side, so changing
 > the request body achieves nothing."
 
+### Optional 20 seconds: step-up authentication
+
+If the room is interested in security, open the admin view's institutional
+figures. It asks for the password again.
+
+> "Being signed in proves you authenticated at some point today. It doesn't
+> prove you're still the person at the keyboard. Financial figures ask again,
+> and the unlock lasts five minutes."
+
+Then, before unlocking, ask the assistant *"what's our collection rate?"*
+
+> "It can't answer. Not because we told it to refuse — because without the
+> elevation the institutional tool isn't bound to it at all. Same mechanism as
+> the role gate. There's no prompt to talk around when the function isn't on
+> the list."
+
+Unlock, ask again, and it answers.
+
 ### Optional, if a judge asks for advice
 
 If anyone asks the admin view something like **"what should we do to collect
