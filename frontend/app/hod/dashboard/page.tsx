@@ -14,9 +14,10 @@ import Panel from "@/components/Panel";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
 import CRPanel from "@/components/CRPanel";
+import FinancePanel from "@/components/FinancePanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Exam Seating", "Accreditation", "IQAC"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Fee Analysis", "Exam Seating", "Accreditation", "IQAC"];
 interface Member { name: string; id: string; info: string; }
 
 function EditableSection({ title, data, onChange, cols }: {
@@ -125,6 +126,8 @@ export default function HodDashboard() {
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 
       {tab === "IQAC" && <IQACPanel />}
+
+      {tab === "Fee Analysis" && <FinancePanel />}
       {tab === "Accreditation" && <ReportsPanel />}
       {tab === "Exam Seating" && <SeatingPanel />}
       {tab === "Insights" && <InsightsPanel />}

@@ -30,6 +30,8 @@ export type Capability =
   | "evidence.upload" | "evidence.verify" | "evidence.approve"
   | "evidence.viewConfidential" | "evidence.viewRestricted"
   | "criteria.configure"
+  // finance (fee statement simplifier)
+  | "finance.viewOwn" | "finance.viewInstitutional" | "finance.analyseStatement"
   // administration
   | "user.manage" | "role.assign" | "audit.view";
 
@@ -61,6 +63,13 @@ const MATRIX: Record<Capability, Role[]> = {
   "evidence.viewConfidential": ["HOI", "OWNER", "SUPER_ADMIN"],
   "evidence.viewRestricted": ["OWNER", "SUPER_ADMIN"],
   "criteria.configure": ["HOI", "OWNER", "SUPER_ADMIN"],
+
+  // A student may only ever see their own ledger. The institutional view is
+  // aggregate-only and is withheld from STUDENT and FACULTY entirely - this is
+  // enforced by which tools get bound to the agent, not by prompt wording.
+  "finance.viewOwn": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
+  "finance.viewInstitutional": ["ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
+  "finance.analyseStatement": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
 
   "user.manage": ["ADMIN", "OWNER", "SUPER_ADMIN"],
   "role.assign": ["OWNER", "SUPER_ADMIN"],

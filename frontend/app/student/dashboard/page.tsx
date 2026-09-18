@@ -1,6 +1,7 @@
 "use client";
 import FeedbackPanel from "@/components/FeedbackPanel";
 import GrievancePanel from "@/components/GrievancePanel";
+import FinancePanel from "@/components/FinancePanel";
 import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useEffect, useState } from "react";
@@ -97,15 +98,15 @@ export default function StudentDashboard() {
         <div className={tab === "Dashboard" ? "mt-6" : ""}><ClassroomPanel /></div>
       )}
 
+      {/* The fee figures here were previously hard-coded placeholders. They now
+          come from the student's actual fee record, analysed server-side. */}
       {(tab === "Fees") && (
-        <Panel title="Fees">
-          <div className="grid grid-cols-3 gap-3 text-center text-sm">
-            <div className="glass p-4"><div className="text-lg font-bold">Rs 1.2L</div><div className="text-[var(--muted)]">Total</div></div>
-            <div className="glass p-4"><div className="text-lg font-bold text-emerald-400">Rs 90k</div><div className="text-[var(--muted)]">Paid</div></div>
-            <div className="glass p-4"><div className="text-lg font-bold text-rose-400">Rs 30k</div><div className="text-[var(--muted)]">Pending</div></div>
+        <>
+          <FinancePanel />
+          <div className="px-5 max-w-5xl mx-auto">
+            <button onClick={downloadReceipt} className="px-4 py-2 rounded-full bg-brand text-white text-sm hover:bg-brand-light">Download Receipt</button>
           </div>
-          <button onClick={downloadReceipt} className="mt-4 px-4 py-2 rounded-full bg-brand text-white text-sm hover:bg-brand-light">Download Receipt</button>
-        </Panel>
+        </>
       )}
 
       {tab === "Results" && (
