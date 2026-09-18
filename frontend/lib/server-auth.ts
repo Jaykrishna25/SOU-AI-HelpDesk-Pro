@@ -48,7 +48,14 @@ export async function getLiveSession(req: Request): Promise<Session | null> {
     select: { tokenVersion: true, isActive: true },
   });
   if (!u || !u.isActive) return null;
-  if (typeof s.tv === "number" && s.tv !== u.tokenVersion) return null;
+  /* Fail closed on a missing token version.
+     Previously this read `typeof s.tv === "number" && s.tv !== u.tokenVersion`,
+     which skipped the check entirely for any token without a `tv` claim - so a
+     token issued before versioning existed could not be revoked by bumping
+     tokenVersion. Every sign-in path now sets `tv`, so a token without one is
+     stale by definition and is rejected. `tokenVersion` is non-nullable with a
+     default of 0, so a valid session always has a number to compare. */
+  if (typeof s.tv !== "number" || s.tv !== u.tokenVersion) return null;
   return s;
 }
 

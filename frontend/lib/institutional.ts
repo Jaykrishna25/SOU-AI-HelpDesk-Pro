@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getLiveSession } from "@/lib/server-auth";
+import { audit } from "@/lib/audit";
 
 const CREATORS = rolesWith("feedback.createForm");
 const HANDLERS = rolesWith("grievance.handle");
@@ -86,6 +87,23 @@ export async function GET(req: NextRequest) {
     if (!HANDLERS.includes(u.role)) return json({ error: "Not permitted" }, 403);
     const items = await prisma.grievance.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
     const showId = IDENTITY.includes(u.role);
+
+    /* Encrypting an identity is only half of the control. Without a record of
+       who decrypted it, there is no way to answer "did anyone look?" - so every
+       reveal is logged. One row per request, with the count, rather than one
+       per grievance. */
+    if (showId) {
+      const revealed = items.filter(g => (g as any).identityRef).length;
+      if (revealed > 0) {
+        await audit({
+          action: "VIEW_IDENTITY", entity: "Grievance", req,
+          session: { userId: u.id, role: u.role, loginId: u.id, fullName: u.name },
+          summary: u.name + " (" + u.role + ") viewed the complainant identity on " +
+                   revealed + " grievance(s)",
+        });
+      }
+    }
+
     return json({
       items: items.map(g => {
         const { identityRef, ...rest } = g as any;
