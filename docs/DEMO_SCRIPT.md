@@ -62,6 +62,21 @@ Switch back to the student window.
 > bound, and an HOD is pinned to their own department server-side, so changing
 > the request body achieves nothing."
 
+### Optional, if a judge asks for advice
+
+If anyone asks the admin view something like **"what should we do to collect
+100% of fees?"**, let it answer rather than deflecting. It declines to advise
+while still reporting the real position:
+
+> *"I cannot provide advice on how to manage fee collection. According to the
+> current institutional data, the university has collected 80% of the total
+> billed amount of INR 12,00,000, with INR 2,40,000 currently outstanding
+> across 8 students."*
+
+> "It won't tell you what to do about money. It tells you what's true and stops
+> there. That boundary is in the system prompt and it holds on questions we
+> never anticipated."
+
 ## 2:45 — Close (15 seconds)
 
 > "Eleven tests cover the arithmetic with no database and no model in the loop.
