@@ -18,9 +18,10 @@ import AuditPanel from "@/components/AuditPanel";
 import AccountsPanel from "@/components/AccountsPanel";
 import { useInstitutionalMoney } from "@/components/useInstitutionalMoney";
 import StudyPanel from "@/components/StudyPanel";
+import FunPanel from "@/components/FunPanel";
 import { useTickets, updateTicket, statusColor } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Study Plan", "Fee Analysis", "Accounts", "Audit Trail", "Exam Seating", "Accreditation", "IQAC"];
+const NAV = ["Dashboard", "Tickets", "Revenue", "Workforce", "Forecasting", "Governance", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Study Plan", "Fee Analysis", "Accounts", "Audit Trail", "Exam Seating", "Accreditation", "IQAC", "Fun Zone"];
 
 export default function OwnerDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -120,6 +121,7 @@ export default function OwnerDashboard() {
       {tab === "Insights" && <InsightsPanel />}
       {tab === "Feedback" && <FeedbackPanel />}
       {tab === "Grievance" && <GrievancePanel />}
+      {tab === "Fun Zone" && <FunPanel />}
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Workforce" && (

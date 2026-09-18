@@ -11,10 +11,11 @@ import Panel from "@/components/Panel";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
 import CRPanel from "@/components/CRPanel";
 import StudyPanel from "@/components/StudyPanel";
+import FunPanel from "@/components/FunPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 import { useSubmissions } from "@/lib/attendance";
 
-const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets", "Study Plan", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights"];
+const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets", "Study Plan", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Fun Zone"];
 
 export default function FacultyDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -81,6 +82,7 @@ export default function FacultyDashboard() {
       {tab === "Study Plan" && <StudyPanel />}
       {tab === "Feedback" && <FeedbackPanel />}
       {tab === "Grievance" && <GrievancePanel />}
+      {tab === "Fun Zone" && <FunPanel />}
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Timetable" && (

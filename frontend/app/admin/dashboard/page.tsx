@@ -16,9 +16,10 @@ import CRPanel from "@/components/CRPanel";
 import FinancePanel from "@/components/FinancePanel";
 import AccountsPanel from "@/components/AccountsPanel";
 import StudyPanel from "@/components/StudyPanel";
+import FunPanel from "@/components/FunPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources", "Announcements", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Study Plan", "Fee Analysis", "Accounts", "Exam Seating", "Accreditation", "IQAC"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources", "Announcements", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Study Plan", "Fee Analysis", "Accounts", "Exam Seating", "Accreditation", "IQAC", "Fun Zone"];
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -96,6 +97,7 @@ export default function AdminDashboard() {
       {tab === "Insights" && <InsightsPanel />}
       {tab === "Feedback" && <FeedbackPanel />}
       {tab === "Grievance" && <GrievancePanel />}
+      {tab === "Fun Zone" && <FunPanel />}
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "CR & Attendance" && <CRPanel actor={me} />}

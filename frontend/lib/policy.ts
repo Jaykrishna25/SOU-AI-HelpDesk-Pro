@@ -34,6 +34,8 @@ export type Capability =
   | "finance.viewOwn" | "finance.viewInstitutional" | "finance.analyseStatement"
   // academic (study plan adviser)
   | "study.viewOwn" | "study.viewCohort"
+  // fun zone
+  | "fun.play"
   // administration
   | "user.manage" | "role.assign" | "audit.view";
 
@@ -77,6 +79,9 @@ const MATRIX: Record<Capability, Role[]> = {
   // is enforced by which tools get bound to the adviser, not by prompt wording.
   "study.viewOwn": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
   "study.viewCohort": ["FACULTY", "HOD", "HOI", "ADMIN", "OWNER", "SUPER_ADMIN"],
+
+  // Everyone may play. The access window, not the role, is what limits it.
+  "fun.play": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
 
   "user.manage": ["ADMIN", "OWNER", "SUPER_ADMIN"],
   "role.assign": ["OWNER", "SUPER_ADMIN"],

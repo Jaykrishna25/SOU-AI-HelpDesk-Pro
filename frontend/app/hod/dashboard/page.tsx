@@ -16,9 +16,10 @@ import TicketActionModal, { TicketAction } from "@/components/TicketActionModal"
 import CRPanel from "@/components/CRPanel";
 import FinancePanel from "@/components/FinancePanel";
 import StudyPanel from "@/components/StudyPanel";
+import FunPanel from "@/components/FunPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 
-const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Study Plan", "Fee Analysis", "Exam Seating", "Accreditation", "IQAC"];
+const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Students", "Faculty", "Admins", "Meetings", "Events", "Reports", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Study Plan", "Fee Analysis", "Exam Seating", "Accreditation", "IQAC", "Fun Zone"];
 interface Member { name: string; id: string; info: string; }
 
 function EditableSection({ title, data, onChange, cols }: {
@@ -136,6 +137,7 @@ export default function HodDashboard() {
       {tab === "Insights" && <InsightsPanel />}
       {tab === "Feedback" && <FeedbackPanel />}
       {tab === "Grievance" && <GrievancePanel />}
+      {tab === "Fun Zone" && <FunPanel />}
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Dashboard" && <AnalyticsCharts />}

@@ -919,3 +919,30 @@ model WebAuthnChallenge {
   @@index([loginId, purpose])
   @@index([expiresAt])
 }
+
+// ---------------------------------------------------------------------------
+// Fun Zone: daily puzzles and a weekly leaderboard.
+//
+// Deliberately NOT linked to User by a foreign key relation - a play record is
+// not academic data and should not widen the User model's blast radius. The
+// userId is stored plainly so the leaderboard can group by it, along with a
+// display name captured at play time.
+// ---------------------------------------------------------------------------
+model GameScore {
+  id         String   @id @default(cuid())
+  userId     String
+  userName   String
+  userRole   String
+  game       String              // "grid" | "scramble" | "sequence"
+  puzzleDate String              // YYYY-MM-DD, the puzzle played
+  score      Int
+  durationMs Int      @default(0)
+  moves      Int      @default(0)
+  weekKey    String              // YYYY-Www, so a weekly board is one index hit
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, game, puzzleDate])   // one scoring run per puzzle per day
+  @@index([weekKey, game])
+  @@index([userId])
+  @@index([createdAt])
+}
