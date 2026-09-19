@@ -55,11 +55,11 @@ Model is `qwen3:1.7b` via Ollama. Set `OLLAMA_MODEL` to change it.
 
 ## Portal — built and deployed
 
-Fee Statement Simplifier · Study Plan adviser · Fun Zone (eleven daily puzzles,
-weekly leaderboard, 30-minute daily budget) · Audit Trail viewer · account recovery with
+Fee Statement Simplifier · Study Plan adviser · Tutor · Fun Zone (eleven daily
+puzzles, levels, streaks, ten badges, weekly leaderboard, 30-minute daily budget) · Audit Trail viewer · account recovery with
 rank enforcement · step-up authentication · OakMitra full-page assistant at
-`/assistant` · Class Group (WhatsApp) · Tutor · transcript upload · opportunity search ·
-253 tests passing across 14 files.
+`/assistant` · Class Group (WhatsApp) · transcript upload · opportunity search ·
+284 tests passing across 15 files.
 
 ---
 
@@ -85,7 +85,7 @@ Eleven games: five originals plus six code games.
 - **Demo the Study Plan on an account with weak results.** The current student
   record has three subjects at 87–90, so the plan correctly shows nothing to
   revise — which makes a working feature look like it does nothing.
-- Have `docs/QA_REPORT.md` open in a tab. If asked what is weak, eleven
+- Have `docs/QA_REPORT.md` open in a tab. If asked what is weak, thirteen
   findings with severities is a better answer than improvising.
 - Expect two questions: *"won't students play during lectures?"* (30 minutes a
   day, enforced server-side — the endpoint returns 423 once it is spent) and
@@ -107,9 +107,21 @@ Documented in `docs/QA_REPORT.md` with reasoning:
 
 ## Things worth remembering
 
-**Nine fabricated statistics have been removed** from this project, including
-the "Strategic AI Forecasting" panel and the hard-coded CGPA. If a figure
-appears on screen, it should come from the database. Keep it that way.
+**Thirteen fabricated statistics have been removed** from this project: the
+"Strategic AI Forecasting" panel, the hard-coded CGPA, the "90% confidence"
+claim on the landing page and in the README, and the Owner's workforce figures
+("4.5 / 5", "91%", "6.2 hrs"). If a figure appears on screen it should come
+from the database. Keep it that way.
+
+**Real staff names were hard-coded in seven files** and have been replaced with
+an invented cast — Prof. R. Mehta, Prof. S. Iyer, Ms. A. Desai, Mr. V. Joshi,
+Dr. N. Rao, Dr. P. Menon, Mr. K. Shah. Demo data must not name real people, and
+showing the HOI a portal with her own name in the source is worse than a
+placeholder.
+
+**Five buttons claimed actions that never happened** ("Emergency alert
+broadcast to the entire campus!"). They now say what is actually true. A UI
+asserting something false is the same class of problem as a fabricated figure.
 
 **Three credentials have been exposed in screenshots** during development — a
 Gemini key, an Owner JWT and a student JWT. Keep tokens and keys out of images.

@@ -15,6 +15,7 @@ import {
   makeOutput, checkOutput, makeRobot, runRobot, robotBonus,
   makeSemantic, checkSemantic, semanticBonus,
 } from "@/lib/fun-code";
+import { progressFor } from "@/lib/fun-progress";
 
 /* Fun Zone endpoints.
 
@@ -64,6 +65,22 @@ export async function GET(req: NextRequest) {
     const minutesUsed = playedToday.reduce((a, r) => a + chargeFor(r.durationMs), 0);
     const budget = budgetState(minutesUsed, now);
 
+    /* Progression is DERIVED from the score rows, not stored. No XP column,
+       no migration - so the level curve can be rewritten without leaving a
+       single incorrect badge behind. */
+    const history = await prisma.gameScore.findMany({
+      where: { userId: s.userId },
+      select: { puzzleDate: true, game: true, score: true, durationMs: true },
+      orderBy: { puzzleDate: "asc" },
+      take: 2000,
+    });
+
+    const progress = progressFor({
+      rows: history,
+      today,
+      totalGames: GAMES.length,
+    });
+
     return json({
       window: budget,          // the client reads `window.open` and `window.label`
       budget,
@@ -73,6 +90,7 @@ export async function GET(req: NextRequest) {
       minutesUsed,
       budgetMinutes: DAILY_BUDGET_MINUTES,
       budgetLeft: budget.leftMinutes,
+      progress,
     });
   }
 

@@ -20,7 +20,7 @@ const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content",
 
 export default function FacultyDashboard() {
   const [tab, setTab] = useState("Dashboard");
-  const [me, setMe] = useState("Akshay Sir");
+  const [me, setMe] = useState("Prof. R. Mehta");
   const all = useTickets();
   const subs = useSubmissions();
   const tickets = all.filter((t) => t.stage === "FACULTY");
@@ -72,7 +72,7 @@ export default function FacultyDashboard() {
       ]}>
 
       <TicketActionModal open={modal.open} mode={modal.mode} ticketCode={modal.code}
-        escalateOptions={["HOD (Deepika Chauhan Mam)", "HOI (Hemal Patel Mam)", "Owner (Shital Aggrawal Sir)"]}
+        escalateOptions={["HOD (Dr. N. Rao)", "HOI (Dr. P. Menon)", "Owner (Mr. K. Shah)"]}
         resolveOptions={["Student (ticket creator)", "HOD"]}
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 
@@ -112,7 +112,7 @@ export default function FacultyDashboard() {
             <div className="flex gap-2 flex-wrap">
               {["Notes", "Assignment", "Video", "PPT"].map((t) => <button key={t} onClick={() => alert(t + " selected. Choose a file to upload.")} className="px-4 py-2 rounded-full glass text-sm hover:bg-brand/20">{t}</button>)}
             </div>
-            <button onClick={() => alert("Content uploaded successfully.")} className="px-4 py-2 rounded-full bg-brand text-white text-sm">Upload</button>
+            <button onClick={() => alert("Not wired up in this build. File storage is configured for IQAC evidence only — see the IQAC tab for a working upload.")} className="px-4 py-2 rounded-full bg-brand text-white text-sm">Upload</button>
           </div>
         </Panel>
       )}

@@ -15,11 +15,11 @@ const CLASSES = [
 
 const SUBJECTS = [
   { name: "Artificial Intelligence and intelligent Systems",        faculty: "Prof. Sagar Brahmbhatt" },
-  { name: "Cloud Native Application and Services",         faculty: "Prof. Deepika Chauhan & Prof. Akshay Parmar" },
+  { name: "Cloud Native Application and Services",         faculty: "Dr. N. Rao & Prof. R. Mehta" },
   { name: "Ethical and Legal Frameworks for Digital Systems",          faculty: "Prof. Meghna Panara & Prof. Pooja Mahadik" },
   { name: "Research Methodology",      faculty: "Prof. Dr Darshan Chhaya" },
   { name: "Artificial Intelligence and intelligent Systems_Practicals",        faculty: "Prof. Sagar Brahmbhatt" },
-  { name: "Cloud Native Application and Services_Practicals",        faculty: "Prof. Akshay Parmar" },
+  { name: "Cloud Native Application and Services_Practicals",        faculty: "Prof. R. Mehta" },
 ];
 
 const FIRST = ["Aarav","Vivaan","Aditya","Krish","Dhruv","Meet","Jay","Harsh","Kavya","Riya",

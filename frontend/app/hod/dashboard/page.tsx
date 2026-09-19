@@ -72,7 +72,7 @@ function EditableSection({ title, data, onChange, cols }: {
 export default function HodDashboard() {
   const [tab, setTab] = useState("Dashboard");
   const [myStage, setMyStage] = useState("HOD");
-  const [me, setMe] = useState("Deepika Chauhan Mam");
+  const [me, setMe] = useState("Dr. N. Rao");
   const all = useTickets();
   useEffect(() => {
     try {
@@ -97,12 +97,12 @@ export default function HodDashboard() {
     { name: "Ashok Sharma", id: "SOU2023CSE05", info: "Sem 5" },
   ]);
   const [faculty, setFaculty] = useState<Member[]>([
-    { name: "Akshay Sir", id: "FAC001", info: "Asst. Professor" },
-    { name: "Sagar Sir", id: "FAC002", info: "Asst. Professor" },
+    { name: "Prof. R. Mehta", id: "FAC001", info: "Asst. Professor" },
+    { name: "Prof. S. Iyer", id: "FAC002", info: "Asst. Professor" },
   ]);
   const [admins, setAdmins] = useState<Member[]>([
-    { name: "Umangini Mam", id: "ADM001", info: "Campus" },
-    { name: "Dipal Darji Sir", id: "ADM002", info: "Department" },
+    { name: "Ms. A. Desai", id: "ADM001", info: "Campus" },
+    { name: "Mr. V. Joshi", id: "ADM002", info: "Department" },
   ]);
   const [meetings, setMeetings] = useState<Member[]>([
     { name: "Faculty Review Meeting", id: "28 Jul 2026", info: "Department" },
@@ -123,7 +123,7 @@ export default function HodDashboard() {
       ]}>
 
       <TicketActionModal open={modal.open} mode={modal.mode} ticketCode={modal.code}
-        escalateOptions={["HOI (Hemal Patel Mam)", "Owner (Shital Aggrawal Sir)"]}
+        escalateOptions={["HOI (Dr. P. Menon)", "Owner (Mr. K. Shah)"]}
         resolveOptions={["Student (ticket creator)", "Admin", "Faculty"]}
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 

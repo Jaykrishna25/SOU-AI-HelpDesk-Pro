@@ -23,7 +23,7 @@ const NAV = ["Dashboard", "Tickets", "CR & Attendance", "Classrooms", "Resources
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState("Dashboard");
-  const [me, setMe] = useState("Umangini Mam");
+  const [me, setMe] = useState("Ms. A. Desai");
   const all = useTickets();
   const tickets = all.filter((t) => t.stage === "ADMIN");
   const [modal, setModal] = useState<{ open: boolean; mode: "escalate" | "resolve"; code: string }>({ open: false, mode: "escalate", code: "" });
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
     setModal({ open: false, mode: "escalate", code: "" });
   };
 
-  const rooms = [["A-301", "Occupied", "DSA - Akshay Sir"], ["A-302", "Occupied", "DBMS - Sagar Sir"], ["Lab-2", "Free", "-"], ["Seminar Hall", "Free", "-"]];
+  const rooms = [["A-301", "Occupied", "DSA - Prof. R. Mehta"], ["A-302", "Occupied", "DBMS - Prof. S. Iyer"], ["Lab-2", "Free", "-"], ["Seminar Hall", "Free", "-"]];
   const resources = [["Computer Lab 1", "Available"], ["Computer Lab 2", "In Use"], ["Seminar Hall A", "Available"], ["Auditorium", "Booked"]];
 
   return (
@@ -54,7 +54,7 @@ export default function AdminDashboard() {
       ]}>
 
       <TicketActionModal open={modal.open} mode={modal.mode} ticketCode={modal.code}
-        escalateOptions={["Faculty (Akshay Sir)", "HOD (Deepika Chauhan Mam)", "HOI (Hemal Patel Mam)", "Owner (Shital Aggrawal Sir)"]}
+        escalateOptions={["Faculty (Prof. R. Mehta)", "HOD (Dr. N. Rao)", "HOI (Dr. P. Menon)", "Owner (Mr. K. Shah)"]}
         resolveOptions={["Student (ticket creator)", "HOD", "Owner"]}
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 
@@ -135,9 +135,9 @@ export default function AdminDashboard() {
             <input placeholder="Announcement title" className="w-full glass px-4 py-3 bg-transparent outline-none text-sm" />
             <textarea placeholder="Message to students / faculty..." className="w-full glass px-4 py-3 bg-transparent outline-none text-sm h-24" />
             <div className="flex gap-2 flex-wrap">
-              <button onClick={() => alert("Announcement posted to all students.")} className="px-4 py-2 rounded-full bg-brand text-white text-sm">Post to Students</button>
-              <button onClick={() => alert("Announcement posted to all faculty.")} className="px-4 py-2 rounded-full glass text-sm">Post to Faculty</button>
-              <button onClick={() => alert("Emergency alert broadcast to the entire campus!")} className="px-4 py-2 rounded-full bg-rose-500/80 text-white text-sm">Emergency Alert</button>
+              <button onClick={() => alert("Not wired up in this build. Announcements are drafted here; delivery needs the notification service connected.")} className="px-4 py-2 rounded-full bg-brand text-white text-sm">Post to Students</button>
+              <button onClick={() => alert("Not wired up in this build. Announcements are drafted here; delivery needs the notification service connected.")} className="px-4 py-2 rounded-full glass text-sm">Post to Faculty</button>
+              <button onClick={() => alert("Not wired up in this build — and deliberately so. A campus-wide emergency broadcast should not be one unconfirmed click away.")} className="px-4 py-2 rounded-full bg-rose-500/80 text-white text-sm">Emergency Alert</button>
             </div>
           </div>
         </Panel>

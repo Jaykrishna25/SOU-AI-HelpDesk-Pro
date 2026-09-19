@@ -21,14 +21,14 @@ async function main() {
   const mkUser = (loginId: string, role: Role, fullName: string, birthdate: string, email: string) =>
     prisma.user.create({ data: { loginId, role, fullName, birthdate: D(birthdate), email } });
 
-  await mkUser("OWN001", Role.OWNER, "Shital Aggrawal Sir", "1990-06-09", "own001@silveroakuni.ac.in");
+  await mkUser("OWN001", Role.OWNER, "Mr. K. Shah", "1990-06-09", "own001@silveroakuni.ac.in");
   await mkUser("OWN002", Role.OWNER, "Poonam Aggrawal Mam", "1990-10-25", "own002@silveroakuni.ac.in");
-  await mkUser("HOD002", Role.HOI, "Hemal Patel Mam", "1995-10-05", "hoi@silveroakuni.ac.in");
-  await mkUser("HOD001", Role.HOD, "Deepika Chauhan Mam", "1995-09-05", "hod.cse@silveroakuni.ac.in");
+  await mkUser("HOD002", Role.HOI, "Dr. P. Menon", "1995-10-05", "hoi@silveroakuni.ac.in");
+  await mkUser("HOD001", Role.HOD, "Dr. N. Rao", "1995-09-05", "hod.cse@silveroakuni.ac.in");
 
   for (const [id, name, bd, scope] of [
-    ["ADM001", "Umangini Mam", "2000-05-02", "CAMPUS"],
-    ["ADM002", "Dipal Darji Sir", "2000-05-03", "DEPARTMENT"],
+    ["ADM001", "Ms. A. Desai", "2000-05-02", "CAMPUS"],
+    ["ADM002", "Mr. V. Joshi", "2000-05-03", "DEPARTMENT"],
   ] as const) {
     const u = await mkUser(id, Role.ADMIN, name, bd, id.toLowerCase() + "@silveroakuni.ac.in");
     await prisma.admin.create({ data: { userId: u.id, adminId: id, scope } });
@@ -36,8 +36,8 @@ async function main() {
 
   const facultyIds: Record<string, string> = {};
   for (const [id, name, bd, desig] of [
-    ["FAC001", "Akshay Sir", "2000-10-05", "Assistant Professor"],
-    ["FAC002", "Sagar Sir", "2000-08-09", "Assistant Professor"],
+    ["FAC001", "Prof. R. Mehta", "2000-10-05", "Assistant Professor"],
+    ["FAC002", "Prof. S. Iyer", "2000-08-09", "Assistant Professor"],
   ] as const) {
     const u = await mkUser(id, Role.FACULTY, name, bd, id.toLowerCase() + "@silveroakuni.ac.in");
     const f = await prisma.faculty.create({ data: { userId: u.id, facultyId: id, departmentId: cse.id, designation: desig } });
@@ -94,7 +94,7 @@ async function main() {
 
   await prisma.cRAssignment.create({
     data: { subjectCode: "CS301", subjectName: "Data Structures",
-      enrollmentNo: "SOU2023CSE69", studentName: "Navlani Jaykrishna Satishkumar", assignedBy: "Akshay Sir" },
+      enrollmentNo: "SOU2023CSE69", studentName: "Navlani Jaykrishna Satishkumar", assignedBy: "Prof. R. Mehta" },
   });
 
   for (const [title, type, content] of [

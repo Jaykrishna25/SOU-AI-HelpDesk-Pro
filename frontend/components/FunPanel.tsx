@@ -4,16 +4,24 @@ import {
   Gamepad2, Trophy, Clock, Lock, Loader2, CheckCircle2, XCircle, Play, RotateCcw,
 } from "lucide-react";
 import FunCodeGames from "@/components/FunCodeGames";
+import FunProgress from "@/components/FunProgress";
 
 /* Fun Zone.
 
-   Open twice a day rather than always. The server enforces that - a closed
-   window returns 423 and no puzzle, so leaving the tab open past closing time
-   achieves nothing.
+   Open all day. What limits it is a thirty-minute daily budget, enforced on
+   the server - once it is spent the puzzle endpoint returns 423 and no puzzle,
+   so leaving the tab open achieves nothing. A budget rather than a time
+   window, because a window makes a rule about the timetable and the timetable
+   is not this portal's business.
 
    Puzzles are generated from the date, so everyone gets the same puzzle and the
    weekly board compares like with like. Solutions never reach the client: the
-   attempt is posted and the server decides. */
+   attempt is posted and the server decides.
+
+   Progression - level, streak, badges - is derived from the score rows rather
+   than stored, so the curve can be rewritten without a migration. It leads
+   with the STREAK on purpose: the leaderboard already rewards winning, and a
+   leaderboard is what makes a student who is not the best stop playing. */
 
 const tok = () => { try { return sessionStorage.getItem("sou_token") || localStorage.getItem("sou_token") || ""; } catch { return ""; } };
 const H = () => ({ "Content-Type": "application/json", Authorization: "Bearer " + tok() });
@@ -168,6 +176,7 @@ export default function FunPanel() {
             The board is still below — a spent budget stops you playing, not looking.
           </p>
         </div>
+        <FunProgress progress={status?.progress} />
         {board && <Leaderboard board={board} onFilter={loadBoard} />}
       </div>
     );
@@ -437,8 +446,10 @@ export default function FunPanel() {
 
       {err && <div className="mt-5 px-4 py-3 rounded-lg text-sm border border-rose-500/40 bg-rose-500/10">{err}</div>}
 
+      <FunProgress progress={status?.progress} />
+
       {status && (
-        <div className="panel-solid rounded-xl p-4 mt-5 flex items-center justify-between gap-3 flex-wrap">
+        <div className="panel-solid rounded-xl p-4 mt-3 flex items-center justify-between gap-3 flex-wrap">
           <div className="text-sm">
             Daily play budget
             <span className="opacity-50 text-xs ml-2">

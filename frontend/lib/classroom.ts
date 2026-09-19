@@ -14,9 +14,9 @@ export const getToken = (): string | null =>
   typeof window === "undefined" ? null : sessionStorage.getItem("gc_token");
 
 const MOCK_COURSES: GcCourse[] = [
-  { id: "c1", name: "Data Structures & Algorithms", section: "CSE Sem 5 - A", teacher: "Akshay Sir" },
-  { id: "c2", name: "Database Management Systems", section: "CSE Sem 5 - A", teacher: "Sagar Sir" },
-  { id: "c3", name: "Operating Systems", section: "CSE Sem 5 - A", teacher: "Akshay Sir" },
+  { id: "c1", name: "Data Structures & Algorithms", section: "CSE Sem 5 - A", teacher: "Prof. R. Mehta" },
+  { id: "c2", name: "Database Management Systems", section: "CSE Sem 5 - A", teacher: "Prof. S. Iyer" },
+  { id: "c3", name: "Operating Systems", section: "CSE Sem 5 - A", teacher: "Prof. R. Mehta" },
 ];
 const MOCK_WORK: GcWork[] = [
   { id: "w1", courseId: "c1", title: "Assignment 3 - Binary Trees", dueDate: "2026-08-12", state: "PUBLISHED" },

@@ -23,8 +23,8 @@
 > |---|---|
 > | Live portal | [sou-ai-help-desk-pro-frontend.vercel.app](https://sou-ai-help-desk-pro-frontend.vercel.app) |
 > | Role map | [/role-map.html](https://sou-ai-help-desk-pro-frontend.vercel.app/role-map.html) |
-> | Tests | 253 across 14 files · `cd frontend && npx vitest run` |
-> | QA report | [`docs/QA_REPORT.md`](./docs/QA_REPORT.md) — 12 findings with severities |
+> | Tests | 284 across 15 files · `cd frontend && npx vitest run` |
+> | QA report | [`docs/QA_REPORT.md`](./docs/QA_REPORT.md) — 13 findings with severities |
 > | Verification | [`docs/VERIFICATION_CHECKLIST.md`](./docs/VERIFICATION_CHECKLIST.md) — 10 checks, all passing |
 >
 > **Also in this repository:** [`ai-agent/`](./ai-agent) — the same AI layer
@@ -38,7 +38,7 @@
 **Silver Oak University** · Cloud-Native SaaS Platform
 
 ![status](https://img.shields.io/badge/status-production--ready-6d28d9)
-![stack](https://img.shields.io/badge/Next.js-15-black) ![node](https://img.shields.io/badge/Node-20-green) ![db](https://img.shields.io/badge/PostgreSQL-16-blue) ![orm](https://img.shields.io/badge/Prisma-5-white)
+![stack](https://img.shields.io/badge/Next.js-16-black) ![node](https://img.shields.io/badge/Node-20-green) ![db](https://img.shields.io/badge/PostgreSQL-16-blue) ![orm](https://img.shields.io/badge/Prisma-5-white)
 
 A unified platform combining a **University ERP + Student Information System** with a
 **multi-agent AI Help Desk**, **RAG knowledge engine**, **ticketing + SLA automation**,
@@ -49,12 +49,12 @@ Oracle PeopleSoft Campus Solutions, ServiceNow, Jira Service Management and Sale
 
 ## ✨ Highlights
 
-- **12-agent AI pipeline** (LangChain-style) — intent → entities → RAG → decision → ticket → routing → notify.
+- **Role-bound tool calling** — the agent is handed only the tools the caller's role permits, so a restriction cannot be argued around.
 - **Confidence-gated help desk** — below the retrieval confidence floor the assistant says it does not know and offers a ticket, rather than improvising.
 - **7 role-based portals** — Student, Admin, Faculty, HOD, HOI, Owner, Super Admin.
 - **SLA tracking** with escalation up the role chain and watcher notifications.
-- **RAG knowledge base** with semantic search and auto-learning.
-- **Animated premium UI** — Next.js 15 + React 19 + Framer Motion + GSAP + Three.js + Recharts, dark/light mode & glassmorphism.
+- **RAG knowledge base** over 20 university documents, re-embedded from the Owner dashboard.
+- **Animated premium UI** — Next.js 16 + React 19 + Framer Motion + GSAP + Three.js + Recharts, dark/light mode & glassmorphism.
 - **Cloud-native & Dockerized** — EC2, RDS, S3, SES, Cognito, IAM, CloudWatch.
 
 ---
@@ -71,7 +71,7 @@ sou-ai-helpdesk-pro/
 │       ├── services/           # ticket workflow, SLA, notifications
 │       ├── middleware/         # JWT auth, RBAC, error handling
 │       └── seed.ts             # demo users + academic + ticket data
-├── frontend/                   # Next.js 15 animated app
+├── frontend/                   # Next.js 16 app
 │   ├── app/                    # landing, login, 5 role dashboards
 │   └── components/             # Three.js bg, chatbot, charts, shell
 ├── docs/                       # architecture, ERD, API, viva, report, slides…
@@ -168,12 +168,12 @@ human oversight on low-confidence answers.
 
 **Known gaps, documented rather than hidden** — see [`docs/QA_REPORT.md`](docs/QA_REPORT.md):
 there is **no rate limiting on the AI endpoints**, booking clash detection is not atomic, and
-booking hours are stored in UTC. Twelve findings in total, with severities.
+booking hours are stored in UTC. Thirteen findings in total, with severities.
 
 ---
 
 ## 🧰 Tech Stack
-**Frontend:** Next.js 15, React 19, TypeScript, Tailwind, ShadCN-style UI, Framer Motion, GSAP, Three.js, Recharts
+**Frontend:** Next.js 16, React 19, TypeScript, Tailwind, ShadCN-style UI, Framer Motion, GSAP, Three.js, Recharts
 **Backend:** Node.js, Express, TypeScript, Prisma, PostgreSQL
 **AI:** Google Gemini via LangChain.js (portal) · Ollama + LangChain + Chroma (ai-agent) · RAG with role-bound tool calling
 **Cloud:** AWS EC2/RDS/S3/SES/Cognito/IAM/CloudWatch (Bedrock — future), Docker, CI/CD-ready

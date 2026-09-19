@@ -47,7 +47,7 @@ export default function OwnerDashboard() {
   ];
 
   return (
-    <DashboardShell role="Owner" name="Shital Aggrawal Sir" nav={NAV} activeNav={tab} onNavSelect={setTab}
+    <DashboardShell role="Owner" name="Mr. K. Shah" nav={NAV} activeNav={tab} onNavSelect={setTab}
       stats={[
         { label: "Fees Outstanding", value: money.outstanding, icon: Wallet },
         { label: "My Tickets", value: String(tickets.length), icon: TrendingUp },
@@ -131,12 +131,31 @@ export default function OwnerDashboard() {
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Workforce" && (
-        <Panel title="Workforce Performance">
-          <div className="space-y-2 text-sm">
-            <div className="glass px-4 py-3 flex justify-between"><span>Faculty avg rating</span><span className="text-brand-light">4.5 / 5</span></div>
-            <div className="glass px-4 py-3 flex justify-between"><span>Admin ticket resolution</span><span className="text-brand-light">91%</span></div>
-            <div className="glass px-4 py-3 flex justify-between"><span>Avg response time</span><span className="text-brand-light">6.2 hrs</span></div>
+        <Panel title="Workforce performance">
+          {/* "4.5 / 5", "91%" and "6.2 hrs" were hard-coded strings presented as
+              measurements. Nothing in this system computes them. Removed rather
+              than relabelled - a fabricated figure with a caveat is still a
+              fabricated figure, and this one sits on the Owner's dashboard where
+              somebody might act on it. */}
+          <p className="text-sm text-[var(--muted)]">
+            Not implemented. These figures are not computed anywhere in this system, so
+            none are shown. What each would need:
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3 text-sm mt-4">
+            {[
+              ["Faculty rating", "Feedback responses per faculty member - the Feedback module collects these, but aggregation by staff member is not built"],
+              ["Ticket resolution rate", "Available in principle from ticket history; not yet aggregated per role"],
+              ["Average response time", "Needs first-response timestamps on tickets, which are not recorded"],
+            ].map(([k, v]) => (
+              <div key={k} className="glass p-4">
+                <div className="font-medium">{k}</div>
+                <div className="text-xs text-[var(--muted)] mt-1">Needs: {v}</div>
+              </div>
+            ))}
           </div>
+          <p className="text-xs text-[var(--muted)] mt-4">
+            Feedback aggregate scores, which <i>are</i> computed, appear under Feedback.
+          </p>
         </Panel>
       )}
 

@@ -3,7 +3,7 @@
 ## Automated tests
 
 Framework: Vitest. Run with `npm test` from `frontend/`.
-Current state: **253 tests across 14 files, all passing.**
+Current state: **284 tests across 15 files, all passing.**
 
 | File | Tests | Covers |
 |---|---|---|
@@ -21,6 +21,7 @@ Current state: **253 tests across 14 files, all passing.**
 | `careers.test.ts` | 13 | Opportunity keywords come from the student's own marks |
 | `tutor.test.ts` | 38 | What the tutor will and will not claim to know |
 | `fun-code.test.ts` | 32 | The six code games: determinism, hidden answers, solvable levels |
+| `fun-progress.test.ts` | 27 | Level curve, streak rule, badge predicates |
 
 ### tests/auth.test.ts (6)
 
