@@ -1,4 +1,39 @@
 # 🎓 SOU AI HelpDesk Pro
+
+> ### 🏆 Hackathon submission — Track 3, Education
+>
+> ## → **[https://sou-ai-help-desk-pro-frontend.vercel.app](https://sou-ai-help-desk-pro-frontend.vercel.app)**
+>
+> A live, deployed university help desk serving 7 roles, backed by 50 database
+> models, with an AI assistant that **refuses rather than guesses**. Not a
+> prototype — it goes in front of our Head of Institute.
+>
+> **The one thing to try.** Sign in as a student and ask the fee assistant
+> *"what will be my penalty?"* It gives the exact overdue figure — because a
+> tool computed it — then says the policy documents do not state the penalty
+> rate and sends you to the Accounts Office. It had every opportunity to invent
+> a percentage.
+>
+> **The idea underneath it.** Most systems restrict an assistant by *telling*
+> it what to avoid. That is a request, and requests can be argued with. Here a
+> tool the caller is not entitled to is **never bound to the agent**, so no
+> phrasing reaches it — see [`frontend/lib/policy.ts`](./frontend/lib/policy.ts).
+>
+> | | |
+> |---|---|
+> | Live portal | [sou-ai-help-desk-pro-frontend.vercel.app](https://sou-ai-help-desk-pro-frontend.vercel.app) |
+> | Role map | [/role-map.html](https://sou-ai-help-desk-pro-frontend.vercel.app/role-map.html) |
+> | Tests | 183 across 12 files · `cd frontend && npx vitest run` |
+> | QA report | [`docs/QA_REPORT.md`](./docs/QA_REPORT.md) — 12 findings with severities |
+> | Verification | [`docs/VERIFICATION_CHECKLIST.md`](./docs/VERIFICATION_CHECKLIST.md) — 10 checks, all passing |
+>
+> **Also in this repository:** [`ai-agent/`](./ai-agent) — the same AI layer
+> rebuilt in Python as a Streamlit app, running the classic RAG pipeline
+> end to end: LangChain loaders, HuggingFace embeddings, Chroma, `@tool`,
+> `create_agent`, ChatOllama. `agent_core/policy.py` mirrors
+> `frontend/lib/policy.ts`, so the role-gating idea is demonstrable in both
+> stacks. Run it with `cd ai-agent && streamlit run app.py`.
+
 ### Enterprise AI-Powered University ERP · Multi-Agent Help Desk · Management System
 **Silver Oak University** · Cloud-Native SaaS Platform
 

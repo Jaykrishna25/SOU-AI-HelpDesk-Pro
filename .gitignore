@@ -16,3 +16,6 @@ frontend/.env
 .env*
 
 frontend/tsconfig.tsbuildinfo
+.venv/
+ai-agent/.venv/
+ai-agent/**/__pycache__/

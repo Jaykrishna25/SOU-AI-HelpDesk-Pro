@@ -1,0 +1,4 @@
+# Streamlit's file watcher introspects torch/transformers modules and throws
+# spurious tracebacks on startup. Nothing here needs hot reload.
+[server]
+fileWatcherType = "none"

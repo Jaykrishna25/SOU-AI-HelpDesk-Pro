@@ -1,0 +1,13 @@
+streamlit>=1.40
+langchain
+langchain-community
+langchain-ollama
+langchain-chroma
+langchain-huggingface
+langgraph
+chromadb
+sentence-transformers
+pypdf
+pandas
+# Optional: only needed when LLM_PROVIDER=gemini. Default path is Ollama.
+langchain-google-genai

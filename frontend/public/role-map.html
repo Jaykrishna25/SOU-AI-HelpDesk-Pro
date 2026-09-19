@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SOU AI HelpDesk Pro — how the roles connect</title>
+<style>
+  :root {
+    --bg:#0c0a14; --panel:#15121f; --line:rgba(255,255,255,.14);
+    --text:#eceaf3; --muted:#9a93ad; --brand:#7c5cff; --brand2:#4ea8ff;
+    --ok:#2fbf71; --warn:#f5a524; --bad:#e5484d;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.55 ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+    padding:32px 24px 64px;
+  }
+  .wrap { max-width:1180px; margin:0 auto; }
+  h1 { font-size:30px; letter-spacing:-.02em; margin:0 0 6px; }
+  .sub { color:var(--muted); margin:0 0 28px; max-width:70ch; }
+  h2 { font-size:19px; letter-spacing:-.01em; margin:38px 0 14px;
+       display:flex; align-items:center; gap:10px; }
+  h2::after { content:""; flex:1; height:1px; background:var(--line); }
+  svg { width:100%; height:auto; display:block; }
+  .card { background:var(--panel); border:1px solid var(--line);
+          border-radius:14px; padding:18px 20px; }
+  .note { color:var(--muted); font-size:13.5px; margin-top:10px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; font-size:12px;
+       text-transform:uppercase; letter-spacing:.06em; }
+  td.y { color:var(--ok); font-weight:600; }
+  td.n { color:var(--muted); }
+  .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+  .k { font-weight:600; margin-bottom:4px; }
+  code { background:rgba(255,255,255,.07); padding:1px 6px; border-radius:5px;
+         font-size:12.5px; }
+  .legend { display:flex; gap:18px; flex-wrap:wrap; color:var(--muted);
+            font-size:13px; margin-top:12px; }
+  .sw { display:inline-block; width:11px; height:11px; border-radius:3px;
+        margin-right:6px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>How the roles connect</h1>
+  <p class="sub">
+    Seven roles, one capability matrix. Nothing below is enforced by asking nicely —
+    every gate is a check in <code>lib/policy.ts</code>, and for the AI features it is
+    enforced by <em>which tools get bound to the agent</em> rather than by wording in a
+    prompt.
+  </p>
+
+  <!-- ============ 1. THE HIERARCHY ============ -->
+  <h2>The hierarchy, and what each rank adds</h2>
+  <div class="card">
+  <svg viewBox="0 0 1100 330" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Role hierarchy from Student to Super Admin">
+    <defs>
+      <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+        <path d="M0,0 L9,4.5 L0,9 z" fill="#7c5cff"/>
+      </marker>
+    </defs>
+
+    <!-- tiers -->
+    <g font-size="13" fill="#eceaf3" text-anchor="middle">
+      <g>
+        <rect x="20" y="120" width="150" height="86" rx="12" fill="#15121f" stroke="#7c5cff" stroke-width="1.5"/>
+        <text x="95" y="150" font-size="15" font-weight="700">STUDENT</text>
+        <text x="95" y="171" font-size="11.5" fill="#9a93ad">own record only</text>
+        <text x="95" y="188" font-size="11.5" fill="#9a93ad">rank 1</text>
+      </g>
+      <g>
+        <rect x="205" y="120" width="150" height="86" rx="12" fill="#15121f" stroke="#4ea8ff" stroke-width="1.5"/>
+        <text x="280" y="150" font-size="15" font-weight="700">FACULTY</text>
+        <text x="280" y="171" font-size="11.5" fill="#9a93ad">+ cohort, attendance</text>
+        <text x="280" y="188" font-size="11.5" fill="#9a93ad">rank 2</text>
+      </g>
+      <g>
+        <rect x="390" y="120" width="150" height="86" rx="12" fill="#15121f" stroke="#4ea8ff" stroke-width="1.5"/>
+        <text x="465" y="150" font-size="15" font-weight="700">ADMIN</text>
+        <text x="465" y="171" font-size="11.5" fill="#9a93ad">+ approve bookings</text>
+        <text x="465" y="188" font-size="11.5" fill="#9a93ad">rank 3</text>
+      </g>
+      <g>
+        <rect x="575" y="120" width="150" height="86" rx="12" fill="#15121f" stroke="#4ea8ff" stroke-width="1.5"/>
+        <text x="650" y="150" font-size="15" font-weight="700">HOD</text>
+        <text x="650" y="171" font-size="11.5" fill="#9a93ad">+ verify, department</text>
+        <text x="650" y="188" font-size="11.5" fill="#9a93ad">rank 3</text>
+      </g>
+      <g>
+        <rect x="760" y="120" width="150" height="86" rx="12" fill="#15121f" stroke="#f5a524" stroke-width="1.5"/>
+        <text x="835" y="150" font-size="15" font-weight="700">HOI</text>
+        <text x="835" y="171" font-size="11.5" fill="#9a93ad">+ approve, publish</text>
+        <text x="835" y="188" font-size="11.5" fill="#9a93ad">rank 4</text>
+      </g>
+      <g>
+        <rect x="945" y="120" width="140" height="86" rx="12" fill="#15121f" stroke="#e5484d" stroke-width="1.5"/>
+        <text x="1015" y="144" font-size="15" font-weight="700">OWNER</text>
+        <text x="1015" y="164" font-size="11.5" fill="#9a93ad">+ identity reveal,</text>
+        <text x="1015" y="179" font-size="11.5" fill="#9a93ad">audit, accounts</text>
+        <text x="1015" y="195" font-size="11.5" fill="#9a93ad">rank 5</text>
+      </g>
+    </g>
+
+    <!-- arrows -->
+    <g stroke="#7c5cff" stroke-width="1.6" marker-end="url(#a)" opacity=".8">
+      <line x1="172" y1="163" x2="200" y2="163"/>
+      <line x1="357" y1="163" x2="385" y2="163"/>
+      <line x1="542" y1="163" x2="570" y2="163"/>
+      <line x1="727" y1="163" x2="755" y2="163"/>
+      <line x1="912" y1="163" x2="940" y2="163"/>
+    </g>
+
+    <text x="550" y="42" text-anchor="middle" font-size="13.5" fill="#9a93ad">
+      Each rank holds everything to its left, plus what is written beneath it.
+    </text>
+    <text x="550" y="66" text-anchor="middle" font-size="13" fill="#f5a524">
+      Rank governs account recovery: you may only reset an account you outrank.
+    </text>
+    <text x="550" y="88" text-anchor="middle" font-size="13" fill="#9a93ad">
+      ADMIN and HOD share rank 3 — so neither can reset the other.
+    </text>
+
+    <text x="550" y="256" text-anchor="middle" font-size="13" fill="#9a93ad">
+      SUPER_ADMIN (rank 6) exists in the matrix but has no seeded account. The highest
+      privilege sits outside the application, with whoever operates the deployment.
+    </text>
+    <text x="550" y="288" text-anchor="middle" font-size="12.5" fill="#6f6885">
+      Hierarchy is not inheritance: it decides recovery, not capability. A capability is
+      granted by the matrix or it is not held.
+    </text>
+  </svg>
+  </div>
+
+  <!-- ============ 2. SEPARATION OF DUTIES ============ -->
+  <h2>Separation of duties — nobody approves their own work</h2>
+  <div class="card">
+  <svg viewBox="0 0 1100 250" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="IQAC evidence chain: upload, verify, approve, publish">
+    <defs>
+      <marker id="b" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+        <path d="M0,0 L9,4.5 L0,9 z" fill="#2fbf71"/>
+      </marker>
+    </defs>
+
+    <text x="550" y="28" text-anchor="middle" font-size="13.5" fill="#9a93ad">
+      IQAC accreditation evidence passes through four hands, and no role holds two of them.
+    </text>
+
+    <g text-anchor="middle">
+      <rect x="40" y="60" width="210" height="76" rx="12" fill="#15121f" stroke="#2fbf71" stroke-width="1.5"/>
+      <text x="145" y="88" font-size="14" font-weight="700" fill="#eceaf3">1 · UPLOAD</text>
+      <text x="145" y="110" font-size="12" fill="#9a93ad">Faculty, Admin, HOD, HOI</text>
+      <text x="145" y="126" font-size="11" fill="#6f6885">evidence.upload</text>
+
+      <rect x="290" y="60" width="210" height="76" rx="12" fill="#15121f" stroke="#2fbf71" stroke-width="1.5"/>
+      <text x="395" y="88" font-size="14" font-weight="700" fill="#eceaf3">2 · VERIFY</text>
+      <text x="395" y="110" font-size="12" fill="#9a93ad">Admin, HOD, HOI</text>
+      <text x="395" y="126" font-size="11" fill="#6f6885">evidence.verify</text>
+
+      <rect x="540" y="60" width="210" height="76" rx="12" fill="#15121f" stroke="#f5a524" stroke-width="1.5"/>
+      <text x="645" y="88" font-size="14" font-weight="700" fill="#eceaf3">3 · APPROVE</text>
+      <text x="645" y="110" font-size="12" fill="#9a93ad">HOI, Owner only</text>
+      <text x="645" y="126" font-size="11" fill="#6f6885">evidence.approve</text>
+
+      <rect x="790" y="60" width="210" height="76" rx="12" fill="#15121f" stroke="#e5484d" stroke-width="1.5"/>
+      <text x="895" y="88" font-size="14" font-weight="700" fill="#eceaf3">4 · PUBLISH</text>
+      <text x="895" y="110" font-size="12" fill="#9a93ad">HOI, Owner only</text>
+      <text x="895" y="126" font-size="11" fill="#6f6885">report.publish</text>
+    </g>
+
+    <g stroke="#2fbf71" stroke-width="1.6" marker-end="url(#b)" opacity=".8">
+      <line x1="252" y1="98" x2="285" y2="98"/>
+      <line x1="502" y1="98" x2="535" y2="98"/>
+      <line x1="752" y1="98" x2="785" y2="98"/>
+    </g>
+
+    <text x="550" y="176" text-anchor="middle" font-size="13" fill="#f5a524">
+      An ADMIN can verify evidence but can never approve it. Tested in policy.test.ts.
+    </text>
+    <text x="550" y="202" text-anchor="middle" font-size="12.5" fill="#9a93ad">
+      Export is refused until approval, so an unapproved draft cannot leave the building.
+    </text>
+    <text x="550" y="228" text-anchor="middle" font-size="12.5" fill="#6f6885">
+      A report lists the criteria it has no evidence for, rather than filling the gaps.
+    </text>
+  </svg>
+  </div>
+
+  <!-- ============ 3. GRIEVANCE ============ -->
+  <h2>The grievance path — handled by one role, identified by another</h2>
+  <div class="card">
+  <svg viewBox="0 0 1100 230" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Grievance flow with encrypted identity">
+    <defs>
+      <marker id="c" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+        <path d="M0,0 L9,4.5 L0,9 z" fill="#4ea8ff"/>
+      </marker>
+    </defs>
+
+    <g text-anchor="middle">
+      <rect x="40" y="52" width="200" height="84" rx="12" fill="#15121f" stroke="#7c5cff" stroke-width="1.5"/>
+      <text x="140" y="80" font-size="14" font-weight="700" fill="#eceaf3">STUDENT files</text>
+      <text x="140" y="102" font-size="12" fill="#9a93ad">identity encrypted</text>
+      <text x="140" y="120" font-size="11" fill="#6f6885">AES-256-GCM at rest</text>
+
+      <rect x="310" y="52" width="230" height="84" rx="12" fill="#15121f" stroke="#4ea8ff" stroke-width="1.5"/>
+      <text x="425" y="80" font-size="14" font-weight="700" fill="#eceaf3">HOD / ADMIN handles</text>
+      <text x="425" y="102" font-size="12" fill="#9a93ad">reads the case,</text>
+      <text x="425" y="120" font-size="12" fill="#e5484d">cannot see who filed it</text>
+
+      <rect x="610" y="52" width="230" height="84" rx="12" fill="#15121f" stroke="#f5a524" stroke-width="1.5"/>
+      <text x="725" y="80" font-size="14" font-weight="700" fill="#eceaf3">OWNER may reveal</text>
+      <text x="725" y="102" font-size="12" fill="#9a93ad">only when necessary</text>
+      <text x="725" y="120" font-size="11" fill="#6f6885">grievance.viewIdentity</text>
+
+      <rect x="910" y="52" width="160" height="84" rx="12" fill="#15121f" stroke="#e5484d" stroke-width="1.5"/>
+      <text x="990" y="80" font-size="14" font-weight="700" fill="#eceaf3">AUDIT LOG</text>
+      <text x="990" y="102" font-size="12" fill="#9a93ad">VIEW_IDENTITY</text>
+      <text x="990" y="120" font-size="11" fill="#6f6885">with a name against it</text>
+    </g>
+
+    <g stroke="#4ea8ff" stroke-width="1.6" marker-end="url(#c)" opacity=".85">
+      <line x1="242" y1="94" x2="305" y2="94"/>
+      <line x1="542" y1="94" x2="605" y2="94"/>
+      <line x1="842" y1="94" x2="905" y2="94"/>
+    </g>
+
+    <text x="550" y="178" text-anchor="middle" font-size="13" fill="#9a93ad">
+      The point: a complaint can be investigated without the investigator knowing who
+      complained — which is what makes a student willing to file one.
+    </text>
+    <text x="550" y="206" text-anchor="middle" font-size="12.5" fill="#6f6885">
+      Revealing an identity is possible, deliberate, and permanently recorded.
+    </text>
+  </svg>
+  </div>
+
+  <!-- ============ 4. AI GATING ============ -->
+  <h2>Where the AI is gated — by binding, not by instruction</h2>
+  <div class="card">
+  <svg viewBox="0 0 1100 260" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Role-bound tool binding for the AI assistants">
+    <text x="550" y="26" text-anchor="middle" font-size="13.5" fill="#9a93ad">
+      The same question, asked by two roles, reaches two different sets of functions.
+    </text>
+
+    <g text-anchor="middle">
+      <rect x="60" y="52" width="420" height="170" rx="14" fill="#15121f" stroke="#7c5cff" stroke-width="1.5"/>
+      <text x="270" y="80" font-size="15" font-weight="700" fill="#eceaf3">STUDENT asks the fee assistant</text>
+      <text x="270" y="108" font-size="12.5" fill="#2fbf71">✓ analyse_my_fees</text>
+      <text x="270" y="130" font-size="12.5" fill="#2fbf71">✓ search_fee_policy</text>
+      <text x="270" y="152" font-size="12.5" fill="#6f6885">— analyse_institutional_fees not bound</text>
+      <text x="270" y="182" font-size="12" fill="#9a93ad">"What is our collection rate?"</text>
+      <text x="270" y="202" font-size="12" fill="#e5484d">cannot answer — the function is absent</text>
+
+      <rect x="620" y="52" width="420" height="170" rx="14" fill="#15121f" stroke="#f5a524" stroke-width="1.5"/>
+      <text x="830" y="80" font-size="15" font-weight="700" fill="#eceaf3">OWNER asks the same question</text>
+      <text x="830" y="108" font-size="12.5" fill="#2fbf71">✓ analyse_my_fees</text>
+      <text x="830" y="130" font-size="12.5" fill="#2fbf71">✓ search_fee_policy</text>
+      <text x="830" y="152" font-size="12.5" fill="#2fbf71">✓ analyse_institutional_fees</text>
+      <text x="830" y="182" font-size="12" fill="#9a93ad">…but only after a password step-up</text>
+      <text x="830" y="202" font-size="12" fill="#f5a524">and the attempt is audited either way</text>
+    </g>
+  </svg>
+  <p class="note">
+    This is the difference worth defending. Most systems tell the model what not to do —
+    <em>“never reveal institutional figures to a student.”</em> That is a request, and
+    requests can be argued with. Here the function is never passed in, so there is no
+    phrasing that reaches it. The question stops being <em>“will the model comply?”</em>
+    and becomes <em>“was the function bound?”</em>
+  </p>
+  </div>
+
+  <!-- ============ 5. MATRIX ============ -->
+  <h2>The capability matrix</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>Capability</th><th>Student</th><th>Faculty</th><th>Admin</th><th>HOD</th><th>HOI</th><th>Owner</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>booking.create</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>booking.approve</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+        <tr><td>grievance.raise</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>grievance.handle</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>grievance.viewIdentity</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+        <tr><td>evidence.upload</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>evidence.verify</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>evidence.approve</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>report.publish</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>finance.viewOwn</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>finance.viewInstitutional</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>study.viewOwn</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>study.viewCohort</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>audit.view</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+      </tbody>
+    </table>
+    <div class="legend">
+      <span><span class="sw" style="background:#2fbf71"></span>granted</span>
+      <span><span class="sw" style="background:#6f6885"></span>not held — the feature is absent, not merely refused</span>
+    </div>
+    <p class="note">
+      Two rows are worth pausing on. <b>booking.approve</b> excludes HOD deliberately —
+      approving a room is an administrative act, not an academic one. And
+      <b>grievance.handle</b> without <b>grievance.viewIdentity</b> is the whole
+      anonymity design in one line.
+    </p>
+  </div>
+
+  <!-- ============ 6. FAIL CLOSED ============ -->
+  <h2>What happens when something is unknown</h2>
+  <div class="card grid">
+    <div>
+      <div class="k">An unrecognised role</div>
+      <div class="note">Treated as STUDENT. A typo in a role string fails closed, never open. Tested.</div>
+    </div>
+    <div>
+      <div class="k">A token with no version claim</div>
+      <div class="note">Rejected. This was a real finding — the check previously skipped such tokens entirely.</div>
+    </div>
+    <div>
+      <div class="k">Retrieval below the confidence floor</div>
+      <div class="note">OakMitra says it does not know and offers a ticket. It does not improvise.</div>
+    </div>
+    <div>
+      <div class="k">A question about your own record</div>
+      <div class="note">Refused before retrieval runs at all, and routed to a person.</div>
+    </div>
+    <div>
+      <div class="k">A figure no tool produced</div>
+      <div class="note">Not stated. The fee assistant gives the overdue amount and declines to invent the penalty rate.</div>
+    </div>
+    <div>
+      <div class="k">An evidence gap in a report</div>
+      <div class="note">Listed as a gap. Nothing is filled in, and no accreditation outcome is predicted.</div>
+    </div>
+  </div>
+
+  <p class="note" style="margin-top:34px">
+    SOU AI HelpDesk Pro · Navlani Jaykrishna Satishkumar (SOU2023CSE69), Silver Oak
+    University · 183 tests across 12 files · capability matrix in <code>lib/policy.ts</code>
+  </p>
+</div>
+</body>
+</html>

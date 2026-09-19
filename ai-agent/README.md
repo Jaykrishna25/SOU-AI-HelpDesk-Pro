@@ -1,0 +1,178 @@
+# SOU AI HelpDesk — Streamlit agent
+
+The AI layer of the [deployed portal](https://sou-ai-help-desk-pro-frontend.vercel.app),
+rebuilt in Python as a Streamlit app — the classic RAG pipeline end to end, over
+the same 20 help desk articles the portal answers from, exported from
+`frontend/lib/kb-content.ts`.
+
+The portal is the submission; this is here because the idea it demonstrates —
+role-bound tool binding — is easier to *see* in one screen than in a
+seven-role web application, and because it shows the same design holds in
+either stack. `agent_core/policy.py` mirrors `frontend/lib/policy.ts`.
+
+Built by Navlani Jaykrishna Satishkumar (SOU2023CSE69), Silver Oak University.
+
+---
+
+## Run it
+
+```bash
+cd ai-agent
+python -m venv .venv
+.venv\Scripts\activate          # Windows;  source .venv/bin/activate on Unix
+pip install -r requirements.txt
+
+ollama pull qwen3:8b            # or qwen3:4b on a machine short of RAM
+streamlit run app.py
+```
+
+Everything runs locally. No API key, no account, no network call.
+
+To use a smaller model: `set OLLAMA_MODEL=qwen3:4b`.
+
+To run against a hosted model instead — useful on a machine that cannot hold an
+8B model, or on a slow connection:
+
+```bash
+set LLM_PROVIDER=gemini
+set GOOGLE_API_KEY=your-free-key     # aistudio.google.com/apikey
+```
+
+The pipeline is unchanged either way; only the chat model swaps.
+
+---
+
+## The required pipeline, and where each stage lives
+
+| Stage | Implementation | File |
+|---|---|---|
+| LLM setup | `ChatOllama`, default `qwen3:8b` (switchable to Gemini) | `agent_core/agent.py` |
+| Document loading | `TextLoader` for the knowledge base | `agent_core/ingest.py` |
+| Document loading | `PyPDFLoader` / pandas for an uploaded transcript | `agent_core/ingest.py` |
+| Text splitting | Section-aware, plus one Document per subject | `agent_core/ingest.py` |
+| Embeddings | `HuggingFaceEmbeddings`, `BAAI/bge-small-en-v1.5` | `agent_core/ingest.py` |
+| Vector store | `Chroma` | `agent_core/ingest.py` |
+| Retriever | `as_retriever(search_kwargs={"k": 4})` | `agent_core/ingest.py` |
+| Custom tools | Four, each with units stated in its docstring | `agent_core/tools.py` |
+| Tool calling | `@tool`, bound by role | `agent_core/tools.py` |
+| Agent | `create_agent`, ReAct style | `agent_core/agent.py` |
+| Deployment | Streamlit | `app.py` |
+
+---
+
+## The idea worth judging
+
+Select **Student** in the sidebar. Two tools appear struck through. Now ask:
+
+> What is our institutional collection rate?
+
+It cannot answer — and **not because it was told not to**.
+
+Most systems restrict an assistant by telling it what to avoid: *"never reveal
+institutional finance figures to a student."* That is a request, and a request
+can be argued with. People talk models out of their own instructions every
+week.
+
+Here, `analyse_institutional_finance` is never added to a student's tool list,
+so the model is never told it exists. There is no phrasing that reaches a
+function that was not passed in. The question stops being *"will the model
+comply?"* and becomes *"was the function bound?"* — a fact about a list, not a
+matter of persuasion.
+
+Switch to **Owner** and ask the same question. Same agent, same prompt, same
+model. Different answer, because a different list was built.
+
+| Capability | Student | Faculty | Admin | HOD | HOI | Owner |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|
+| `policy.search` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `study.viewOwn` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `finance.viewOwn` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `study.viewCohort` | — | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `finance.viewInstitutional` | — | — | ✓ | ✓ | ✓ | ✓ |
+| `audit.view` | — | — | — | — | — | ✓ |
+
+An unknown role falls back to Student, never upward — a typo in a role string
+must fail closed. `agent_core/policy.py`, pinned by `tests/test_policy.py`:
+
+```bash
+python -m pytest tests/ -q
+```
+
+---
+
+## The four tools
+
+### 1. `analyse_my_results` — runs automatically on upload
+
+Pure Python, no model involvement. For every subject below the threshold it
+computes urgency, suggested weekly hours, and the reason it was flagged.
+Priority is worst score first. Hours scale with the gap to the threshold, so
+the plan spends more time where more is at stake.
+
+The plan shown on upload comes from running this tool **directly** and asking
+the model to phrase the result — it does not depend on a small local model
+choosing to call it. The numbers are therefore always correct; the model only
+ever rewords them. The raw tool output is on screen under an expander so the
+summary can be checked against its own working.
+
+### 2. `analyse_cohort_performance` — withheld from Student
+
+Aggregate only. It says plainly that this demonstration holds one transcript,
+rather than presenting one student's marks as a cohort average.
+
+### 3. `analyse_institutional_finance` — withheld from Student and Faculty
+
+Returns billed, collected, outstanding, collection rate and overdue count. The
+figures are **seed data and the tool says so in its own output**, so the model
+cannot report them as real. The portal computes these from the database.
+
+### 4. `search_university_policy` — everyone
+
+Retrieval over the 20 help-desk articles. The agent is told that if the
+extracts do not answer the question it must say so rather than fall back on
+general knowledge about Indian universities.
+
+---
+
+## Design decisions worth defending
+
+**The model never calculates.** Every figure comes from a tool. This matters
+because a student acts on the output: a plan confidently wrong about which
+subject is most urgent sends them to revise the wrong thing, and a wrong fee
+figure is worse than no fee figure.
+
+**No grade prediction, anywhere.** Nothing in the system produces a forecast,
+so offering one would mean inventing it — and a student would believe it.
+
+**Split on sections, not on character count.** A help-desk article is a
+self-contained unit of meaning. "What to do if your fee receipt has not been
+generated" is three sentences that only work together; a 500-character split
+cuts it in half, and the half that gets retrieved reads like a complete answer
+while missing the step that matters.
+
+**One Document per subject, as well as whole-transcript chunks.** A fixed split
+separates a subject name from its marks, so a narrow question — *"what did I
+get in databases?"* — retrieves something that looks right and answers wrong.
+
+**An unknown role fails closed.** `capabilities_for("PRINCIPAL")` returns the
+Student set, not the Owner set.
+
+---
+
+## Relationship to the rest of this repository
+
+| | What | Deployment |
+|---|---|---|
+| `frontend/`, `backend/` | **The submission.** The full help desk portal — 7 roles, 50 models, bookings, attendance, grievances, IQAC. | Next.js on Vercel, [live](https://sou-ai-help-desk-pro-frontend.vercel.app) |
+| `ai-agent/` | This directory. The same AI layer in Python. | Streamlit, local |
+
+Two implementations of one idea. The portal is where it runs for real; this is
+where the mechanism is visible in a single screen.
+
+The honest note: this is a port, not a second system. The knowledge base is
+exported from the portal's content, the capability matrix is a direct
+translation of `frontend/lib/policy.ts`, and the institutional finance figures
+here are seed values where the portal computes them from the database. It
+earns its place by proving the design is not a quirk of one framework — the
+same role-bound binding works in TypeScript with Gemini and in Python with a
+local Ollama model.
