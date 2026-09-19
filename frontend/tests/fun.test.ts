@@ -1,55 +1,91 @@
 import { describe, it, expect } from "vitest";
 import {
-  windowState, WINDOWS, dateKey, weekKey, makeGrid, checkGrid,
+  budgetState, chargeFor, DAILY_BUDGET_MINUTES, MIN_CHARGE_MINUTES, MAX_CHARGE_MINUTES,
+  dateKey, weekKey, makeGrid, checkGrid,
   makeScramble, makeSequence, scoreRun, plausible, MAX_SCORE,
 } from "@/lib/fun-core";
 import { targetFor, judgeGuess, rankingFor, scoreLadder } from "@/lib/fun-ladder";
 import { memeOfTheDay, quizFor, quizScore } from "@/lib/fun-memes";
 import { VOCAB } from "@/lib/fun-vocab";
 
-/* These cover the rules the Fun Zone depends on being right: the access window,
+/* These cover the rules the Fun Zone depends on being right: the daily budget,
    whether a generated grid is actually solvable, and whether a score can be
    forged. All pure - no database, no network. */
 
 const at = (h: number, m = 0) => new Date(2026, 8, 18, h, m);
 
-describe("access window", () => {
-  it("is open during the lunch window", () => {
-    const w = windowState(at(12, 30));
-    expect(w.open).toBe(true);
-    expect(w.label).toBe("Lunch break");
-  });
+describe("the daily budget", () => {
+  /* The Fun Zone used to be gated by two fixed time windows. That was the wrong
+     instrument: a window says "not now", which is a rule about the timetable and
+     invites "my lecture was cancelled". A budget says "enough for today", which
+     is what anyone worried about this feature was actually worried about. */
 
-  it("is open during the evening window", () => {
-    expect(windowState(at(18, 0)).open).toBe(true);
-  });
-
-  it("is closed between the windows", () => {
-    expect(windowState(at(15, 0)).open).toBe(false);
-    expect(windowState(at(9, 0)).open).toBe(false);
-  });
-
-  it("is closed at the exact closing hour, not still open", () => {
-    // A boundary that is wrong by one hour means students play through a lecture.
-    expect(windowState(at(14, 0)).open).toBe(false);
-    expect(windowState(at(20, 0)).open).toBe(false);
-  });
-
-  it("is open at the exact opening minute", () => {
-    expect(windowState(at(12, 0)).open).toBe(true);
-    expect(windowState(at(17, 0)).open).toBe(true);
-  });
-
-  it("points at the next opening when closed", () => {
-    expect(windowState(at(9, 0)).label).toContain("12:00");
-    expect(windowState(at(15, 0)).label).toContain("17:00");
-    expect(windowState(at(22, 0)).label).toContain("tomorrow");
-  });
-
-  it("never reports a negative countdown", () => {
-    for (let h = 0; h < 24; h++) {
-      expect(windowState(at(h, 30)).minutes).toBeGreaterThanOrEqual(0);
+  it("is open all day while the allowance lasts", () => {
+    for (const h of [0, 9, 12, 15, 18, 23]) {
+      expect(budgetState(0, at(h, 30)).open).toBe(true);
     }
+  });
+
+  it("closes once the allowance is spent, at any hour", () => {
+    for (const h of [0, 9, 12, 15, 18, 23]) {
+      expect(budgetState(DAILY_BUDGET_MINUTES, at(h, 30)).open).toBe(false);
+    }
+  });
+
+  it("closes on the boundary rather than one minute late", () => {
+    expect(budgetState(DAILY_BUDGET_MINUTES - 1, at(12)).open).toBe(true);
+    expect(budgetState(DAILY_BUDGET_MINUTES, at(12)).open).toBe(false);
+    expect(budgetState(DAILY_BUDGET_MINUTES + 50, at(12)).open).toBe(false);
+  });
+
+  it("never reports negative minutes left", () => {
+    expect(budgetState(999, at(12)).leftMinutes).toBe(0);
+    expect(budgetState(-5, at(12)).usedMinutes).toBe(0);
+  });
+
+  it("counts down to midnight, never negative", () => {
+    for (let h = 0; h < 24; h++) {
+      const r = budgetState(0, at(h, 30)).resetsInMinutes;
+      expect(r).toBeGreaterThan(0);
+      expect(r).toBeLessThanOrEqual(24 * 60);
+    }
+  });
+
+  it("says how much is left, or that it is gone", () => {
+    expect(budgetState(10, at(12)).label).toContain("20 minutes left");
+    expect(budgetState(29, at(12)).label).toContain("1 minute left");
+    expect(budgetState(30, at(12)).label).toMatch(/used today/i);
+  });
+});
+
+describe("what a play costs against the budget", () => {
+  it("charges a minimum however short the client claims it was", () => {
+    /* Duration is reported by the client. Without a floor, a player could claim
+       every puzzle took zero seconds and never spend anything. */
+    expect(chargeFor(0)).toBe(MIN_CHARGE_MINUTES);
+    expect(chargeFor(1_000)).toBe(MIN_CHARGE_MINUTES);
+    expect(chargeFor(-50_000)).toBe(MIN_CHARGE_MINUTES);
+  });
+
+  it("caps a single play, so a forgotten tab cannot burn the day", () => {
+    expect(chargeFor(60 * 60_000)).toBe(MAX_CHARGE_MINUTES);
+    expect(chargeFor(Number.MAX_SAFE_INTEGER)).toBe(MAX_CHARGE_MINUTES);
+  });
+
+  it("charges the real duration in between", () => {
+    expect(chargeFor(5 * 60_000)).toBe(5);
+    expect(chargeFor(3.4 * 60_000)).toBe(3);
+  });
+
+  it("survives junk input rather than returning NaN", () => {
+    expect(chargeFor(NaN)).toBe(MIN_CHARGE_MINUTES);
+    expect(chargeFor(undefined as any)).toBe(MIN_CHARGE_MINUTES);
+  });
+
+  it("allows a sensible number of plays per day", () => {
+    // Between four long games and fifteen quick ones.
+    expect(Math.floor(DAILY_BUDGET_MINUTES / MAX_CHARGE_MINUTES)).toBeGreaterThanOrEqual(3);
+    expect(Math.floor(DAILY_BUDGET_MINUTES / MIN_CHARGE_MINUTES)).toBeLessThanOrEqual(20);
   });
 });
 

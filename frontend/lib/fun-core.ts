@@ -33,70 +33,68 @@ export const GAMES: { id: GameId; name: string; blurb: string }[] = [
   { id: "semantic", name: "Semantic Match", blurb: "Clear each term by typing a word that belongs with it." },
 ];
 
-/* ---------------- access window ---------------- */
+/* ---------------- the daily budget ----------------
 
-/**
- * The Fun Zone opens twice a day rather than all day.
- *
- * This is deliberate. A campus portal that offers unlimited games during
- * lecture hours is a portal that gets blocked by the institution. Two windows -
- * lunch and evening - make it a break rather than a distraction, and make the
- * institution's answer "yes" instead of "no".
- */
-export interface Window { startHour: number; endHour: number; label: string }
+   The Fun Zone is open all day. What limits it is a budget, not
+   a clock.
 
-export const WINDOWS: Window[] = [
-  { startHour: 12, endHour: 14, label: "Lunch break" },
-  { startHour: 17, endHour: 20, label: "Evening" },
-];
+   It used to be two fixed windows - lunch and evening. That was
+   the wrong instrument. A window says "you may not play now",
+   which is a rule about the timetable, and the timetable is not
+   the portal's business: a student between lectures, on a free
+   afternoon, or revising at midnight is not doing anything the
+   institution needs to prevent. A budget says "you have had
+   enough today", which is the thing anyone actually worried
+   about this feature was worried about.
 
-/** Minutes of play allowed per day, across all games. */
+   It is also harder to argue with. "Blocked during lectures" invites
+   "my lecture was cancelled". "Thirty minutes a day" does not.
+   ------------------------------------------------ */
+
+/** Minutes of play allowed per day, across every game. */
 export const DAILY_BUDGET_MINUTES = 30;
 
-export interface WindowState {
+/**
+ * What one recorded play costs against the budget.
+ *
+ * Clamped at both ends, and the floor is the important one. Duration is
+ * reported by the client, so without a minimum a player could claim every
+ * puzzle took zero seconds and never spend anything. The ceiling stops a
+ * forgotten tab from burning the whole allowance in one sitting.
+ */
+export const MIN_CHARGE_MINUTES = 2;
+export const MAX_CHARGE_MINUTES = 8;
+
+export function chargeFor(durationMs: number): number {
+  const mins = Number.isFinite(durationMs) ? durationMs / 60_000 : 0;
+  return Math.min(MAX_CHARGE_MINUTES, Math.max(MIN_CHARGE_MINUTES, Math.round(mins)));
+}
+
+export interface BudgetState {
+  /** False once the day's allowance is spent. */
   open: boolean;
   label: string;
-  /** Minutes until it opens (when closed) or closes (when open). */
-  minutes: number;
-  windows: string[];
+  usedMinutes: number;
+  budgetMinutes: number;
+  leftMinutes: number;
+  /** Minutes until the allowance resets at midnight. */
+  resetsInMinutes: number;
 }
 
-function hhmm(h: number): string {
-  return String(h).padStart(2, "0") + ":00";
-}
+export function budgetState(usedMinutes: number, now: Date = new Date()): BudgetState {
+  const used = Math.max(0, Math.round(usedMinutes || 0));
+  const left = Math.max(0, DAILY_BUDGET_MINUTES - used);
+  const resetsIn = (23 - now.getHours()) * 60 + (60 - now.getMinutes());
 
-export function windowState(now: Date = new Date()): WindowState {
-  const h = now.getHours();
-  const m = now.getMinutes();
-  const labels = WINDOWS.map(w => `${hhmm(w.startHour)}-${hhmm(w.endHour)}`);
-
-  for (const w of WINDOWS) {
-    if (h >= w.startHour && h < w.endHour) {
-      return {
-        open: true,
-        label: w.label,
-        minutes: (w.endHour - h) * 60 - m,
-        windows: labels,
-      };
-    }
-  }
-
-  // Closed: find the next opening, today or tomorrow.
-  const upcoming = WINDOWS.filter(w => w.startHour > h).sort((a, b) => a.startHour - b.startHour)[0];
-  if (upcoming) {
-    return {
-      open: false,
-      label: "Opens " + hhmm(upcoming.startHour),
-      minutes: (upcoming.startHour - h) * 60 - m,
-      windows: labels,
-    };
-  }
-  const first = WINDOWS[0];
   return {
-    open: false,
-    label: "Opens tomorrow " + hhmm(first.startHour),
-    minutes: (24 - h + first.startHour) * 60 - m,
-    windows: labels,
+    open: left > 0,
+    label: left > 0
+      ? `${left} minute${left === 1 ? "" : "s"} left today`
+      : "You have used today's 30 minutes",
+    usedMinutes: used,
+    budgetMinutes: DAILY_BUDGET_MINUTES,
+    leftMinutes: left,
+    resetsInMinutes: resetsIn,
   };
 }
 

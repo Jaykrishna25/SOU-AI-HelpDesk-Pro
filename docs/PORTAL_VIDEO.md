@@ -24,7 +24,7 @@ that the system works.
 - [ ] Three browser profiles or windows, so switching is instant on camera
 - [ ] `https://sou-ai-help-desk-pro-frontend.vercel.app/role-map.html` open in a tab
 - [ ] `sample-transcript.csv` and `sample-class-group.txt` downloaded
-- [ ] Record between **17:00 and 20:00** if you want the Fun Zone open
+- [ ] Fun Zone is open all day now — no need to time the recording
 - [ ] Browser zoom 100%, notifications off, bookmarks bar hidden
 - [ ] One dry run. The first AI call on a cold deployment is slow.
 
@@ -251,7 +251,7 @@ Demonstrate: *what are my results?* → the amber panel.
 | Problem | What to do |
 |---|---|
 | AI returns a quota error | Say "the free tier has a daily cap" and move to a non-AI feature. Do not retry on camera. |
-| Fun Zone shows the locked screen | That is the feature. Explain the access window and move on. |
+| Fun Zone shows the locked screen | The 30-minute budget is spent. That is the feature — explain it and move on. |
 | A page is slow | Keep talking. Silence looks worse than latency. |
 | Study Plan shows no weak subjects | Upload `sample-transcript.csv`. That is what it is for. |
 | Booking approval fails | Check you are on ADMIN, not HOD. HOD deliberately lacks `booking.approve`. |

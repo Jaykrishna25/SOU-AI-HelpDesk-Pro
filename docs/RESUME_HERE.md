@@ -55,8 +55,8 @@ Model is `qwen3:1.7b` via Ollama. Set `OLLAMA_MODEL` to change it.
 
 ## Portal — built and deployed
 
-Fee Statement Simplifier · Study Plan adviser · Fun Zone (five daily puzzles,
-weekly leaderboard, access window) · Audit Trail viewer · account recovery with
+Fee Statement Simplifier · Study Plan adviser · Fun Zone (eleven daily puzzles,
+weekly leaderboard, 30-minute daily budget) · Audit Trail viewer · account recovery with
 rank enforcement · step-up authentication · OakMitra full-page assistant at
 `/assistant` · Class Group (WhatsApp) · Tutor · transcript upload · opportunity search ·
 253 tests passing across 14 files.
@@ -74,11 +74,11 @@ portal is demo-ready; what remains is rehearsal and one seeding task.
 The run caught three real problems, all fixed and deployed. Table and detail in
 `docs/VERIFICATION_CHECKLIST.md`; the exact scripts are in `docs/LIVE_CHECKS.md`.
 
-### 2. Play all five games once
+### 2. Play the games once
 
-Fun Zone is open 12:00–14:00 and 17:00–20:00 only. Outside those hours you get
-the locked screen, which is worth seeing once anyway. Mini Grid first — the
-cell-cycling UI and the server's checker have to agree exactly.
+Fun Zone is open all day now; what limits it is a 30-minute daily budget. Mini
+Grid first — the cell-cycling UI and the server's checker have to agree exactly.
+Eleven games: five originals plus six code games.
 
 ### 3. Before showing the HOI
 
@@ -87,9 +87,9 @@ cell-cycling UI and the server's checker have to agree exactly.
   revise — which makes a working feature look like it does nothing.
 - Have `docs/QA_REPORT.md` open in a tab. If asked what is weak, eleven
   findings with severities is a better answer than improvising.
-- Expect two questions: *"won't students play during lectures?"* (access window,
-  server-enforced, 30-minute daily budget) and *"is this real data?"*
-  (institutional figures are seed data — say so plainly).
+- Expect two questions: *"won't students play during lectures?"* (30 minutes a
+  day, enforced server-side — the endpoint returns 423 once it is spent) and
+  *"is this real data?"* (institutional figures are seed data — say so plainly).
 
 ---
 

@@ -189,18 +189,19 @@ Needs a normal window and a private window, two roles signed in at once.
 - [ ] Seed or find a student with **weak** results. The current record is three
       subjects at 87–90, so the Study Plan correctly shows nothing to revise —
       which makes a working feature look like it does nothing.
-- [ ] Play all five Fun Zone games once. **Mini Grid first** — the cell-cycling
-      UI and the server's checker have to agree exactly. The Zone only opens
-      12:00–14:00 and 17:00–20:00.
+- [ ] Play the Fun Zone games once. **Mini Grid first** — the cell-cycling UI
+      and the server's checker have to agree exactly. Open all day; 30 minutes
+      of play per student per day.
 - [ ] Have `docs/QA_REPORT.md` open in a tab. Twelve findings with severities is
       a better answer to "what is weak about this?" than improvising.
 
 Two questions to expect:
 
-**"Won't students just play games during lectures?"** — The window is enforced
-on the server, not in the browser. A closed window returns 423 and no puzzle,
-so leaving the tab open achieves nothing. Thirty minutes a day, across all
-games.
+**"Won't students just play games during lectures?"** — Thirty minutes a day,
+enforced on the server rather than in the browser: once the budget is spent the
+puzzle endpoint returns 423 and no puzzle, so leaving the tab open achieves
+nothing. We chose a budget over a time window deliberately — a window makes a
+rule about the timetable, which is not the portal's business.
 
 **"Is this real data?"** — The institutional figures are seed data. Say so
 plainly. Individual fee and result figures come from the database.

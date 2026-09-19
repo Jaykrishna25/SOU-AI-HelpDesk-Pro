@@ -208,6 +208,32 @@ whoever operates the deployment.
 Verified in practice during testing: an owner locked out of `OWN001` could not
 be recovered by the other owner and was restored through the script.
 
+### 13. The Fun Zone budget can be avoided by never submitting — LOW, accepted
+
+The Fun Zone was gated by two fixed time windows and is now gated by a daily
+budget: thirty minutes, any hour, resets at midnight. The window was the wrong
+instrument — it made a rule about the timetable, which is not the portal's
+business, and it invited "my lecture was cancelled". The budget is the thing
+anyone worried about this feature was actually worried about.
+
+The budget is enforced server-side: `/api/fun/puzzle` returns 423 and no puzzle
+once it is spent, so keeping the tab open achieves nothing.
+
+**The gap.** Time is charged from recorded plays, and a play is only recorded
+when a score is submitted. A student who opens puzzles and never submits is
+never charged. Two mitigations are in place:
+
+- Every recorded play costs a **minimum of 2 minutes** regardless of what the
+  client reports, so claiming a puzzle took zero seconds does not work.
+- A single play is **capped at 8 minutes**, so a forgotten tab cannot burn the
+  whole allowance.
+
+Closing it properly needs a server-side play record written when a puzzle is
+*served* rather than when it is submitted — a new table and a migration. Not
+done, because the failure mode is a student who plays without ever scoring,
+which forfeits the leaderboard that is the entire point of the feature. The
+incentive already points the right way.
+
 ### 12. The two assistants disagreed about what they would refuse — MEDIUM, fixed
 
 Found on 2026-09-19 while working check 7.

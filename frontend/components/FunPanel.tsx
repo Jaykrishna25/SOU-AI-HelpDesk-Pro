@@ -151,19 +151,22 @@ export default function FunPanel() {
           <Lock size={26} className="mx-auto opacity-40" />
           <div className="text-lg font-medium mt-3">{w?.label}</div>
           <p className="text-sm opacity-55 mt-2 max-w-md mx-auto">
-            The Fun Zone opens for a couple of hours at lunch and again in the evening. That is
-            deliberate — it is a break, not a way to spend a lecture.
+            The Fun Zone is open all day — what is limited is how long you play, not when.
+            Thirty minutes each day, across every game, and it resets at midnight.
           </p>
           <div className="flex gap-2 justify-center mt-4">
-            {(w?.windows || []).map((x: string) => (
-              <span key={x} className="text-xs px-3 py-1.5 rounded-lg border border-white/15 opacity-70">{x}</span>
-            ))}
+            <span className="text-xs px-3 py-1.5 rounded-lg border border-white/15 opacity-70">
+              {w?.usedMinutes ?? 0} of {w?.budgetMinutes ?? 30} minutes used
+            </span>
           </div>
-          {typeof w?.minutes === "number" && w.minutes > 0 && (
+          {typeof w?.resetsInMinutes === "number" && w.resetsInMinutes > 0 && (
             <p className="text-xs opacity-40 mt-4">
-              Opens in about {Math.floor(w.minutes / 60)}h {w.minutes % 60}m.
+              Resets in about {Math.floor(w.resetsInMinutes / 60)}h {w.resetsInMinutes % 60}m.
             </p>
           )}
+          <p className="text-xs opacity-35 mt-3 max-w-sm mx-auto">
+            The board is still below — a spent budget stops you playing, not looking.
+          </p>
         </div>
         {board && <Leaderboard board={board} onFilter={loadBoard} />}
       </div>
@@ -421,12 +424,13 @@ export default function FunPanel() {
             <Gamepad2 size={20} className="opacity-70" /> Fun Zone
           </h1>
           <p className="opacity-55 text-sm mt-1">
-            Five puzzles a day, the same for everyone, so the board is a fair comparison.
+            Eleven puzzles a day, the same for everyone, so the board is a fair comparison.
+            Open all day — thirty minutes of play, whenever you want them.
           </p>
         </div>
         {w?.open && (
           <span className="text-xs px-3 py-1.5 rounded-full border border-emerald-500/40 text-emerald-300 bg-emerald-500/10 flex items-center gap-1.5">
-            <Clock size={12} /> {w.label} · closes in {Math.floor(w.minutes / 60)}h {w.minutes % 60}m
+            <Clock size={12} /> {w.label}
           </span>
         )}
       </div>

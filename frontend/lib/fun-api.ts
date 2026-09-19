@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getLiveSession, notifyUser } from "@/lib/server-auth";
 import { can, normaliseRole } from "@/lib/policy";
 import {
-  windowState, dateKey, weekKey, makeGrid, makeScramble, makeSequence,
+  budgetState, chargeFor, dateKey, weekKey, makeGrid, makeScramble, makeSequence,
   checkGrid, scoreRun, plausible, GAMES, DAILY_BUDGET_MINUTES, type GameId,
 } from "@/lib/fun-core";
 import {
@@ -20,11 +20,22 @@ import {
 
    Two rules the server enforces rather than trusting the client with:
 
-   1. The access window. A closed window returns 423 and no puzzle, so a student
-      cannot simply keep the tab open past closing time and carry on.
-   2. The solution. The grid's answer never leaves the server. The client posts
-      its attempt and the server decides, which is the difference between a
+   1. The daily budget. Thirty minutes a day across every game. Once it is
+      spent the puzzle endpoint returns 423 and no puzzle, so keeping the tab
+      open achieves nothing. The Fun Zone itself is open all day - the limit is
+      how long you play, not when.
+   2. The solution. No answer ever leaves the server. The client posts its
+      attempt and the server decides, which is the difference between a
       leaderboard and an honour system. */
+
+/** Minutes this user has spent today, charged per recorded play. */
+async function minutesUsedToday(userId: string, today: string): Promise<number> {
+  const plays = await prisma.gameScore.findMany({
+    where: { userId, puzzleDate: today },
+    select: { durationMs: true },
+  });
+  return plays.reduce((total, p) => total + chargeFor(p.durationMs), 0);
+}
 
 function json(d: any, s = 200) { return NextResponse.json(d, { status: s }); }
 function seg(req: NextRequest) {
@@ -43,7 +54,6 @@ export async function GET(req: NextRequest) {
 
   const p = seg(req);
   const now = new Date();
-  const w = windowState(now);
   const today = dateKey(now);
 
   if (p[0] === "status") {
@@ -51,26 +61,28 @@ export async function GET(req: NextRequest) {
       where: { userId: s.userId, puzzleDate: today },
       select: { game: true, score: true, durationMs: true },
     });
-    const minutesUsed = Math.round(
-      playedToday.reduce((a, r) => a + r.durationMs, 0) / 60000,
-    );
+    const minutesUsed = playedToday.reduce((a, r) => a + chargeFor(r.durationMs), 0);
+    const budget = budgetState(minutesUsed, now);
+
     return json({
-      window: w,
+      window: budget,          // the client reads `window.open` and `window.label`
+      budget,
       games: GAMES,
       today,
       playedToday: playedToday.map(r => r.game),
       minutesUsed,
       budgetMinutes: DAILY_BUDGET_MINUTES,
-      budgetLeft: Math.max(0, DAILY_BUDGET_MINUTES - minutesUsed),
+      budgetLeft: budget.leftMinutes,
     });
   }
 
   /* ---- fetch today's puzzle ---- */
   if (p[0] === "puzzle") {
-    if (!w.open) {
+    const budget = budgetState(await minutesUsedToday(s.userId, today), now);
+    if (!budget.open) {
       return json({
-        error: "The Fun Zone is closed right now.",
-        closed: true, window: w,
+        error: "You have used today's 30 minutes. It resets at midnight.",
+        closed: true, window: budget, budget,
       }, 423);
     }
 
@@ -182,12 +194,14 @@ export async function POST(req: NextRequest) {
   const p = seg(req);
   const b = await req.json().catch(() => ({}));
   const now = new Date();
-  const w = windowState(now);
   const today = dateKey(now);
+  const budget = budgetState(await minutesUsedToday(s.userId, today), now);
 
   /* ---- judge one Concept Ladder guess (no score recorded here) ---- */
   if (p[0] === "guess") {
-    if (!w.open) return json({ error: "The Fun Zone is closed.", closed: true }, 423);
+    if (!budget.open) {
+      return json({ error: "You have used today's 30 minutes.", closed: true, budget }, 423);
+    }
     const guess = String(b.guess || "").trim();
     if (!guess) return json({ error: "A guess is required" }, 400);
     return json(judgeGuess(targetFor(today).word, guess));
@@ -195,8 +209,11 @@ export async function POST(req: NextRequest) {
 
   if (p[0] !== "submit") return json({ error: "Not found" }, 404);
 
-  if (!w.open) {
-    return json({ error: "The Fun Zone is closed, so scores are not accepted.", closed: true }, 423);
+  if (!budget.open) {
+    return json({
+      error: "You have used today's 30 minutes, so scores are not accepted.",
+      closed: true, budget,
+    }, 423);
   }
 
   const game = String(b.game || "") as GameId;
