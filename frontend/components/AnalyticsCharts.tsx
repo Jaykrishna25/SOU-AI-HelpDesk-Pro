@@ -12,7 +12,7 @@ const tickets = [
 const pie = [
   { name: "Auto-resolved", value: 68 }, { name: "Ticketed", value: 22 }, { name: "Escalated", value: 10 },
 ];
-const COLORS = ["#8b5cf6", "#06b6d4", "#f43f5e"];
+const COLORS = ["#9B1C26", "#106B3F", "#f43f5e"];
 
 const tipStyle = { background: "#14142b", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "#ffffff" };
 const tipItem = { color: "#ffffff" };
@@ -26,13 +26,13 @@ export default function AnalyticsCharts() {
         <ResponsiveContainer width="100%" height={180}>
           <AreaChart data={revenue}>
             <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.7} />
-              <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
+              <stop offset="0%" stopColor="#9B1C26" stopOpacity={0.7} />
+              <stop offset="100%" stopColor="#9B1C26" stopOpacity={0} />
             </linearGradient></defs>
             <XAxis dataKey="m" stroke="#9aa0b4" fontSize={11} />
             <YAxis stroke="#9aa0b4" fontSize={11} />
             <Tooltip contentStyle={tipStyle} itemStyle={tipItem} labelStyle={tipLabel} />
-            <Area type="monotone" dataKey="v" stroke="#8b5cf6" fill="url(#g)" strokeWidth={2} />
+            <Area type="monotone" dataKey="v" stroke="#9B1C26" fill="url(#g)" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -43,7 +43,7 @@ export default function AnalyticsCharts() {
             <XAxis dataKey="c" stroke="#9aa0b4" fontSize={11} />
             <YAxis stroke="#9aa0b4" fontSize={11} />
             <Tooltip contentStyle={tipStyle} itemStyle={tipItem} labelStyle={tipLabel} cursor={{ fill: "rgba(139,92,246,0.1)" }} />
-            <Bar dataKey="n" fill="#06b6d4" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="n" fill="#106B3F" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

@@ -11,17 +11,17 @@ import {
    decoration - they are what makes "the orange one" a usable way to think
    about a game you played yesterday. */
 const GAME_STYLE: Record<string, { icon: any; from: string; ring: string; tile: string; glow: string }> = {
-  grid:     { icon: Grid3x3,     from: "from-violet-600/45",  ring: "border-violet-400/45",  tile: "bg-violet-500",  glow: "shadow-violet-500/30" },
-  scramble: { icon: Shuffle,     from: "from-sky-600/45",     ring: "border-sky-400/45",     tile: "bg-sky-500",     glow: "shadow-sky-500/30" },
-  sequence: { icon: Music,       from: "from-emerald-600/45", ring: "border-emerald-400/45", tile: "bg-emerald-500", glow: "shadow-emerald-500/30" },
-  ladder:   { icon: Link2,       from: "from-amber-600/45",   ring: "border-amber-400/45",   tile: "bg-amber-500",   glow: "shadow-amber-500/30" },
-  culture:  { icon: Smile,       from: "from-pink-600/45",    ring: "border-pink-400/45",    tile: "bg-pink-500",    glow: "shadow-pink-500/30" },
-  typing:   { icon: Keyboard,    from: "from-cyan-600/45",    ring: "border-cyan-400/45",    tile: "bg-cyan-500",    glow: "shadow-cyan-500/30" },
-  jumble:   { icon: ListOrdered, from: "from-indigo-600/45",  ring: "border-indigo-400/45",  tile: "bg-indigo-500",  glow: "shadow-indigo-500/30" },
-  debug:    { icon: Bug,         from: "from-rose-600/45",    ring: "border-rose-400/45",    tile: "bg-rose-500",    glow: "shadow-rose-500/30" },
-  output:   { icon: Terminal,    from: "from-lime-600/45",    ring: "border-lime-400/45",    tile: "bg-lime-500",    glow: "shadow-lime-500/30" },
-  robot:    { icon: Navigation,  from: "from-orange-600/45",  ring: "border-orange-400/45",  tile: "bg-orange-500",  glow: "shadow-orange-500/30" },
-  semantic: { icon: Braces,      from: "from-teal-600/45",    ring: "border-teal-400/45",    tile: "bg-teal-500",    glow: "shadow-teal-500/30" },
+  grid:     { icon: Grid3x3,     from: "from-red-800/45",     ring: "border-red-500/45",     tile: "bg-red-700",     glow: "shadow-red-800/30" },
+  scramble: { icon: Shuffle,     from: "from-emerald-800/45", ring: "border-emerald-500/45", tile: "bg-emerald-700", glow: "shadow-emerald-800/30" },
+  sequence: { icon: Music,       from: "from-amber-700/45",   ring: "border-amber-500/45",   tile: "bg-amber-600",   glow: "shadow-amber-700/30" },
+  ladder:   { icon: Link2,       from: "from-orange-800/45",  ring: "border-orange-500/45",  tile: "bg-orange-700",  glow: "shadow-orange-800/30" },
+  culture:  { icon: Smile,       from: "from-rose-800/45",    ring: "border-rose-500/45",    tile: "bg-rose-700",    glow: "shadow-rose-800/30" },
+  typing:   { icon: Keyboard,    from: "from-teal-800/45",    ring: "border-teal-500/45",    tile: "bg-teal-700",    glow: "shadow-teal-800/30" },
+  jumble:   { icon: ListOrdered, from: "from-stone-700/45",   ring: "border-stone-400/45",   tile: "bg-stone-600",   glow: "shadow-stone-700/30" },
+  debug:    { icon: Bug,         from: "from-red-900/45",     ring: "border-red-600/45",     tile: "bg-red-800",     glow: "shadow-red-900/30" },
+  output:   { icon: Terminal,    from: "from-green-800/45",   ring: "border-green-500/45",   tile: "bg-green-700",   glow: "shadow-green-800/30" },
+  robot:    { icon: Navigation,  from: "from-yellow-700/45",  ring: "border-yellow-500/45",  tile: "bg-yellow-600",  glow: "shadow-yellow-700/30" },
+  semantic: { icon: Braces,      from: "from-lime-800/45",    ring: "border-lime-500/45",    tile: "bg-lime-700",    glow: "shadow-lime-800/30" },
 };
 const FALLBACK = { icon: Gamepad2, from: "from-white/15", ring: "border-white/20", tile: "bg-white/20", glow: "shadow-white/10" };
 import FunCodeGames from "@/components/FunCodeGames";

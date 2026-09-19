@@ -168,7 +168,7 @@ export default function IQAC() {
                     <XAxis dataKey="year" stroke="rgba(255,255,255,.5)" fontSize={11} />
                     <YAxis stroke="rgba(255,255,255,.5)" fontSize={11} />
                     <Tooltip {...TT} /><Legend wrapperStyle={{ color: "#fff", fontSize: 12 }} />
-                    <Line type="monotone" dataKey="total" name="Recorded" stroke="#8b5cf6" strokeWidth={2} />
+                    <Line type="monotone" dataKey="total" name="Recorded" stroke="#9B1C26" strokeWidth={2} />
                     <Line type="monotone" dataKey="approved" name="Approved" stroke="#10b981" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>

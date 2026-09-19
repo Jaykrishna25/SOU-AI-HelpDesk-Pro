@@ -19,7 +19,7 @@ export default function ThreeBackground() {
     const pos = new Float32Array(N * 3);
     for (let i = 0; i < N * 3; i++) pos[i] = (Math.random() - 0.5) * 16;
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    const mat = new THREE.PointsMaterial({ size: 0.03, color: 0x8b5cf6, transparent: true, opacity: 0.85 });
+    const mat = new THREE.PointsMaterial({ size: 0.03, color: 0x9B1C26, transparent: true, opacity: 0.85 });
     const points = new THREE.Points(geo, mat);
     scene.add(points);
 

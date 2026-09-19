@@ -11,7 +11,7 @@ Desai Krish Nilesh, SOU2023IT18, IT
 Joshi Ananya Rajesh, SOU2023ECE07, ECE
 Mehta Dhruv Sanjay, SOU2023ECE22, ECE`;
 
-const PALETTE = ["#8b5cf6", "#10b981", "#f59e0b", "#38bdf8", "#f43f5e", "#a3e635", "#e879f9", "#fb923c"];
+const PALETTE = ["#9B1C26", "#10b981", "#f59e0b", "#1C8A54", "#f43f5e", "#a3e635", "#e879f9", "#fb923c"];
 
 export default function Seating() {
   const [tab, setTab] = useState<"new" | "plans">("new");

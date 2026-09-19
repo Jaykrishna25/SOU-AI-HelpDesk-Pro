@@ -77,7 +77,7 @@ export default function Insights() {
                     <XAxis dataKey="w" stroke="rgba(255,255,255,0.5)" fontSize={11} />
                     <YAxis stroke="rgba(255,255,255,0.5)" fontSize={11} />
                     <Tooltip {...TT} />
-                    <Bar dataKey="tickets" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="tickets" fill="#9B1C26" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

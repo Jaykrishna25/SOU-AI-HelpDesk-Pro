@@ -27,8 +27,8 @@ function Ring({ percent, label }: { percent: number; label: string }) {
         style={{ transition: "stroke-dashoffset .8s ease" }} />
       <defs>
         <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#a78bfa" />
-          <stop offset="100%" stopColor="#38bdf8" />
+          <stop offset="0%" stopColor="#C4414B" />
+          <stop offset="100%" stopColor="#C9A227" />
         </linearGradient>
       </defs>
       <text x="33" y="33" textAnchor="middle" dominantBaseline="central"
@@ -88,7 +88,7 @@ export default function FunProgress({ progress }: Props) {
       {/* ---------- level, as a ring ----------
            A ring rather than a bar: it reads as a single glanceable state, and
            it leaves room for the number that matters in the middle. */}
-      <div className="rounded-2xl p-4 border border-violet-400/25 bg-gradient-to-br from-violet-500/[0.12] to-transparent">
+      <div className="rounded-2xl p-4 border border-brand-light/30 bg-gradient-to-br from-brand/[0.18] to-transparent">
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide opacity-55">
           <Sparkles size={13} /> Level
         </div>

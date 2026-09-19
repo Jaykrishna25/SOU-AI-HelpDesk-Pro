@@ -41,10 +41,13 @@ function buildNotifs(tickets: Ticket[], role: string, name: string): Notif[] {
   }).sort((a, b) => b.ts - a.ts).slice(0, 15);
 }
 
-/* Stat-card palette. Four cards in one colour is a striped row; four colours
-   makes each one a distinct thing you can point at. */
-const STAT_TILE = ["bg-violet-500", "bg-sky-500", "bg-amber-500", "bg-emerald-500"];
-const STAT_BLOOM = ["bg-violet-500", "bg-sky-500", "bg-amber-500", "bg-emerald-500"];
+/* Stat-card palette, drawn from the university logo: the maroon of the
+   wordmark, the green of the oak, the gold of the laurel. Four cards in one
+   colour is a striped row; four makes each a distinct thing you can point at —
+   but they have to belong to the same family, or the dashboard looks like a
+   toy. */
+const STAT_TILE = ["bg-brand", "bg-brand-green", "bg-brand-gold", "bg-brand-leaf"];
+const STAT_BLOOM = ["bg-brand", "bg-brand-green", "bg-brand-gold", "bg-brand-leaf"];
 
 export default function DashboardShell({
   role, name, nav, stats, children, activeNav, onNavSelect,

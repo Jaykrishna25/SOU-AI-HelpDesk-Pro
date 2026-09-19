@@ -43,9 +43,9 @@ export default function FacultyDashboard() {
     const now = new Date().toLocaleString();
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>SOU Salary Slip</title>
     <style>body{font-family:Arial,sans-serif;max-width:640px;margin:40px auto;color:#111}
-    .head{text-align:center;border-bottom:3px solid #6d28d9;padding-bottom:12px}.head h1{color:#6d28d9;margin:0}
+    .head{text-align:center;border-bottom:3px solid #9B1C26;padding-bottom:12px}.head h1{color:#9B1C26;margin:0}
     table{width:100%;border-collapse:collapse;margin-top:20px}td,th{border:1px solid #ddd;padding:10px;text-align:left}
-    th{background:#f3e8ff}.foot{margin-top:24px;font-size:12px;color:#666;text-align:center}</style></head>
+    th{background:#f6ecec}.foot{margin-top:24px;font-size:12px;color:#666;text-align:center}</style></head>
     <body><div class="head"><h1>Silver Oak University</h1><p>Salary Slip - SOU AI HelpDesk Pro</p></div>
     <table><tr><th>Faculty Name</th><td>${me}</td></tr><tr><th>Faculty ID</th><td>FAC001</td></tr>
     <tr><th>Department</th><td>Computer Science & Engineering</td></tr><tr><th>Designation</th><td>Assistant Professor</td></tr>
