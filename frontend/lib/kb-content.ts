@@ -23,7 +23,11 @@ export const KB_DOCS: KbDoc[] = [
 Sign in to the student portal, open the Fees section, and follow the payment instructions shown there.
 Keep the transaction reference. If a payment is deducted but not reflected within two working days,
 raise a ticket from the help desk with the transaction reference attached, and it will be routed to Accounts.
-This assistant does not hold fee amounts or due dates; those are published by the Accounts Office.`,
+
+Your own due date and outstanding balance are shown on the Fees page of this portal, against your
+individual fee record. This assistant answers from general university documents and therefore does not
+hold any particular student's amounts or dates - so for "what do I owe" and "when is mine due", the Fees
+page is the place to look, and the Accounts Office publishes the official schedule.`,
   },
   {
     sourceKey: "kb:fee-receipt", sourceType: "FAQ", title: "Fee receipt not generated",

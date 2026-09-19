@@ -15,6 +15,7 @@ import AnalyticsCharts from "@/components/AnalyticsCharts";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
 import FinancePanel from "@/components/FinancePanel";
 import AuditPanel from "@/components/AuditPanel";
+import KnowledgePanel from "@/components/KnowledgePanel";
 import AccountsPanel from "@/components/AccountsPanel";
 import { useInstitutionalMoney } from "@/components/useInstitutionalMoney";
 import StudyPanel from "@/components/StudyPanel";
@@ -115,7 +116,12 @@ export default function OwnerDashboard() {
 
       {tab === "Accounts" && <AccountsPanel />}
 
-      {tab === "Audit Trail" && <AuditPanel />}
+      {tab === "Audit Trail" && (
+        <div className="space-y-5">
+          <KnowledgePanel />
+          <AuditPanel />
+        </div>
+      )}
       {tab === "Accreditation" && <ReportsPanel />}
       {tab === "Exam Seating" && <SeatingPanel />}
       {tab === "Insights" && <InsightsPanel />}

@@ -10,6 +10,7 @@ import {
 } from "@/lib/speech";
 import { addTicket } from "@/lib/tickets";
 import { gate, GATE_MESSAGE } from "@/lib/ai-guard";
+import { SUGGESTIONS } from "@/lib/assistant-suggestions";
 
 /* ============================================================
    OakMitra - the full-page assistant.
@@ -39,12 +40,9 @@ interface Msg {
   unsure?: boolean;
 }
 
-const SUGGESTIONS = [
-  { icon: "fees", label: "When is my fee due?", q: "When is my semester fee due and what happens if I pay late?" },
-  { icon: "exam", label: "Exam rules", q: "What are the rules for supplementary examinations?" },
-  { icon: "attend", label: "Attendance requirement", q: "What is the minimum attendance requirement?" },
-  { icon: "hostel", label: "Hostel and campus", q: "What facilities are available on campus?" },
-];
+/* In lib/ so a test can assert the assistant never suggests a question it
+   would then refuse - which it briefly did. See the file's own comment. */
+
 
 /* Questions about a specific person's record, and complaints, belong with a
    human rather than a retrieval model working from general policy documents.

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   isPersonalRecordQuestion, needsHuman, gate, GATE_MESSAGE,
 } from "@/lib/ai-guard";
+import { SUGGESTIONS } from "@/lib/assistant-suggestions";
 
 /* These tests exist because the gate was written twice - once in the corner
    bubble, once in the full-page assistant - and the two copies disagreed.
@@ -106,6 +107,16 @@ describe("gate ordering and messages", () => {
     expect(gate("")).toBeNull();
     expect(gate("   ")).toBeNull();
     expect(isPersonalRecordQuestion(undefined as any)).toBe(false);
+  });
+
+  /* The welcome screen once offered "When is my semester fee due...", which
+     the widened gate then refused. The most obvious button on the page
+     produced a refusal, and nothing in the build complained. */
+  it("never suggests a question the assistant would refuse", () => {
+    expect(SUGGESTIONS.length).toBeGreaterThan(0);
+    for (const s of SUGGESTIONS) {
+      expect(gate(s.q), `suggestion "${s.label}" would be refused`).toBeNull();
+    }
   });
 
   it("does not leak across sentence boundaries", () => {
