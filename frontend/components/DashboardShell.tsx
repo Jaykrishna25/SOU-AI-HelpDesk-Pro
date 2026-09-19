@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, TreeDeciduous, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint, Sparkles } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
 import { useTickets, Ticket } from "@/lib/tickets";
@@ -107,8 +108,12 @@ export default function DashboardShell({
             rather than like a student project. */}
         <div className="mb-7">
           <div className="flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-brand flex items-center justify-center shrink-0 shadow-lg shadow-brand/30">
-              <TreeDeciduous size={18} className="text-white" />
+            {/* The university's own mark. It is drawn dark-green-on-white, so it
+                sits on a white disc rather than being recoloured — an
+                institution's emblem is not ours to restyle. */}
+            <span className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-lg shadow-black/30 ring-1 ring-black/10 overflow-hidden">
+              <Image src="/sou-mark.png" alt="Silver Oak University"
+                width={40} height={40} className="w-[38px] h-[38px] object-contain" priority />
             </span>
             <div className="min-w-0 leading-tight">
               <div className="font-display text-[15px] font-semibold tracking-tight truncate">

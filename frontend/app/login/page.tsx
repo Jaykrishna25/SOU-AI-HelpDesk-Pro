@@ -4,7 +4,8 @@ import { Fingerprint } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { GraduationCap, LogIn, ShieldCheck, UserPlus, Copy, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
+import { LogIn, ShieldCheck, UserPlus, Copy, CheckCircle2 } from "lucide-react";
 import ThreeBackground from "@/components/ThreeBackground";
 import ThemeToggle from "@/components/ThemeToggle";
 import { sendMailTo } from "@/lib/email";
@@ -177,9 +178,17 @@ export default function LoginPage() {
 
       <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6 }}
         className="relative z-10 glass p-6 sm:p-8 w-full max-w-md">
-        <div className="flex items-center gap-2 justify-center mb-1">
-          <GraduationCap className="text-brand-light" />
-          <span className="font-bold gradient-text text-lg">SOU AI HelpDesk Pro</span>
+        {/* The sign-in screen is the first thing anyone sees, so it carries
+            the university's mark rather than a product logotype. */}
+        <div className="flex flex-col items-center mb-1">
+          <span className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-xl shadow-black/30 ring-1 ring-black/10 overflow-hidden">
+            <Image src="/sou-mark.png" alt="Silver Oak University"
+              width={64} height={64} className="w-[60px] h-[60px] object-contain" priority />
+          </span>
+          <h1 className="font-display text-xl font-semibold mt-3.5">Silver Oak University</h1>
+          <p className="text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] mt-1">
+            AI Help Desk
+          </p>
         </div>
 
         <div className="flex gap-2 my-5">
