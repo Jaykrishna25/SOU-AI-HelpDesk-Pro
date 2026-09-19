@@ -1,5 +1,7 @@
 "use client";
 import { Trophy, Crown, Medal, TrendingUp } from "lucide-react";
+import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from "framer-motion";
+import { spring, springSoft, fade, stagger } from "@/lib/motion";
 
 /* The weekly board.
 
@@ -33,6 +35,7 @@ function initials(name: string): string {
 }
 
 export default function FunLeaderboard({ board, onFilter, games = [] }: Props) {
+  const reduced = useReducedMotion();
   const rows: any[] = board?.board || [];
   const top = PODIUM.map(p => ({ ...p, row: rows[p.place - 1] })).filter(p => p.row);
   const rest = rows.slice(3);
@@ -70,28 +73,57 @@ export default function FunLeaderboard({ board, onFilter, games = [] }: Props) {
       ) : (
         <>
           {/* ---------- podium ---------- */}
+          {/* The blocks grow up from the floor, second and third before first,
+              so the winner's block is the last thing to finish rising. That is
+              what a podium reveal does, and it costs one delay value. */}
           <div className="flex items-end justify-center gap-3 sm:gap-6 mt-6 px-2">
-            {top.map(({ place, h, ring, bg, Icon, tint, row }) => (
-              <div key={place} className="flex-1 max-w-[9rem] flex flex-col items-center">
-                <div className={"relative w-14 h-14 rounded-full ring-2 " + ring +
-                  " bg-gradient-to-br " + bg + " to-transparent flex items-center justify-center"}>
-                  <span className="text-sm font-semibold">{initials(row.name)}</span>
-                  {place === 1 && (
-                    <Crown size={15} className="absolute -top-4 text-amber-300" />
-                  )}
-                </div>
+            {top.map(({ place, h, ring, bg, Icon, tint, row }) => {
+              const order = place === 1 ? 2 : place === 2 ? 0 : 1;
+              return (
+                <div key={place} className="flex-1 max-w-[9rem] flex flex-col items-center">
+                  <motion.div
+                    initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.6, y: 10 }}
+                    animate={reduced ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+                    transition={reduced ? fade : { ...spring, delay: 0.35 + order * 0.12 }}
+                    className={"relative w-14 h-14 rounded-full ring-2 " + ring +
+                      " bg-gradient-to-br " + bg + " to-transparent flex items-center justify-center"}>
+                    <span className="text-sm font-semibold">{initials(row.name)}</span>
+                    {place === 1 && (
+                      <motion.span
+                        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 6, rotate: -18 }}
+                        animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, rotate: 0 }}
+                        transition={reduced ? fade : { ...spring, delay: 0.72 }}
+                        className="absolute -top-4">
+                        <Crown size={15} className="text-amber-300" />
+                      </motion.span>
+                    )}
+                  </motion.div>
 
-                <div className="text-xs font-medium mt-2 text-center truncate w-full px-1">
-                  {row.isYou ? "You" : row.name}
-                </div>
-                <div className={"text-[11px] " + tint}>{row.total.toLocaleString()}</div>
+                  <motion.div
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    transition={{ ...fade, delay: 0.4 + order * 0.12 }}
+                    className="text-xs font-medium mt-2 text-center truncate w-full px-1">
+                    {row.isYou ? "You" : row.name}
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    transition={{ ...fade, delay: 0.45 + order * 0.12 }}
+                    className={"text-[11px] tabular " + tint}>
+                    {row.total.toLocaleString()}
+                  </motion.div>
 
-                <div className={"w-full mt-2 rounded-t-xl bg-gradient-to-t " + bg +
-                  " to-transparent border-t border-x border-[var(--border)] flex items-start justify-center pt-2 " + h}>
-                  <span className="text-xl font-semibold opacity-80">{place}</span>
+                  <motion.div
+                    initial={reduced ? { opacity: 0 } : { scaleY: 0, opacity: 0 }}
+                    animate={reduced ? { opacity: 1 } : { scaleY: 1, opacity: 1 }}
+                    transition={reduced ? fade : { ...springSoft, delay: order * 0.12 }}
+                    style={{ originY: 1 }}
+                    className={"w-full mt-2 rounded-t-xl bg-gradient-to-t " + bg +
+                      " to-transparent border-t border-x border-[var(--border)] flex items-start justify-center pt-2 " + h}>
+                    <span className="text-xl font-semibold opacity-80">{place}</span>
+                  </motion.div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* ---------- the gap that matters ---------- */}
@@ -108,10 +140,17 @@ export default function FunLeaderboard({ board, onFilter, games = [] }: Props) {
 
           {/* ---------- everyone else ---------- */}
           {!!rest.length && (
-            <div className="space-y-1.5 mt-4">
+            <LayoutGroup>
+            <motion.div variants={stagger(0.03, 0.5)} initial="hidden" animate="show"
+              className="space-y-1.5 mt-4">
+              <AnimatePresence initial={false}>
               {rest.map((r: any) => (
-                <div key={r.userId}
-                  className={"rounded-xl px-4 py-2.5 flex items-center gap-3 border transition " +
+                <motion.div key={r.userId}
+                  layout={!reduced}
+                  variants={{ hidden: { opacity: 0, x: -8 }, show: { opacity: 1, x: 0 } }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={reduced ? fade : spring}
+                  className={"rounded-xl px-4 py-2.5 flex items-center gap-3 border transition-colors " +
                     (r.isYou
                       ? "border-brand/50 bg-brand/10"
                       : "border-[var(--border)] bg-[var(--panel)] hover:bg-[var(--panel-raised)]")}>
@@ -124,9 +163,11 @@ export default function FunLeaderboard({ board, onFilter, games = [] }: Props) {
                     <span className="text-[11px] opacity-40 ml-2">{r.plays} play{r.plays === 1 ? "" : "s"}</span>
                   </span>
                   <span className="text-sm font-medium tabular-nums">{r.total.toLocaleString()}</span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+              </AnimatePresence>
+            </motion.div>
+            </LayoutGroup>
           )}
 
           {you && you.rank > 3 && !rest.some((r: any) => r.isYou) && (

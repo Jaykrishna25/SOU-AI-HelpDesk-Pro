@@ -1,5 +1,7 @@
 "use client";
 import { Flame, Trophy, Lock, Sparkles, AlertTriangle } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { spring, springSoft, fade, stagger, popIn, motionSafe } from "@/lib/motion";
 
 /* The progression strip: level, streak, badges.
 
@@ -13,18 +15,21 @@ import { Flame, Trophy, Lock, Sparkles, AlertTriangle } from "lucide-react";
    itself. */
 
 /** A progress ring. Pure SVG - no chart library for one circle. */
-function Ring({ percent, label }: { percent: number; label: string }) {
+function Ring({ percent, label, reduced }: { percent: number; label: string; reduced: boolean | null }) {
   const R = 26, C = 2 * Math.PI * R;
   const shown = Math.max(0, Math.min(100, percent));
   return (
     <svg width="66" height="66" viewBox="0 0 66 66" className="shrink-0">
       <circle cx="33" cy="33" r={R} fill="none" stroke="currentColor"
         strokeWidth="6" className="text-[var(--border)]" />
-      <circle cx="33" cy="33" r={R} fill="none" stroke="url(#ringGrad)"
-        strokeWidth="6" strokeLinecap="round"
-        strokeDasharray={C} strokeDashoffset={C - (C * shown) / 100}
-        transform="rotate(-90 33 33)"
-        style={{ transition: "stroke-dashoffset .8s ease" }} />
+      {/* Draws itself from zero. A ring that appears already full tells you
+          nothing; one that sweeps round shows you how far along you are. */}
+      <motion.circle cx="33" cy="33" r={R} fill="none" stroke="url(#ringGrad)"
+        strokeWidth="6" strokeLinecap="round" strokeDasharray={C}
+        initial={{ strokeDashoffset: reduced ? C - (C * shown) / 100 : C }}
+        animate={{ strokeDashoffset: C - (C * shown) / 100 }}
+        transition={reduced ? { duration: 0 } : { duration: 1.1, ease: [0.22, 0.61, 0.36, 1], delay: 0.15 }}
+        transform="rotate(-90 33 33)" />
       <defs>
         <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#C4414B" />
@@ -40,6 +45,7 @@ function Ring({ percent, label }: { percent: number; label: string }) {
 interface Props { progress: any }
 
 export default function FunProgress({ progress }: Props) {
+  const reduced = useReducedMotion();
   if (!progress) return null;
   const { level, streak, badges, solved, gamesTried } = progress;
   const earned = badges.filter((b: any) => b.earned);
@@ -49,15 +55,25 @@ export default function FunProgress({ progress }: Props) {
     .slice(0, 3);
 
   return (
-    <div className="grid md:grid-cols-3 gap-3 mt-5">
+    <motion.div variants={stagger(0.07)} initial="hidden" animate="show"
+      className="grid md:grid-cols-3 gap-3 mt-5">
 
       {/* ---------- streak, first and largest ---------- */}
-      <div className={"rounded-2xl p-4 border " +
+      <motion.div variants={motionSafe(popIn, reduced)} className={"rounded-2xl p-4 border " +
         (streak.current > 0
           ? "border-orange-400/40 bg-gradient-to-br from-orange-500/[0.14] to-transparent"
           : "panel-solid")}>
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide opacity-55">
-          <Flame size={13} className={streak.current > 0 ? "text-orange-400" : ""} />
+          <motion.span
+            animate={streak.atRisk && !reduced
+              ? { scale: [1, 1.22, 1], opacity: [1, 0.72, 1] }
+              : { scale: 1, opacity: 1 }}
+            transition={streak.atRisk && !reduced
+              ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
+              : { duration: 0.2 }}
+            className="inline-flex">
+            <Flame size={13} className={streak.current > 0 ? "text-orange-400" : ""} />
+          </motion.span>
           Streak
         </div>
         <div className="flex items-baseline gap-2 mt-2">
@@ -83,18 +99,18 @@ export default function FunProgress({ progress }: Props) {
         {streak.best > streak.current && (
           <p className="text-[11px] opacity-40 mt-2">Your best run: {streak.best} days</p>
         )}
-      </div>
+      </motion.div>
 
       {/* ---------- level, as a ring ----------
            A ring rather than a bar: it reads as a single glanceable state, and
            it leaves room for the number that matters in the middle. */}
-      <div className="rounded-2xl p-4 border border-brand-light/30 bg-gradient-to-br from-brand/[0.18] to-transparent">
+      <motion.div variants={motionSafe(popIn, reduced)} className="rounded-2xl p-4 border border-brand-light/30 bg-gradient-to-br from-brand/[0.18] to-transparent">
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide opacity-55">
           <Sparkles size={13} /> Level
         </div>
 
         <div className="flex items-center gap-4 mt-2">
-          <Ring percent={level.percent} label={String(level.level.n)} />
+          <Ring percent={level.percent} label={String(level.level.n)} reduced={reduced} />
           <div className="min-w-0">
             <div className="text-xl font-semibold leading-tight truncate">{level.level.title}</div>
             <p className="text-[11px] opacity-45 mt-1">
@@ -107,10 +123,10 @@ export default function FunProgress({ progress }: Props) {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* ---------- what you have done ---------- */}
-      <div className="rounded-2xl p-4 border border-amber-400/25 bg-gradient-to-br from-amber-400/[0.12] to-transparent">
+      <motion.div variants={motionSafe(popIn, reduced)} className="rounded-2xl p-4 border border-amber-400/25 bg-gradient-to-br from-amber-400/[0.12] to-transparent">
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide opacity-55">
           <Trophy size={13} className="text-amber-300" /> Badges
         </div>
@@ -119,23 +135,27 @@ export default function FunProgress({ progress }: Props) {
           <span className="text-sm opacity-55">of {badges.length}</span>
         </div>
         <div className="w-full h-1.5 rounded-full bg-[var(--panel)] overflow-hidden mt-3">
-          <div className="h-full bg-amber-400 transition-all duration-700"
+          <motion.div className="h-full bg-amber-400 origin-left"
+            initial={{ scaleX: reduced ? 1 : 0 }} animate={{ scaleX: 1 }}
+            transition={reduced ? { duration: 0 } : { ...springSoft, delay: 0.25 }}
             style={{ width: Math.round((earned.length / badges.length) * 100) + "%" }} />
         </div>
         <p className="text-[11px] opacity-45 mt-2">
           {solved} puzzle{solved === 1 ? "" : "s"} solved · {gamesTried} game{gamesTried === 1 ? "" : "s"} tried
         </p>
-      </div>
+      </motion.div>
 
       {/* ---------- the badge shelf ----------
            Unearned badges show a progress bar rather than just a lock. A lock
            says "no"; a bar at 60% says "keep going", which is the whole
            difference between a trophy cabinet and something worth chasing. */}
-      <div className="md:col-span-3 panel-solid rounded-2xl p-4">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
+      <motion.div variants={motionSafe(popIn, reduced)} className="md:col-span-3 panel-solid rounded-2xl p-4">
+        <motion.div variants={stagger(0.025, 0.1)} initial="hidden" animate="show"
+          className="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
           {badges.map((b: any) => (
-            <div key={b.id} title={b.note ? `${b.how} — ${b.note}` : b.how}
-              className={"rounded-xl px-3 py-2.5 border transition " +
+            <motion.div key={b.id} title={b.note ? `${b.how} — ${b.note}` : b.how}
+              variants={motionSafe(popIn, reduced)}
+              className={"rounded-xl px-3 py-2.5 border transition-colors " +
                 (b.earned
                   ? "border-amber-400/40 bg-amber-400/[0.09]"
                   : "border-[var(--border)] bg-[var(--panel)]")}>
@@ -150,20 +170,22 @@ export default function FunProgress({ progress }: Props) {
               <div className="text-[10px] opacity-40 mt-1 leading-snug line-clamp-2">{b.how}</div>
               {!b.earned && typeof b.progress === "number" && (
                 <div className="w-full h-1 rounded-full bg-[var(--panel)] overflow-hidden mt-2">
-                  <div className="h-full bg-[var(--border-strong)] transition-all duration-700"
+                  <motion.div className="h-full bg-[var(--border-strong)] origin-left"
+                    initial={{ scaleX: reduced ? 1 : 0 }} animate={{ scaleX: 1 }}
+                    transition={reduced ? { duration: 0 } : { ...springSoft, delay: 0.3 }}
                     style={{ width: b.progress + "%" }} />
                 </div>
               )}
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {!!next.length && (
           <p className="text-[11px] opacity-45 mt-3">
             Closest: {next.map((b: any) => `${b.name} (${b.progress}%)`).join(" · ")}
           </p>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
