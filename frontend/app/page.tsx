@@ -15,12 +15,12 @@ import AnalyticsCharts from "@/components/AnalyticsCharts";
 const features = [
   { icon: Bot, title: "Multi-Agent AI Help Desk", desc: "12 cooperating agents detect intent, retrieve knowledge, decide, route & notify." },
   { icon: BrainCircuit, title: "RAG Knowledge Engine", desc: "Semantic search over circulars, policies & FAQs with confidence-gated answers." },
-  { icon: Ticket, title: "Smart Ticketing + SLA", desc: "Auto-ticketing below 90% confidence, 48h SLA, auto-escalation letters." },
+  { icon: Ticket, title: "Smart Ticketing + SLA", desc: "Auto-ticketing when retrieval confidence is too low to trust, with escalation up the chain." },
   { icon: Bell, title: "Real-Time Notifications", desc: "Watchers auto-added across the chain; In-App + AWS SES email on every event." },
   { icon: BarChart3, title: "Analytics Dashboards", desc: "Attendance, bookings, energy use and quality metrics, each shown with its source." },
-  { icon: Workflow, title: "Workflow Automation", desc: "Student ??? AI ??? Admin ??? Faculty ??? HOD ??? Owner ??? Resolution ??? KB learning." },
+  { icon: Workflow, title: "Workflow Automation", desc: "Student → AI → Admin → Faculty → HOD → Owner → Resolution → KB learning." },
   { icon: ShieldCheck, title: "RBAC + Audit Logs", desc: "JWT + refresh tokens, 7 role portals, full audit trail & responsible AI." },
-  { icon: Cloud, title: "Cloud-Native (AWS)", desc: "EC2, RDS, S3, SES, Cognito, IAM, CloudWatch ??? Dockerized & CI/CD ready." },
+  { icon: Cloud, title: "Cloud-Native (AWS)", desc: "EC2, RDS, S3, SES, Cognito, IAM, CloudWatch · Dockerized & CI/CD ready." },
 ];
 
 const agents = [
@@ -107,7 +107,7 @@ export default function Home() {
       {/* AGENTS */}
       <section id="agents" className="relative z-10 py-24 px-6 max-w-6xl mx-auto">
         <Reveal><h2 className="text-4xl font-bold text-center mb-4">A <span className="gradient-text">multi-agent</span> brain</h2></Reveal>
-        <Reveal delay={0.1}><p className="text-center text-[var(--muted)] mb-14 max-w-2xl mx-auto">Every query flows through a LangChain-style pipeline. Confidence ??? 90% answers instantly; below that, a ticket is born.</p></Reveal>
+        <Reveal delay={0.1}><p className="text-center text-[var(--muted)] mb-14 max-w-2xl mx-auto">Every query is answered from retrieved university documents. When the best match falls below the confidence floor, the assistant says it does not know and offers a ticket instead of guessing.</p></Reveal>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {agents.map((a, i) => (
             <Reveal key={a} delay={i * 0.04}>
@@ -120,7 +120,7 @@ export default function Home() {
         </div>
         <Reveal delay={0.2}>
           <div className="glass mt-10 p-6 text-center text-sm text-[var(--muted)]">
-            <b className="text-[var(--text)]">Flow:</b> Student ??? AI Chatbot ??? Confidence Check ??? (Answer or Ticket) ??? Admin ??? Faculty ??? HOD ??? Owner ??? Resolution ??? Knowledge Base Update ??? Student Notification
+            <b className="text-[var(--text)]">Flow:</b> Student &rarr; AI Chatbot &rarr; Confidence Check &rarr; (Answer or Ticket) &rarr; Admin &rarr; Faculty &rarr; HOD &rarr; Owner &rarr; Resolution &rarr; Knowledge Base Update &rarr; Student Notification
           </div>
         </Reveal>
       </section>
@@ -137,7 +137,7 @@ export default function Home() {
                   <h3 className="font-semibold text-lg">{p.name}</h3>
                 </div>
                 <ul className="space-y-2 text-sm text-[var(--muted)]">
-                  {p.pts.map((pt) => <li key={pt} className="flex gap-2"><span className="text-brand-light">???</span>{pt}</li>)}
+                  {p.pts.map((pt) => <li key={pt} className="flex gap-2"><span className="text-brand-light">&bull;</span>{pt}</li>)}
                 </ul>
               </motion.div>
             </Reveal>
