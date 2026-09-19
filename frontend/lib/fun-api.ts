@@ -81,6 +81,15 @@ export async function GET(req: NextRequest) {
       totalGames: GAMES.length,
     });
 
+    /* Best score per game, so a card can show what you have to beat. A colour
+       that also carries a number is worth more than a colour alone. */
+    const bestByGame: Record<string, number> = {};
+    const playsByGame: Record<string, number> = {};
+    for (const r of history) {
+      bestByGame[r.game] = Math.max(bestByGame[r.game] ?? 0, r.score);
+      playsByGame[r.game] = (playsByGame[r.game] ?? 0) + 1;
+    }
+
     return json({
       window: budget,          // the client reads `window.open` and `window.label`
       budget,
@@ -91,6 +100,8 @@ export async function GET(req: NextRequest) {
       budgetMinutes: DAILY_BUDGET_MINUTES,
       budgetLeft: budget.leftMinutes,
       progress,
+      bestByGame,
+      playsByGame,
     });
   }
 

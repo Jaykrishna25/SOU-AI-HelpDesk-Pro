@@ -3,27 +3,27 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Gamepad2, Trophy, Clock, Lock, Loader2, CheckCircle2, XCircle, Play, RotateCcw,
   Grid3x3, Shuffle, Music, Link2, Smile, Keyboard, ListOrdered, Bug, Terminal,
-  Navigation, Braces, Check,
+  Navigation, Braces, Check, Star,
 } from "lucide-react";
 
 /* Each game gets its own colour and mark. Eleven identical grey cards is a
    list; eleven distinct ones is a place you choose from. The colours are not
    decoration - they are what makes "the orange one" a usable way to think
    about a game you played yesterday. */
-const GAME_STYLE: Record<string, { icon: any; from: string; ring: string; text: string }> = {
-  grid:     { icon: Grid3x3,     from: "from-violet-500/20",  ring: "border-violet-400/30",  text: "text-violet-300" },
-  scramble: { icon: Shuffle,     from: "from-sky-500/20",     ring: "border-sky-400/30",     text: "text-sky-300" },
-  sequence: { icon: Music,       from: "from-emerald-500/20", ring: "border-emerald-400/30", text: "text-emerald-300" },
-  ladder:   { icon: Link2,       from: "from-amber-500/20",   ring: "border-amber-400/30",   text: "text-amber-300" },
-  culture:  { icon: Smile,       from: "from-pink-500/20",    ring: "border-pink-400/30",    text: "text-pink-300" },
-  typing:   { icon: Keyboard,    from: "from-cyan-500/20",    ring: "border-cyan-400/30",    text: "text-cyan-300" },
-  jumble:   { icon: ListOrdered, from: "from-indigo-500/20",  ring: "border-indigo-400/30",  text: "text-indigo-300" },
-  debug:    { icon: Bug,         from: "from-rose-500/20",    ring: "border-rose-400/30",    text: "text-rose-300" },
-  output:   { icon: Terminal,    from: "from-lime-500/20",    ring: "border-lime-400/30",    text: "text-lime-300" },
-  robot:    { icon: Navigation,  from: "from-orange-500/20",  ring: "border-orange-400/30",  text: "text-orange-300" },
-  semantic: { icon: Braces,      from: "from-teal-500/20",    ring: "border-teal-400/30",    text: "text-teal-300" },
+const GAME_STYLE: Record<string, { icon: any; from: string; ring: string; tile: string; glow: string }> = {
+  grid:     { icon: Grid3x3,     from: "from-violet-600/45",  ring: "border-violet-400/45",  tile: "bg-violet-500",  glow: "shadow-violet-500/30" },
+  scramble: { icon: Shuffle,     from: "from-sky-600/45",     ring: "border-sky-400/45",     tile: "bg-sky-500",     glow: "shadow-sky-500/30" },
+  sequence: { icon: Music,       from: "from-emerald-600/45", ring: "border-emerald-400/45", tile: "bg-emerald-500", glow: "shadow-emerald-500/30" },
+  ladder:   { icon: Link2,       from: "from-amber-600/45",   ring: "border-amber-400/45",   tile: "bg-amber-500",   glow: "shadow-amber-500/30" },
+  culture:  { icon: Smile,       from: "from-pink-600/45",    ring: "border-pink-400/45",    tile: "bg-pink-500",    glow: "shadow-pink-500/30" },
+  typing:   { icon: Keyboard,    from: "from-cyan-600/45",    ring: "border-cyan-400/45",    tile: "bg-cyan-500",    glow: "shadow-cyan-500/30" },
+  jumble:   { icon: ListOrdered, from: "from-indigo-600/45",  ring: "border-indigo-400/45",  tile: "bg-indigo-500",  glow: "shadow-indigo-500/30" },
+  debug:    { icon: Bug,         from: "from-rose-600/45",    ring: "border-rose-400/45",    tile: "bg-rose-500",    glow: "shadow-rose-500/30" },
+  output:   { icon: Terminal,    from: "from-lime-600/45",    ring: "border-lime-400/45",    tile: "bg-lime-500",    glow: "shadow-lime-500/30" },
+  robot:    { icon: Navigation,  from: "from-orange-600/45",  ring: "border-orange-400/45",  tile: "bg-orange-500",  glow: "shadow-orange-500/30" },
+  semantic: { icon: Braces,      from: "from-teal-600/45",    ring: "border-teal-400/45",    tile: "bg-teal-500",    glow: "shadow-teal-500/30" },
 };
-const FALLBACK = { icon: Gamepad2, from: "from-white/10", ring: "border-white/15", text: "text-white/70" };
+const FALLBACK = { icon: Gamepad2, from: "from-white/15", ring: "border-white/20", tile: "bg-white/20", glow: "shadow-white/10" };
 import FunCodeGames from "@/components/FunCodeGames";
 import FunProgress from "@/components/FunProgress";
 import FunLeaderboard from "@/components/FunLeaderboard";
@@ -490,30 +490,51 @@ export default function FunPanel() {
           const played = (status?.playedToday || []).includes(g.id);
           const st = GAME_STYLE[g.id] || FALLBACK;
           const Icon = st.icon;
+          const best = status?.bestByGame?.[g.id] ?? 0;
+          const plays = status?.playsByGame?.[g.id] ?? 0;
           return (
             <button key={g.id} onClick={() => openGame(g.id)} disabled={!!busy}
-              className={"group relative overflow-hidden rounded-2xl p-5 text-left border transition " +
-                "bg-gradient-to-br " + st.from + " to-transparent " + st.ring + " " +
-                "hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-50 disabled:translate-y-0"}>
+              className={"group relative overflow-hidden rounded-2xl p-5 pb-4 text-left border transition-all duration-200 " +
+                "bg-gradient-to-br " + st.from + " via-transparent to-transparent " + st.ring + " " +
+                "hover:-translate-y-1 hover:shadow-xl " + st.glow + " " +
+                "disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"}>
 
-              <div className="flex items-start gap-3">
-                <span className={"w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center shrink-0 " + st.text}>
-                  <Icon size={18} />
+              {/* A soft bloom behind the icon, so the colour reads as light
+                  rather than as a flat wash. */}
+              <span className={"absolute -top-10 -left-8 w-32 h-32 rounded-full blur-2xl opacity-25 " + st.tile} />
+
+              <div className="relative flex items-start gap-3.5">
+                <span className={"w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-lg " + st.tile}>
+                  <Icon size={21} />
                 </span>
-                <div className="min-w-0">
-                  <div className="font-medium leading-tight">{g.name}</div>
-                  <div className="text-[13px] opacity-55 mt-1 leading-snug">{g.blurb}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-[15px] leading-tight">{g.name}</div>
+                  <div className="text-[12.5px] opacity-60 mt-1 leading-snug">{g.blurb}</div>
                 </div>
               </div>
 
+              {/* Your record with this game, or an invitation to make one. */}
+              <div className="relative flex items-center gap-2 mt-4 pt-3 border-t border-white/10 text-[11px]">
+                {best > 0 ? (
+                  <>
+                    <Star size={11} className="text-amber-300 shrink-0" />
+                    <span className="opacity-75">Best <b className="opacity-100">{best.toLocaleString()}</b></span>
+                    <span className="opacity-35">· {plays} play{plays === 1 ? "" : "s"}</span>
+                  </>
+                ) : (
+                  <span className="opacity-45">Not played yet</span>
+                )}
+                <span className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-90 transition">
+                  <Play size={10} /> Play
+                </span>
+              </div>
+
               {played && (
-                <span className="absolute top-3 right-3 w-6 h-6 rounded-full bg-emerald-500/25 border border-emerald-400/40 flex items-center justify-center"
+                <span className="absolute top-4 right-4 w-6 h-6 rounded-full bg-emerald-500/30 border border-emerald-400/50 flex items-center justify-center backdrop-blur"
                   title="Played today">
-                  <Check size={12} className="text-emerald-300" />
+                  <Check size={12} className="text-emerald-200" />
                 </span>
               )}
-
-              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-white/0 group-hover:bg-white/20 transition" />
             </button>
           );
         })}
