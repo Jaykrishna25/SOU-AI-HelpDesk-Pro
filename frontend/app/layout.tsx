@@ -38,6 +38,19 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${serif.variable} ${sans.variable}`}>
+      <head>
+        {/* Applies the saved theme before first paint. Without this the page
+            renders light, then flips to dark a frame later for anyone who
+            chose dark — the flash is brief and looks broken. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('sou_theme');
+if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+if(t==='light'){document.documentElement.classList.add('light');}
+document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.classList.add('light');}})();`,
+          }}
+        />
+      </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
       </body>

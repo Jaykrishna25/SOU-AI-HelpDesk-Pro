@@ -109,7 +109,7 @@ export default function Passkeys() {
             <label className="text-xs opacity-70 block">Name this device (optional)
               <input value={label} onChange={(e) => setLabel(e.target.value)}
                 placeholder={defaultLabel()}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
             <button onClick={register} disabled={busy}
               className="mt-4 px-5 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-sm flex items-center gap-2">
@@ -134,7 +134,7 @@ export default function Passkeys() {
                 </div>
               </div>
               <button onClick={() => remove(k.id)}
-                className="px-3 py-1.5 rounded text-xs border border-white/15 hover:border-rose-500/50 flex items-center gap-1">
+                className="px-3 py-1.5 rounded text-xs border border-[var(--border)] hover:border-rose-500/50 flex items-center gap-1">
                 <Trash2 size={12} /> Remove
               </button>
             </div>

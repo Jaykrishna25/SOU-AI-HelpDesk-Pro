@@ -64,7 +64,7 @@ export default function Grievance() {
           .map(([k, l]: any) => (
             <button key={k} onClick={() => setTab(k)}
               className={"px-4 py-2 rounded-lg text-sm border " +
-                (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-white/10 hover:border-white/25")}>{l}</button>
+                (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>{l}</button>
           ))}
       </div>
 
@@ -78,17 +78,17 @@ export default function Grievance() {
             {err && <div className="mb-4 px-4 py-3 rounded-lg text-sm border border-rose-500/40 bg-rose-500/10">{err}</div>}
             <label className="text-xs opacity-70 block mb-3">Category
               <select value={f.category} onChange={e => setF({ ...f, category: e.target.value })}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
                 {CATS.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
             <label className="text-xs opacity-70 block mb-3">Subject
               <input value={f.subject} onChange={e => setF({ ...f, subject: e.target.value })}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
             <label className="text-xs opacity-70 block">Details
               <textarea rows={6} value={f.body} onChange={e => setF({ ...f, body: e.target.value })}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
             <button onClick={send} className="mt-4 px-5 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-sm">Submit anonymously</button>
           </div>)}
@@ -97,7 +97,7 @@ export default function Grievance() {
         <div className="panel-solid rounded-xl p-5 max-w-2xl">
           <div className="flex gap-2">
             <input value={trackCode} onChange={e => setTrackCode(e.target.value)} placeholder="GR-XXXXXX"
-              className="flex-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm font-mono" />
+              className="flex-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm font-mono" />
             <button onClick={track} className="px-5 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-sm">Track</button>
           </div>
           {tracked && (tracked.error
@@ -132,14 +132,14 @@ export default function Grievance() {
                     {g.identityRef ? " - " + g.identityRef : " - anonymous"}
                   </div>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/25">{g.status}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border-strong)]">{g.status}</span>
               </div>
               <div className="text-sm opacity-80 mt-3">{g.body}</div>
               {g.response && <div className="mt-3 text-sm border-l-2 border-emerald-500/50 pl-3">{g.response}</div>}
               <div className="flex gap-2 mt-3 flex-wrap">
                 <input value={reply[g.id] || ""} onChange={e => setReply({ ...reply, [g.id]: e.target.value })}
                   placeholder="Write a response..."
-                  className="flex-1 min-w-[220px] bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                  className="flex-1 min-w-[220px] bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
                 <button onClick={() => respond(g.id, "UNDER_REVIEW")} className="px-3 py-1.5 rounded text-xs bg-amber-600/80">Reviewing</button>
                 <button onClick={() => respond(g.id, "RESOLVED")} className="px-3 py-1.5 rounded text-xs bg-emerald-600/80">Resolve</button>
               </div>

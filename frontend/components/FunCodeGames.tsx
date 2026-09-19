@@ -83,7 +83,7 @@ function Typing({ p, result, busy, onSubmit }: any) {
         onChange={e => { if (started === null) setStarted(Date.now()); setTyped(e.target.value); }}
         spellCheck={false}
         rows={4}
-        className={"w-full mt-3 bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 outline-none focus:border-white/30 " + CODE}
+        className={"w-full mt-3 bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 outline-none focus:border-[var(--border-strong)] " + CODE}
         placeholder="Start typing…"
       />
 
@@ -151,7 +151,7 @@ function Jumble({ p, result, busy, onSubmit }: any) {
 
       <div className="flex items-center gap-2 mt-4">
         <button onClick={() => setShowHint(true)} disabled={showHint}
-          className="text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40">
+          className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
           Hint
         </button>
         {showHint && <span className="text-xs opacity-60">{p.hint}</span>}
@@ -187,7 +187,7 @@ function Debug({ p, result, busy, onSubmit }: any) {
                 (isAnswer ? "bg-emerald-500/20"
                   : isWrongPick ? "bg-rose-500/20"
                   : picked === i ? "bg-brand/20"
-                  : "hover:bg-white/5")}>
+                  : "hover:bg-[var(--panel)]")}>
               <span className="opacity-30 text-[11px] w-5 text-right shrink-0 pt-0.5">{i + 1}</span>
               <code className={CODE}>{l}</code>
             </button>
@@ -239,7 +239,7 @@ function Output({ p, result, busy, onSubmit }: any) {
                 (isAnswer ? "border-emerald-500/50 bg-emerald-500/15"
                   : isWrongPick ? "border-rose-500/50 bg-rose-500/15"
                   : choice === i ? "border-brand/60 bg-brand/15"
-                  : "border-white/15 hover:border-white/30")}>
+                  : "border-[var(--border)] hover:border-[var(--border-strong)]")}>
               {o}
             </button>
           );
@@ -294,11 +294,11 @@ function Robot({ p, result, busy, onSubmit }: any) {
               return (
                 <div key={c}
                   className={"w-9 h-9 m-0.5 rounded flex items-center justify-center text-xs font-mono " +
-                    (cell === "#" ? "bg-white/15"
+                    (cell === "#" ? "bg-[var(--panel-raised)]"
                       : cell === "G" ? "bg-emerald-500/30 text-emerald-200"
                       : cell === "S" ? "bg-brand/30 text-white"
                       : cell === "*" ? "bg-amber-500/20 text-amber-300"
-                      : on ? "bg-sky-500/25" : "bg-white/[0.04]")}>
+                      : on ? "bg-sky-500/25" : "bg-[var(--panel)]")}>
                   {cell === "." ? "" : cell}
                 </div>
               );
@@ -310,13 +310,13 @@ function Robot({ p, result, busy, onSubmit }: any) {
       <div className="flex gap-2 mt-4">
         {CMDS.map(({ id, icon: Icon }) => (
           <button key={id} onClick={() => setCmds(c => [...c, id])} disabled={!!result}
-            className="p-2.5 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40">
+            className="p-2.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
             <Icon size={15} />
           </button>
         ))}
         <button onClick={() => setCmds(c => c.slice(0, -1))} disabled={!cmds.length || !!result}
           title="Undo the last move"
-          className="p-2.5 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40">
+          className="p-2.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
           <Undo2 size={15} />
         </button>
         <button onClick={() => onSubmit({ commands: cmds })} disabled={!!busy || !cmds.length || !!result}
@@ -379,7 +379,7 @@ function Semantic({ p, result, busy, onSubmit }: any) {
               disabled={answered}
               onChange={e => setGuesses(g => g.map((x, j) => j === i ? e.target.value : x))}
               placeholder="a related word"
-              className="flex-1 min-w-[8rem] bg-transparent border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm outline-none focus:border-white/30 disabled:opacity-60"
+              className="flex-1 min-w-[8rem] bg-transparent border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm outline-none focus:border-[var(--border-strong)] disabled:opacity-60"
             />
             {answered && (
               <span className="text-xs opacity-60">

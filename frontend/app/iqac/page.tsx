@@ -105,7 +105,7 @@ export default function IQAC() {
           </p>
         </div>
         <select value={yearId} onChange={e => setYearId(e.target.value)}
-          className="bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+          className="bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
           {years.map(y => <option key={y.id} value={y.id}>{y.code}{y.isCurrent ? " (current)" : ""}</option>)}
         </select>
       </div>
@@ -119,7 +119,7 @@ export default function IQAC() {
           ["reports", "Reports"]].map(([k, l]) => (
           <button key={k} onClick={() => setTab(k as any)}
             className={"px-4 py-2 rounded-lg text-sm border " +
-              (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-white/10 hover:border-white/25")}>{l}</button>
+              (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>{l}</button>
         ))}
       </div>
 
@@ -150,7 +150,7 @@ export default function IQAC() {
                     <span>{c.code}. {c.title}</span>
                     <span className="opacity-70">{c.approved} / {c.metrics} approved</span>
                   </div>
-                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[var(--panel)] rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-500/80" style={{ width: c.completion + "%" }} />
                   </div>
                 </div>
@@ -181,7 +181,7 @@ export default function IQAC() {
                 ? <div className="text-sm opacity-55">No verified data available yet.</div>
                 : <div className="space-y-2">
                     {dash.byDepartment.map((d: any) => (
-                      <div key={d.name} className="flex justify-between text-sm bg-white/5 rounded px-3 py-2">
+                      <div key={d.name} className="flex justify-between text-sm bg-[var(--panel)] rounded px-3 py-2">
                         <span>{d.name}</span>
                         <span className="opacity-70">{d.approved}/{d.total} approved - {d.completion}%</span>
                       </div>
@@ -205,15 +205,15 @@ export default function IQAC() {
               <Search size={14} className="absolute left-3 top-3 opacity-50" />
               <input value={filter.q} onChange={e => { setSkip(0); setFilter({ ...filter, q: e.target.value }); }}
                 placeholder="Search title, code, narrative or source reference"
-                className="w-full bg-black/30 border border-white/15 rounded pl-9 pr-3 py-2 text-sm" />
+                className="w-full bg-black/30 border border-[var(--border)] rounded pl-9 pr-3 py-2 text-sm" />
             </div>
             <select value={filter.metricId} onChange={e => { setSkip(0); setFilter({ ...filter, metricId: e.target.value }); }}
-              className="bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+              className="bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
               <option value="">All metrics</option>
               {allMetrics.map((m: any) => <option key={m.id} value={m.id}>{m.code} {m.title}</option>)}
             </select>
             <select value={filter.approval} onChange={e => { setSkip(0); setFilter({ ...filter, approval: e.target.value }); }}
-              className="bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+              className="bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
               <option value="">Any approval status</option>
               {["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "RETURNED"].map(x => <option key={x} value={x}>{x}</option>)}
             </select>
@@ -237,7 +237,7 @@ export default function IQAC() {
                 </div>
                 <div className="flex gap-2 items-center">
                   <span className={"text-[10px] px-2 py-0.5 rounded-full border " + (APPROVAL[e.approvalStatus] || "")}>{e.approvalStatus}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/20 opacity-70">{e.verificationStatus}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border-strong)] opacity-70">{e.verificationStatus}</span>
                 </div>
               </button>
             ))}
@@ -246,10 +246,10 @@ export default function IQAC() {
           {total > 25 && (
             <div className="flex justify-between items-center mt-4 text-sm">
               <button disabled={skip === 0} onClick={() => setSkip(Math.max(0, skip - 25))}
-                className="px-3 py-1.5 rounded border border-white/15 disabled:opacity-30">Previous</button>
+                className="px-3 py-1.5 rounded border border-[var(--border)] disabled:opacity-30">Previous</button>
               <span className="opacity-55">{skip + 1}-{Math.min(skip + 25, total)} of {total}</span>
               <button disabled={skip + 25 >= total} onClick={() => setSkip(skip + 25)}
-                className="px-3 py-1.5 rounded border border-white/15 disabled:opacity-30">Next</button>
+                className="px-3 py-1.5 rounded border border-[var(--border)] disabled:opacity-30">Next</button>
             </div>
           )}
         </>
@@ -263,7 +263,7 @@ export default function IQAC() {
               className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-sm flex items-center gap-2">
               <ScanLine size={15} /> {busy ? "Scanning..." : "Run data-quality scan"}
             </button>
-            <button onClick={loadIssues} className="px-3 py-2 rounded-lg border border-white/15 text-sm flex items-center gap-2">
+            <button onClick={loadIssues} className="px-3 py-2 rounded-lg border border-[var(--border)] text-sm flex items-center gap-2">
               <RefreshCw size={14} /> Refresh
             </button>
             <span className="text-xs opacity-55">
@@ -338,7 +338,7 @@ function NewEvidence({ metrics, yearId, onDone }:
       <div className="grid gap-3 md:grid-cols-2">
         <label className="text-xs opacity-70 md:col-span-2">Metric
           <select value={f.metricId} onChange={e => setF({ ...f, metricId: e.target.value })}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
             <option value="">Select a metric</option>
             {metrics.map(m => <option key={m.id} value={m.id}>{m.code} {m.title}</option>)}
           </select>
@@ -346,48 +346,48 @@ function NewEvidence({ metrics, yearId, onDone }:
         <label className="text-xs opacity-70 md:col-span-2">Title
           <input value={f.title} onChange={e => setF({ ...f, title: e.target.value })}
             placeholder="What this evidence shows"
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
         <label className="text-xs opacity-70">Evidence type
           <select value={f.evidenceType} onChange={e => setF({ ...f, evidenceType: e.target.value })}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
             {["FILE", "URL", "STRUCTURED", "NARRATIVE"].map(x => <option key={x}>{x}</option>)}
           </select>
         </label>
         <label className="text-xs opacity-70">Visibility
           <select value={f.visibility} onChange={e => setF({ ...f, visibility: e.target.value })}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
             {["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"].map(x => <option key={x}>{x}</option>)}
           </select>
         </label>
         <label className="text-xs opacity-70">Evidence date
           <input type="date" value={f.evidenceDate} onChange={e => setF({ ...f, evidenceDate: e.target.value })}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
         <label className="text-xs opacity-70">Expires on (optional)
           <input type="date" value={f.expiresAt} onChange={e => setF({ ...f, expiresAt: e.target.value })}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
         <label className="text-xs opacity-70">Source system
           <input value={f.sourceSystem} onChange={e => setF({ ...f, sourceSystem: e.target.value })}
             placeholder="e.g. Examination cell register"
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
         <label className="text-xs opacity-70">Source reference
           <input value={f.sourceReference} onChange={e => setF({ ...f, sourceReference: e.target.value })}
             placeholder="e.g. Register page 42 / File ref 2026-114"
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
         {f.evidenceType === "URL" && (
           <label className="text-xs opacity-70 md:col-span-2">URL
             <input value={f.urlValue} onChange={e => setF({ ...f, urlValue: e.target.value })}
               placeholder="https://..."
-              className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+              className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
           </label>
         )}
         <label className="text-xs opacity-70 md:col-span-2">Narrative / notes
           <textarea rows={3} value={f.narrative} onChange={e => setF({ ...f, narrative: e.target.value })}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
       </div>
       <button onClick={save} disabled={busy || !f.metricId || !f.title}
@@ -459,7 +459,7 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
             ["Visibility", record.visibility],
             ["Source", (record.sourceSystem || "-") + (record.sourceReference ? " / " + record.sourceReference : "")],
             ["Expires", record.expiresAt ? new Date(record.expiresAt).toLocaleDateString() : "-"]].map(([k, v]) => (
-            <div key={String(k)} className="bg-white/5 rounded px-3 py-2">
+            <div key={String(k)} className="bg-[var(--panel)] rounded px-3 py-2">
               <div className="opacity-50">{k}</div><div className="mt-0.5">{v}</div>
             </div>
           ))}
@@ -473,14 +473,14 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
           <div className="text-xs uppercase tracking-wider opacity-55 mb-2">Documents</div>
           {record.documents.length === 0 && <div className="text-sm opacity-50 mb-2">None attached.</div>}
           {record.documents.map((d: any) => (
-            <div key={d.id} className="flex justify-between items-center text-sm bg-white/5 rounded px-3 py-2 mb-1.5">
+            <div key={d.id} className="flex justify-between items-center text-sm bg-[var(--panel)] rounded px-3 py-2 mb-1.5">
               <button onClick={() => openDoc(d)} className="underline text-left">
                 {d.fileName} <span className="opacity-50 text-xs">v{d.versionNo}{d.isCurrent ? " (current)" : ""}</span>
               </button>
               <span className="opacity-45 text-xs">{Math.round(d.sizeBytes / 1024)} KB</span>
             </div>
           ))}
-          <label className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-lg border border-white/15 text-sm cursor-pointer hover:border-white/35">
+          <label className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-lg border border-[var(--border)] text-sm cursor-pointer hover:border-[var(--border-strong)]">
             <Upload size={14} /> {busy ? "Working..." : "Upload document"}
             <input type="file" className="hidden" disabled={busy}
               onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.currentTarget.value = ""; }} />
@@ -492,18 +492,18 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
           <div className="text-xs uppercase tracking-wider opacity-55 mb-2">History</div>
           <div className="space-y-1.5 text-xs">
             {record.versions.map((v: any) => (
-              <div key={v.id} className="bg-white/5 rounded px-3 py-2">
+              <div key={v.id} className="bg-[var(--panel)] rounded px-3 py-2">
                 v{v.versionNo} - {v.changeNote} - {v.changedBy} - {new Date(v.createdAt).toLocaleString()}
               </div>
             ))}
             {record.verifications.map((v: any) => (
-              <div key={v.id} className="bg-white/5 rounded px-3 py-2">
+              <div key={v.id} className="bg-[var(--panel)] rounded px-3 py-2">
                 Verification: {v.result} by {v.verifiedBy} - {new Date(v.verifiedAt).toLocaleString()}
                 {v.comments ? " - " + v.comments : ""}
               </div>
             ))}
             {record.approvals.map((a: any) => (
-              <div key={a.id} className="bg-white/5 rounded px-3 py-2">
+              <div key={a.id} className="bg-[var(--panel)] rounded px-3 py-2">
                 Approval: {a.decision} by {a.decidedBy} - {new Date(a.decidedAt).toLocaleString()}
                 {a.comments ? " - " + a.comments : ""}
               </div>
@@ -512,7 +512,7 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
         </div>
 
         <input value={comments} onChange={e => setComments(e.target.value)} placeholder="Comments for the decision below"
-          className="w-full bg-black/30 border border-white/15 rounded px-3 py-2 text-sm mb-3" />
+          className="w-full bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm mb-3" />
         <div className="flex gap-2 flex-wrap">
           <button disabled={busy} onClick={() => act("verify", { result: "VERIFIED", comments, checklist: { documentsPresent: true, sourceStated: !!record.sourceSystem, dateInYear: true } }, "Marked verified")}
             className="px-3 py-2 rounded text-xs bg-emerald-600/80 hover:bg-emerald-500 flex items-center gap-1">
@@ -523,7 +523,7 @@ function RecordDrawer({ record, onClose, onChanged, setMsg }:
           <button disabled={busy} onClick={() => act("approve", { decision: "APPROVED", comments }, "Approved")}
             className="px-3 py-2 rounded text-xs bg-violet-600/80 hover:bg-violet-500">Approve</button>
           <button disabled={busy} onClick={() => act("approve", { decision: "RETURNED", comments }, "Returned for correction")}
-            className="px-3 py-2 rounded text-xs border border-white/20">Return</button>
+            className="px-3 py-2 rounded text-xs border border-[var(--border-strong)]">Return</button>
         </div>
         <div className="text-[11px] opacity-45 mt-3 flex items-start gap-1.5">
           <AlertTriangle size={12} className="mt-0.5 shrink-0" />
@@ -599,7 +599,7 @@ function ReportsTab({ yearId, setMsg }: { yearId: string; setMsg: (m: any) => vo
       <div className="panel-solid rounded-xl p-4 mb-5 flex gap-3 flex-wrap items-end no-print">
         <label className="text-xs opacity-70">Report type
           <select value={kind} onChange={e => setKind(e.target.value)}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
             <option value="SSR">SSR data annexure (draft)</option>
             <option value="DVV">DVV evidence index</option>
           </select>
@@ -610,8 +610,8 @@ function ReportsTab({ yearId, setMsg }: { yearId: string; setMsg: (m: any) => vo
         </button>
         {draft && <>
           <button onClick={snapshot} disabled={busy}
-            className="px-4 py-2 rounded-lg border border-white/20 text-sm">Save as snapshot</button>
-          <button onClick={() => window.print()} className="px-4 py-2 rounded-lg border border-white/20 text-sm">Print</button>
+            className="px-4 py-2 rounded-lg border border-[var(--border-strong)] text-sm">Save as snapshot</button>
+          <button onClick={() => window.print()} className="px-4 py-2 rounded-lg border border-[var(--border-strong)] text-sm">Print</button>
         </>}
       </div>
 
@@ -628,7 +628,7 @@ function ReportsTab({ yearId, setMsg }: { yearId: string; setMsg: (m: any) => vo
               <span className="px-3 py-1 rounded-full border border-amber-500/40 text-amber-300">
                 {draft.coverage.gaps} gaps
               </span>
-              <span className="px-3 py-1 rounded-full border border-white/20 opacity-70">
+              <span className="px-3 py-1 rounded-full border border-[var(--border-strong)] opacity-70">
                 {draft.coverage.totalMetrics} metrics total
               </span>
             </div>
@@ -657,7 +657,7 @@ function ReportsTab({ yearId, setMsg }: { yearId: string; setMsg: (m: any) => vo
                       {m.evidenced && openIds[m.statementId] && (
                         <div className="mt-2 space-y-1">
                           {m.sources.map((sc: any) => (
-                            <div key={sc.id} className="text-[11px] bg-white/5 rounded px-2 py-1.5">
+                            <div key={sc.id} className="text-[11px] bg-[var(--panel)] rounded px-2 py-1.5">
                               <span className="font-mono opacity-70">{sc.code}</span> - {sc.title} - {sc.evidenceDate}
                               {" - "}{sc.documents} doc(s){sc.verifiedAt ? " - verified " + sc.verifiedAt : ""}
                               {sc.sourceSystem ? " - " + sc.sourceSystem : ""}
@@ -694,7 +694,7 @@ function ReportsTab({ yearId, setMsg }: { yearId: string; setMsg: (m: any) => vo
                   className="px-3 py-1.5 rounded text-xs bg-emerald-600/80 hover:bg-emerald-500">Approve</button>
               )}
               <button onClick={() => act(s.id, "export", "")}
-                className="px-3 py-1.5 rounded text-xs border border-white/20">Export CSV</button>
+                className="px-3 py-1.5 rounded text-xs border border-[var(--border-strong)]">Export CSV</button>
             </div>
           </div>
         ))}

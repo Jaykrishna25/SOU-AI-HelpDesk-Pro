@@ -134,7 +134,7 @@ export default function BookingsPage() {
         ).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k as any)}
             className={"px-4 py-2 rounded-lg text-sm border transition-colors " +
-              (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-white/10 hover:border-white/25")}>
+              (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>
             {l}
           </button>
         ))}
@@ -153,7 +153,7 @@ export default function BookingsPage() {
             {TYPES.map(([v, l]) => (
               <button key={v} onClick={() => { setType(v); setSel(null); }}
                 className={"px-3 py-1.5 rounded-full text-xs border transition-colors " +
-                  (type === v ? "bg-white/15 border-white/40" : "border-white/10 hover:border-white/25")}>
+                  (type === v ? "bg-[var(--panel-raised)] border-[var(--border-strong)]" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>
                 {l}
               </button>
             ))}
@@ -190,29 +190,29 @@ export default function BookingsPage() {
               <div className="grid gap-3 md:grid-cols-4">
                 <label className="text-xs opacity-70">Date
                   <input type="date" value={date} onChange={e => setDate(e.target.value)}
-                    className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                    className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
                 </label>
                 <label className="text-xs opacity-70">From
                   <select value={sH} onChange={e => setSH(+e.target.value)}
-                    className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+                    className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
                     {hours.map(h => <option key={h} value={h}>{h}:00</option>)}
                   </select>
                 </label>
                 <label className="text-xs opacity-70">To
                   <select value={eH} onChange={e => setEH(+e.target.value)}
-                    className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+                    className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
                     {hours.map(h => <option key={h} value={h}>{h}:00</option>)}
                   </select>
                 </label>
                 <label className="text-xs opacity-70">Attendees
                   <input type="number" min={1} max={sel.capacity} value={att} onChange={e => setAtt(+e.target.value)}
-                    className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                    className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
                 </label>
               </div>
               <label className="text-xs opacity-70 block mt-3">Purpose
                 <input value={purpose} onChange={e => setPurpose(e.target.value)}
                   placeholder="Project review meeting, extra lecture, practice session..."
-                  className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                  className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
               </label>
 
               <div className="mt-4 text-xs">
@@ -221,7 +221,7 @@ export default function BookingsPage() {
                   ? <div className="opacity-45">Nothing booked - fully available</div>
                   : <div className="flex flex-wrap gap-2">
                       {slots.map((s: any) => (
-                        <span key={s.id} className="px-2 py-1 rounded bg-white/10">
+                        <span key={s.id} className="px-2 py-1 rounded bg-[var(--panel)]">
                           {hh(s.startsAt)}-{hh(s.endsAt)} {s.userName}
                         </span>
                       ))}
@@ -234,7 +234,7 @@ export default function BookingsPage() {
                   {busy ? "Booking..." : "Confirm booking"}
                 </button>
                 <button onClick={() => setSel(null)}
-                  className="px-5 py-2 rounded-lg border border-white/15 hover:border-white/35 text-sm">Cancel</button>
+                  className="px-5 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] text-sm">Cancel</button>
               </div>
             </div>
           )}

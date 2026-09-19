@@ -225,7 +225,7 @@ export default function Finance() {
           <button
             onClick={() => fileRef.current?.click()}
             disabled={!!busy}
-            className="panel-solid rounded-xl p-6 text-left hover:border-white/25 transition disabled:opacity-50"
+            className="panel-solid rounded-xl p-6 text-left hover:border-[var(--border-strong)] transition disabled:opacity-50"
           >
             <Upload size={18} className="opacity-70" />
             <div className="font-medium mt-3">Upload a statement</div>
@@ -237,7 +237,7 @@ export default function Finance() {
           <button
             onClick={loadMine}
             disabled={!!busy || !status?.canViewOwn}
-            className="panel-solid rounded-xl p-6 text-left hover:border-white/25 transition disabled:opacity-50"
+            className="panel-solid rounded-xl p-6 text-left hover:border-[var(--border-strong)] transition disabled:opacity-50"
           >
             <FileText size={18} className="opacity-70" />
             <div className="font-medium mt-3">Use my portal record</div>
@@ -251,7 +251,7 @@ export default function Finance() {
           <button
             onClick={loadInstitutional}
             disabled={!!busy}
-            className="panel-solid rounded-xl p-6 text-left w-full mt-4 hover:border-white/25 transition disabled:opacity-50"
+            className="panel-solid rounded-xl p-6 text-left w-full mt-4 hover:border-[var(--border-strong)] transition disabled:opacity-50"
           >
             <Building2 size={18} className="opacity-70" />
             <div className="font-medium mt-3">Institutional fee position</div>
@@ -272,7 +272,7 @@ export default function Finance() {
           </div>
         )}
 
-        <p className="text-xs opacity-40 mt-10 border-t border-white/10 pt-5">
+        <p className="text-xs opacity-40 mt-10 border-t border-[var(--border)] pt-5">
           Informational only. This is not personalised financial advice.
         </p>
       </div>
@@ -294,12 +294,12 @@ export default function Finance() {
         </div>
         <div className="flex gap-2">
           <button onClick={() => fileRef.current?.click()}
-            className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30">
+            className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)]">
             Upload another
           </button>
           {canInst && !inst && (
             <button onClick={loadInstitutional}
-              className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30">
+              className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)]">
               Institutional view
             </button>
           )}
@@ -426,7 +426,7 @@ export default function Finance() {
             onChange={e => setPw(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && pw) unlock(); }}
             placeholder="Your password"
-            className="w-full mt-4 px-4 py-3 rounded-xl bg-white/5 border border-white/15 outline-none focus:border-white/35 text-sm"
+            className="w-full mt-4 px-4 py-3 rounded-xl bg-[var(--panel)] border border-[var(--border)] outline-none focus:border-[var(--border-strong)] text-sm"
           />
 
           {stepUpErr && (
@@ -436,7 +436,7 @@ export default function Finance() {
           )}
 
           <button onClick={unlock} disabled={!pw || !!busy}
-            className="mt-4 px-4 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm disabled:opacity-40 flex items-center gap-2">
+            className="mt-4 px-4 py-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm disabled:opacity-40 flex items-center gap-2">
             {busy === "Verifying..." ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
             Unlock for 5 minutes
           </button>
@@ -504,7 +504,7 @@ export default function Finance() {
 
       {/* ---------- chat ---------- */}
       {(analysis || inst) && (
-      <div className="mt-10 border-t border-white/10 pt-7">
+      <div className="mt-10 border-t border-[var(--border)] pt-7">
         <h2 className="text-lg font-medium">Ask about this</h2>
         <p className="text-sm opacity-55 mt-1">
           The assistant calls tools to get its figures and shows you which ones it used. It is not permitted
@@ -514,7 +514,7 @@ export default function Finance() {
         <div className="flex flex-wrap gap-2 mt-4">
           {suggestions.map(s => (
             <button key={s} onClick={() => ask(s)} disabled={!!busy}
-              className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40">
+              className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
               {s}
             </button>
           ))}
@@ -525,11 +525,11 @@ export default function Finance() {
             <div key={i} className={t.role === "user" ? "text-right" : ""}>
               <div className={
                 "inline-block max-w-[85%] text-left px-4 py-3 rounded-xl text-sm " +
-                (t.role === "user" ? "bg-white/10" : "panel-solid")
+                (t.role === "user" ? "bg-[var(--panel)]" : "panel-solid")
               }>
                 <div className="whitespace-pre-wrap leading-relaxed">{t.text}</div>
                 {!!t.tools?.length && (
-                  <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-white/10">
+                  <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-[var(--border)]">
                     <span className="text-[10px] opacity-45 flex items-center gap-1"><Wrench size={10} /> tools used:</span>
                     {t.tools.map(x => (
                       <span key={x} className="text-[10px] px-2 py-0.5 rounded-full border border-sky-500/40 text-sky-300 bg-sky-500/10">
@@ -553,17 +553,17 @@ export default function Finance() {
             value={q} onChange={e => setQ(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") ask(q); }}
             placeholder="Ask a follow-up question"
-            className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 outline-none focus:border-white/35 text-sm"
+            className="flex-1 px-4 py-3 rounded-xl bg-[var(--panel)] border border-[var(--border)] outline-none focus:border-[var(--border-strong)] text-sm"
           />
           <button onClick={() => ask(q)} disabled={!!busy || !q.trim()}
-            className="px-4 rounded-xl border border-white/15 hover:border-white/30 disabled:opacity-40">
+            className="px-4 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
             <Send size={16} />
           </button>
         </div>
       </div>
       )}
 
-      <p className="text-xs opacity-40 mt-8 border-t border-white/10 pt-5">
+      <p className="text-xs opacity-40 mt-8 border-t border-[var(--border)] pt-5">
         Informational only and not personalised financial advice. Figures come from your portal fee record or the
         statement you uploaded, and policy answers are quoted from university documents held in the portal.
       </p>

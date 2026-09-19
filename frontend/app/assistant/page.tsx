@@ -203,7 +203,7 @@ export default function AssistantPage() {
             <div className="grid sm:grid-cols-2 gap-2 mt-6">
               {SUGGESTIONS.map(s => (
                 <button key={s.label} onClick={() => ask(s.q)}
-                  className="panel-solid rounded-xl p-4 text-left hover:border-white/25 transition">
+                  className="panel-solid rounded-xl p-4 text-left hover:border-[var(--border-strong)] transition">
                   <div className="text-sm font-medium">{s.label}</div>
                   <div className="text-xs text-[var(--muted)] mt-1">{s.q}</div>
                 </button>
@@ -234,7 +234,7 @@ export default function AssistantPage() {
               <div className="whitespace-pre-wrap">{m.text}</div>
 
               {!!m.sources?.length && (
-                <div className="mt-2.5 pt-2.5 border-t border-white/10 flex flex-wrap gap-1.5 items-center">
+                <div className="mt-2.5 pt-2.5 border-t border-[var(--border)] flex flex-wrap gap-1.5 items-center">
                   <span className="text-[10px] text-[var(--muted)] flex items-center gap-1">
                     <BookOpen size={10} /> from:
                   </span>

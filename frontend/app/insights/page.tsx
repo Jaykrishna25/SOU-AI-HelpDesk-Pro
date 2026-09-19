@@ -47,7 +47,7 @@ export default function Insights() {
         {[["alerts", "Predictive alerts" + (crit + warn ? " (" + (crit + warn) + ")" : "")], ["green", "Sustainability"]].map(([k, l]) => (
           <button key={k} onClick={() => setTab(k as any)}
             className={"px-4 py-2 rounded-lg text-sm border " +
-              (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-white/10 hover:border-white/25")}>{l}</button>
+              (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>{l}</button>
         ))}
       </div>
 
@@ -123,7 +123,7 @@ export default function Insights() {
             {[7, 30, 90].map(d => (
               <button key={d} onClick={() => setDays(d)}
                 className={"px-3 py-1.5 rounded-full text-xs border " +
-                  (days === d ? "bg-white/15 border-white/40" : "border-white/10")}>{d} days</button>
+                  (days === d ? "bg-[var(--panel-raised)] border-[var(--border-strong)]" : "border-[var(--border)]")}>{d} days</button>
             ))}
           </div>
 
@@ -178,7 +178,7 @@ export default function Insights() {
               <div className="space-y-2">
                 {g.byBuilding.length === 0 && <div className="opacity-50 text-sm">No approved bookings yet.</div>}
                 {g.byBuilding.map((b: any) => (
-                  <div key={b.building} className="flex justify-between items-center text-sm bg-white/5 rounded px-3 py-2">
+                  <div key={b.building} className="flex justify-between items-center text-sm bg-[var(--panel)] rounded px-3 py-2">
                     <span>{b.building}</span>
                     <span className="opacity-70">{b.bookings} bookings - {b.used} kWh - {b.saved} kWh saved</span>
                   </div>

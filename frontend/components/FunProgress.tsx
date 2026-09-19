@@ -19,7 +19,7 @@ function Ring({ percent, label }: { percent: number; label: string }) {
   return (
     <svg width="66" height="66" viewBox="0 0 66 66" className="shrink-0">
       <circle cx="33" cy="33" r={R} fill="none" stroke="currentColor"
-        strokeWidth="6" className="text-white/10" />
+        strokeWidth="6" className="text-[var(--border)]" />
       <circle cx="33" cy="33" r={R} fill="none" stroke="url(#ringGrad)"
         strokeWidth="6" strokeLinecap="round"
         strokeDasharray={C} strokeDashoffset={C - (C * shown) / 100}
@@ -118,7 +118,7 @@ export default function FunProgress({ progress }: Props) {
           <span className="text-3xl font-semibold">{earned.length}</span>
           <span className="text-sm opacity-55">of {badges.length}</span>
         </div>
-        <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden mt-3">
+        <div className="w-full h-1.5 rounded-full bg-[var(--panel)] overflow-hidden mt-3">
           <div className="h-full bg-amber-400 transition-all duration-700"
             style={{ width: Math.round((earned.length / badges.length) * 100) + "%" }} />
         </div>
@@ -138,7 +138,7 @@ export default function FunProgress({ progress }: Props) {
               className={"rounded-xl px-3 py-2.5 border transition " +
                 (b.earned
                   ? "border-amber-400/40 bg-amber-400/[0.09]"
-                  : "border-white/8 bg-white/[0.02]")}>
+                  : "border-[var(--border)] bg-[var(--panel)]")}>
               <div className="flex items-center gap-1.5">
                 {b.earned
                   ? <Trophy size={12} className="text-amber-300 shrink-0" />
@@ -149,8 +149,8 @@ export default function FunProgress({ progress }: Props) {
               </div>
               <div className="text-[10px] opacity-40 mt-1 leading-snug line-clamp-2">{b.how}</div>
               {!b.earned && typeof b.progress === "number" && (
-                <div className="w-full h-1 rounded-full bg-white/8 overflow-hidden mt-2">
-                  <div className="h-full bg-white/35 transition-all duration-700"
+                <div className="w-full h-1 rounded-full bg-[var(--panel)] overflow-hidden mt-2">
+                  <div className="h-full bg-[var(--border-strong)] transition-all duration-700"
                     style={{ width: b.progress + "%" }} />
                 </div>
               )}

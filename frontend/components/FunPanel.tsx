@@ -23,7 +23,7 @@ const GAME_STYLE: Record<string, { icon: any; from: string; ring: string; tile: 
   robot:    { icon: Navigation,  from: "from-yellow-700/45",  ring: "border-yellow-500/45",  tile: "bg-yellow-600",  glow: "shadow-yellow-700/30" },
   semantic: { icon: Braces,      from: "from-lime-800/45",    ring: "border-lime-500/45",    tile: "bg-lime-700",    glow: "shadow-lime-800/30" },
 };
-const FALLBACK = { icon: Gamepad2, from: "from-white/15", ring: "border-white/20", tile: "bg-white/20", glow: "shadow-white/10" };
+const FALLBACK = { icon: Gamepad2, from: "from-[var(--panel-raised)]", ring: "border-[var(--border-strong)]", tile: "bg-[var(--panel-raised)]", glow: "shadow-black/10" };
 import FunCodeGames from "@/components/FunCodeGames";
 import FunProgress from "@/components/FunProgress";
 import FunLeaderboard from "@/components/FunLeaderboard";
@@ -187,7 +187,7 @@ export default function FunPanel() {
             Thirty minutes each day, across every game, and it resets at midnight.
           </p>
           <div className="flex gap-2 justify-center mt-4">
-            <span className="text-xs px-3 py-1.5 rounded-lg border border-white/15 opacity-70">
+            <span className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] opacity-70">
               {w?.usedMinutes ?? 0} of {w?.budgetMinutes ?? 30} minutes used
             </span>
           </div>
@@ -248,8 +248,8 @@ export default function FunPanel() {
                     }}
                     className={
                       "w-14 h-14 rounded-lg text-lg font-semibold transition " +
-                      (fixed ? "bg-white/10 opacity-80 cursor-default"
-                             : "bg-white/5 border border-white/15 hover:border-white/35") +
+                      (fixed ? "bg-[var(--panel)] opacity-80 cursor-default"
+                             : "bg-[var(--panel)] border border-[var(--border)] hover:border-[var(--border-strong)]") +
                       ((c === 1 ? " mr-1" : "") + (r === 1 ? " mb-1" : ""))
                     }>
                     {v === 0 ? "" : v}
@@ -259,11 +259,11 @@ export default function FunPanel() {
             </div>
             <div className="mt-4 flex gap-2">
               <button onClick={() => submit({ attempt: grid })} disabled={!!busy}
-                className="px-4 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm disabled:opacity-40">
+                className="px-4 py-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm disabled:opacity-40">
                 {busy === "submitting" ? "Checking..." : "Check my grid"}
               </button>
               <button onClick={() => { setGrid(puzzle.puzzle.given.map((r: number[]) => [...r])); setMistakes(m => m + 1); }}
-                className="px-4 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm flex items-center gap-1.5">
+                className="px-4 py-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm flex items-center gap-1.5">
                 <RotateCcw size={14} /> Reset
               </button>
             </div>
@@ -284,9 +284,9 @@ export default function FunPanel() {
               <input value={guess} onChange={e => setGuess(e.target.value.toUpperCase())}
                 onKeyDown={e => { if (e.key === "Enter" && guess) submit({ answer: guess }); }}
                 placeholder="Your answer"
-                className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 outline-none focus:border-white/35 text-sm tracking-widest" />
+                className="flex-1 px-4 py-3 rounded-xl bg-[var(--panel)] border border-[var(--border)] outline-none focus:border-[var(--border-strong)] text-sm tracking-widest" />
               <button onClick={() => submit({ answer: guess })} disabled={!!busy || !guess}
-                className="px-5 rounded-xl border border-white/15 hover:border-white/30 text-sm disabled:opacity-40">
+                className="px-5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm disabled:opacity-40">
                 Submit
               </button>
             </div>
@@ -311,7 +311,7 @@ export default function FunPanel() {
             <div className="mt-4 flex gap-2 items-center">
               {seqPhase === "idle" && (
                 <button onClick={playSequence} disabled={!!busy}
-                  className="px-4 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm flex items-center gap-1.5">
+                  className="px-4 py-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm flex items-center gap-1.5">
                   <Play size={14} /> Show the pattern
                 </button>
               )}
@@ -320,11 +320,11 @@ export default function FunPanel() {
                 <>
                   <span className="text-sm opacity-60">{recalled.length} entered</span>
                   <button onClick={() => submit({ recalled })} disabled={!!busy || !recalled.length}
-                    className="px-4 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm disabled:opacity-40">
+                    className="px-4 py-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm disabled:opacity-40">
                     Done
                   </button>
                   <button onClick={() => setRecalled([])}
-                    className="px-3 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm">
+                    className="px-3 py-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm">
                     Clear
                   </button>
                 </>
@@ -347,9 +347,9 @@ export default function FunPanel() {
               <input value={guess} onChange={e => setGuess(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter") sendGuess(); }}
                 placeholder="Type a term, e.g. index"
-                className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 outline-none focus:border-white/35 text-sm" />
+                className="flex-1 px-4 py-3 rounded-xl bg-[var(--panel)] border border-[var(--border)] outline-none focus:border-[var(--border-strong)] text-sm" />
               <button onClick={sendGuess} disabled={!!busy || !guess.trim()}
-                className="px-5 rounded-xl border border-white/15 hover:border-white/30 text-sm disabled:opacity-40">
+                className="px-5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm disabled:opacity-40">
                 Guess
               </button>
             </div>
@@ -362,7 +362,7 @@ export default function FunPanel() {
                     : g.band === "hot" ? "border-l-rose-400"
                     : g.band === "warm" ? "border-l-amber-400"
                     : g.band === "cool" ? "border-l-sky-400"
-                    : "border-l-white/20")}>
+                    : "border-l-[var(--border-strong)]")}>
                   <div className="flex justify-between items-start gap-3 flex-wrap">
                     <div className="min-w-0">
                       <div className="font-medium">{g.word}</div>
@@ -391,9 +391,9 @@ export default function FunPanel() {
               <div className="text-[11px] uppercase tracking-wider opacity-50">Meme of the day</div>
               <div className="text-xl font-semibold mt-1">{puzzle.puzzle.entry.name}</div>
               <div className="flex gap-1.5 flex-wrap mt-2">
-                <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/20 opacity-70">{puzzle.puzzle.entry.year}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border-strong)] opacity-70">{puzzle.puzzle.entry.year}</span>
                 {puzzle.puzzle.entry.aliases.map((a: string) => (
-                  <span key={a} className="text-[10px] px-2 py-0.5 rounded-full border border-white/20 opacity-70">{a}</span>
+                  <span key={a} className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border-strong)] opacity-70">{a}</span>
                 ))}
               </div>
               <div className="text-sm opacity-75 mt-3"><b>Origin.</b> {puzzle.puzzle.entry.origin}</div>
@@ -412,7 +412,7 @@ export default function FunPanel() {
                     <button key={oi}
                       onClick={() => setAnswers(a => { const n = [...a]; n[qi] = oi; return n; })}
                       className={"text-sm px-3 py-2 rounded-lg border text-left transition " +
-                        (answers[qi] === oi ? "border-violet-400/60 bg-violet-400/10" : "border-white/15 hover:border-white/30")}>
+                        (answers[qi] === oi ? "border-violet-400/60 bg-violet-400/10" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>
                       {opt}
                     </button>
                   ))}
@@ -421,7 +421,7 @@ export default function FunPanel() {
             ))}
             <button onClick={() => submit({ answers })}
               disabled={!!busy || answers.filter(a => a !== undefined).length < puzzle.puzzle.quiz.length}
-              className="mt-2 px-4 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm disabled:opacity-40">
+              className="mt-2 px-4 py-2.5 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] text-sm disabled:opacity-40">
               Submit answers
             </button>
           </div>
@@ -480,7 +480,7 @@ export default function FunPanel() {
               {status.minutesUsed} of {status.budgetMinutes} minutes used
             </span>
           </div>
-          <div className="w-40 h-2 rounded-full bg-white/10 overflow-hidden">
+          <div className="w-40 h-2 rounded-full bg-[var(--panel)] overflow-hidden">
             <div className="h-full bg-violet-400"
               style={{ width: Math.min(100, (status.minutesUsed / status.budgetMinutes) * 100) + "%" }} />
           </div>
@@ -518,7 +518,7 @@ export default function FunPanel() {
               </div>
 
               {/* Your record with this game, or an invitation to make one. */}
-              <div className="relative flex items-center gap-2 mt-4 pt-3 border-t border-white/10 text-[11px]">
+              <div className="relative flex items-center gap-2 mt-4 pt-3 border-t border-[var(--border)] text-[11px]">
                 {best > 0 ? (
                   <>
                     <Star size={11} className="text-amber-300 shrink-0" />
@@ -552,7 +552,7 @@ export default function FunPanel() {
 
       {board && <FunLeaderboard board={board} onFilter={loadBoard} games={status?.games || []} />}
 
-      <p className="text-xs opacity-40 mt-8 border-t border-white/10 pt-5">
+      <p className="text-xs opacity-40 mt-8 border-t border-[var(--border)] pt-5">
         Puzzles are generated from the date, so everyone plays the same one. Solutions are checked on
         the server and never sent to your browser. One scoring run per puzzle per day.
       </p>

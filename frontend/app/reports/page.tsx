@@ -75,18 +75,18 @@ export default function Reports() {
           <div className="grid gap-3 md:grid-cols-4">
             <label className="text-xs opacity-70">Report
               <select value={kind} onChange={e => setKind(e.target.value)}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm">
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm">
                 <option value="NAAC_AQAR">NAAC AQAR annexure</option>
                 <option value="AICTE_EOA">AICTE EOA annexure</option>
               </select>
             </label>
             <label className="text-xs opacity-70">From
               <input type="date" value={from} onChange={e => setFrom(e.target.value)}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
             <label className="text-xs opacity-70">To
               <input type="date" value={to} onChange={e => setTo(e.target.value)}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
             <div className="flex items-end">
               <button onClick={generate} disabled={busy}
@@ -99,8 +99,8 @@ export default function Reports() {
           {rep && (
             <div className="flex gap-2 mt-4 flex-wrap">
               <button onClick={snapshot} className="px-3 py-1.5 rounded text-xs bg-emerald-600/80 hover:bg-emerald-500">Save snapshot</button>
-              <button onClick={csv} className="px-3 py-1.5 rounded text-xs border border-white/20">Download CSV</button>
-              <button onClick={() => window.print()} className="px-3 py-1.5 rounded text-xs border border-white/20">Print / PDF</button>
+              <button onClick={csv} className="px-3 py-1.5 rounded text-xs border border-[var(--border-strong)]">Download CSV</button>
+              <button onClick={() => window.print()} className="px-3 py-1.5 rounded text-xs border border-[var(--border-strong)]">Print / PDF</button>
             </div>
           )}
         </div>
@@ -140,7 +140,7 @@ export default function Reports() {
 
               <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 mb-4">
                 {Object.entries(s.summary || {}).map(([k, v]) => (
-                  <div key={k} className="bg-white/5 rounded px-3 py-2">
+                  <div key={k} className="bg-[var(--panel)] rounded px-3 py-2">
                     <div className="text-[11px] opacity-55">{k}</div>
                     <div className="text-sm font-medium mt-0.5">{String(v)}</div>
                   </div>
@@ -157,7 +157,7 @@ export default function Reports() {
                     </thead>
                     <tbody>
                       {s.table.rows.map((r: any[], i: number) => (
-                        <tr key={i} className="border-t border-white/10">
+                        <tr key={i} className="border-t border-[var(--border)]">
                           {r.map((v, j) => <td key={j} className="py-2 pr-4">{String(v)}</td>)}
                         </tr>
                       ))}

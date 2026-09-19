@@ -118,7 +118,7 @@ export default function QRAttendance() {
           .map(([k, l]: any) => (
             <button key={k} onClick={() => setTab(k)}
               className={"px-4 py-2 rounded-lg text-sm border transition-colors " +
-                (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-white/10 hover:border-white/25")}>
+                (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>
               {l}
             </button>
           ))}
@@ -130,19 +130,19 @@ export default function QRAttendance() {
           <div className="grid gap-3 md:grid-cols-2">
             <label className="text-xs opacity-70">Subject
               <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Data Structures"
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
             <label className="text-xs opacity-70">Class / Division
               <input value={cls} onChange={e => setCls(e.target.value)} placeholder="CSE 7A"
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
             <label className="text-xs opacity-70">Expected strength
               <input type="number" value={expected} onChange={e => setExpected(+e.target.value)}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
             <label className="text-xs opacity-70">Open for (minutes)
               <input type="number" min={2} max={60} value={mins} onChange={e => setMins(+e.target.value)}
-                className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </label>
           </div>
           <button onClick={start} className="mt-5 px-5 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-sm">
@@ -164,7 +164,7 @@ export default function QRAttendance() {
               <div className="text-xs opacity-45 mt-1">Rotates every {live.rotateMs / 1000} seconds</div>
             </div>
             <button onClick={() => act(live.session.id, "close")}
-              className="mt-5 px-5 py-2 rounded-lg border border-white/15 hover:border-white/35 text-sm">
+              className="mt-5 px-5 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] text-sm">
               Close session
             </button>
           </div>
@@ -180,7 +180,7 @@ export default function QRAttendance() {
             <div className="space-y-1.5 max-h-[420px] overflow-auto">
               {live.scans.length === 0 && <div className="opacity-50 text-sm">Waiting for the first scan...</div>}
               {live.scans.map((s: any) => (
-                <div key={s.id} className="flex justify-between text-sm bg-white/5 rounded px-3 py-2">
+                <div key={s.id} className="flex justify-between text-sm bg-[var(--panel)] rounded px-3 py-2">
                   <span>{s.name} <span className="opacity-45">{s.enrollment}</span></span>
                   <span className="opacity-45 text-xs">{new Date(s.at).toLocaleTimeString()}</span>
                 </div>
@@ -233,7 +233,7 @@ export default function QRAttendance() {
               </div>
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {s.scans.map((x: any) => (
-                  <span key={x.id} className="text-[11px] px-2 py-0.5 rounded bg-white/10">
+                  <span key={x.id} className="text-[11px] px-2 py-0.5 rounded bg-[var(--panel)]">
                     {x.studentName} {x.enrollment}
                   </span>
                 ))}

@@ -71,10 +71,10 @@ export default function AccountsPanel() {
           value={q} onChange={e => setQ(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter") search(); }}
           placeholder="Search by name or login ID (at least two characters)"
-          className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 outline-none focus:border-white/35 text-sm"
+          className="flex-1 px-4 py-3 rounded-xl bg-[var(--panel)] border border-[var(--border)] outline-none focus:border-[var(--border-strong)] text-sm"
         />
         <button onClick={search} disabled={!!busy || q.trim().length < 2}
-          className="px-4 rounded-xl border border-white/15 hover:border-white/30 disabled:opacity-40">
+          className="px-4 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
           {busy === "search" ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
         </button>
       </div>
@@ -96,8 +96,8 @@ export default function AccountsPanel() {
               <div>
                 <div className="font-medium flex items-center gap-2 flex-wrap">
                   {u.fullName}
-                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/20 opacity-70">{u.loginId}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/20 opacity-70">{u.role}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border-strong)] opacity-70">{u.loginId}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border-strong)] opacity-70">{u.role}</span>
                   {!u.isActive && <span className="text-[10px] px-2 py-0.5 rounded-full border border-rose-500/40 text-rose-300">inactive</span>}
                   {u.locked && <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-500/40 text-amber-300">locked</span>}
                 </div>
@@ -111,7 +111,7 @@ export default function AccountsPanel() {
               <div className="flex gap-2">
                 {u.locked && u.canReset && (
                   <button onClick={() => act("unlock", u.loginId)} disabled={!!busy}
-                    className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5 disabled:opacity-40">
+                    className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] flex items-center gap-1.5 disabled:opacity-40">
                     <Unlock size={13} /> Unlock
                   </button>
                 )}
@@ -127,14 +127,14 @@ export default function AccountsPanel() {
                       {busy === u.loginId ? "Resetting..." : "Confirm reset"}
                     </button>
                     <button onClick={() => setConfirming("")} disabled={!!busy}
-                      className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30">
+                      className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)]">
                       Cancel
                     </button>
                   </>
                 ) : (
                   <button onClick={() => setConfirming(u.loginId)} disabled={!!busy || !u.hasPassword}
                     title={u.hasPassword ? "" : "This account has no password to clear"}
-                    className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5 disabled:opacity-30">
+                    className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] flex items-center gap-1.5 disabled:opacity-30">
                     <KeyRound size={13} /> Reset password
                   </button>
                 )}
@@ -144,7 +144,7 @@ export default function AccountsPanel() {
         ))}
       </div>
 
-      <p className="text-xs opacity-40 mt-8 border-t border-white/10 pt-5">
+      <p className="text-xs opacity-40 mt-8 border-t border-[var(--border)] pt-5">
         You can only act on accounts below your own level, so an administrator cannot reset a
         principal or owner and then sign in as them. Denied attempts are audited too.
       </p>

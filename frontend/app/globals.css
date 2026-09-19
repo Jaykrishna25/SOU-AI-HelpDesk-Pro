@@ -46,6 +46,7 @@
 }
 .light {
   --bg: #faf6f2;
+  /* Light is the default theme, so these are the values most people see. */
   --panel: rgba(255,255,255,0.82);
   --panel-raised: rgba(255,255,255,0.95);
   --border: rgba(20,20,40,0.09);
@@ -117,6 +118,8 @@ table, .tabular { font-variant-numeric: tabular-nums; }
   content: ""; position: absolute; width: 65vw; height: 65vw; border-radius: 50%;
   filter: blur(130px); opacity: 0.13;
 }
+/* On white, the same wash at the same opacity reads as a smudge. */
+.light .aurora::before, .light .aurora::after { opacity: 0.07; }
 .aurora::before { background: radial-gradient(circle, #9B1C26, transparent 60%); top: -10%; left: -10%; }
 .aurora::after  { background: radial-gradient(circle, #106B3F, transparent 60%); bottom: -15%; right: -10%; animation-delay: -9s; }
 /* floaty removed with the animation it drove. */

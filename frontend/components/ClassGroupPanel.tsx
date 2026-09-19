@@ -147,13 +147,13 @@ export default function ClassGroupPanel() {
               </ul>
             </div>
             <button onClick={forget}
-              className="text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5">
+              className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] flex items-center gap-1.5">
               <X size={12} /> Forget it
             </button>
           </div>
 
           {!!summary.announcements?.length && (
-            <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="mt-4 pt-4 border-t border-[var(--border)]">
               <div className="text-xs uppercase tracking-wide opacity-50 flex items-center gap-1.5">
                 <Megaphone size={11} /> Recent announcements
               </div>
@@ -182,7 +182,7 @@ export default function ClassGroupPanel() {
           <div className="flex flex-wrap gap-2 mt-3">
             {EXAMPLES.map(q => (
               <button key={q} onClick={() => ask(q)} disabled={!!busy}
-                className="text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40">
+                className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
                 {q}
               </button>
             ))}
@@ -194,7 +194,7 @@ export default function ClassGroupPanel() {
               onChange={e => setQuestion(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") ask(question); }}
               placeholder="Ask about an exam, a deadline, a room…"
-              className="flex-1 bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-sm outline-none focus:border-white/30"
+              className="flex-1 bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--border-strong)]"
             />
             <button onClick={() => ask(question)} disabled={!!busy || !question.trim()}
               className="px-3 py-2 rounded-lg bg-brand text-white disabled:opacity-40">
@@ -223,7 +223,7 @@ export default function ClassGroupPanel() {
               </summary>
               <div className="mt-2 space-y-2">
                 {t.sources.map((s, j) => (
-                  <div key={j} className="text-xs border-l-2 border-white/15 pl-3 py-0.5">
+                  <div key={j} className="text-xs border-l-2 border-[var(--border)] pl-3 py-0.5">
                     <span className="opacity-45">{s.date} {s.time} · {s.sender}</span>
                     <div className="opacity-80 mt-0.5 whitespace-pre-wrap">{s.text}</div>
                   </div>

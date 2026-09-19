@@ -18,7 +18,7 @@ const TONE: Record<string, string> = {
   EXPORT: "border-sky-500/50 text-sky-300 bg-sky-500/10",
   LOGIN_FAILED: "border-amber-500/50 text-amber-300 bg-amber-500/10",
 };
-const tone = (a: string) => TONE[a] || "border-white/20 text-white/70 bg-white/5";
+const tone = (a: string) => TONE[a] || "border-[var(--border-strong)] text-[var(--muted)] bg-[var(--panel)]";
 
 export default function AuditPanel() {
   const [items, setItems] = useState<any[]>([]);
@@ -63,7 +63,7 @@ export default function AuditPanel() {
           </p>
         </div>
         <button onClick={load} disabled={busy}
-          className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5 disabled:opacity-40">
+          className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] flex items-center gap-1.5 disabled:opacity-40">
           <RefreshCw size={13} className={busy ? "animate-spin" : ""} /> Refresh
         </button>
       </div>
@@ -97,14 +97,14 @@ export default function AuditPanel() {
         <button
           onClick={() => { setSensitiveOnly(v => !v); setAction(""); }}
           className={"text-xs px-3 py-1.5 rounded-lg border " +
-            (sensitiveOnly ? "border-rose-500/50 text-rose-300 bg-rose-500/10" : "border-white/15 hover:border-white/30")}>
+            (sensitiveOnly ? "border-rose-500/50 text-rose-300 bg-rose-500/10" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>
           <Lock size={11} className="inline mr-1" /> Sensitive access only
         </button>
         {(summary?.byAction || []).slice(0, 8).map((a: any) => (
           <button key={a.action}
             onClick={() => { setAction(action === a.action ? "" : a.action); setSensitiveOnly(false); }}
             className={"text-xs px-2.5 py-1.5 rounded-lg border " +
-              (action === a.action ? "border-white/40 bg-white/10" : "border-white/15 hover:border-white/30")}>
+              (action === a.action ? "border-[var(--border-strong)] bg-[var(--panel)]" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>
             {a.action} <span className="opacity-50">{a.count}</span>
           </button>
         ))}
@@ -151,7 +151,7 @@ export default function AuditPanel() {
         ))}
       </div>
 
-      <p className="text-xs opacity-40 mt-8 border-t border-white/10 pt-5">
+      <p className="text-xs opacity-40 mt-8 border-t border-[var(--border)] pt-5">
         Passwords, tokens, secrets, OTPs and identity references are redacted before an
         entry is written - see <code>lib/audit.ts</code>. Entries cannot be edited or deleted
         through the API.

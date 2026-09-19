@@ -85,7 +85,7 @@ export default function Seating() {
         {[["new", "Generate"], ["plans", "Saved plans (" + plans.length + ")"]].map(([k, l]) => (
           <button key={k} onClick={() => { setTab(k as any); setView(null); }}
             className={"px-4 py-2 rounded-lg text-sm border " +
-              (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-white/10 hover:border-white/25")}>{l}</button>
+              (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>{l}</button>
         ))}
       </div>
 
@@ -95,11 +95,11 @@ export default function Seating() {
             <div className="grid gap-3 md:grid-cols-2 mb-4">
               <label className="text-xs opacity-70">Exam
                 <input value={examName} onChange={e => setExamName(e.target.value)}
-                  className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                  className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
               </label>
               <label className="text-xs opacity-70">Date
                 <input type="date" value={examDate} onChange={e => setExamDate(e.target.value)}
-                  className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                  className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
               </label>
             </div>
 
@@ -108,15 +108,15 @@ export default function Seating() {
               <div key={i} className="flex gap-2 mb-2">
                 <input value={r.room} placeholder="Room"
                   onChange={e => setRooms(rooms.map((x, j) => j === i ? { ...x, room: e.target.value } : x))}
-                  className="flex-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                  className="flex-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
                 <input type="number" min={1} value={r.rows} title="Rows"
                   onChange={e => setRooms(rooms.map((x, j) => j === i ? { ...x, rows: +e.target.value } : x))}
-                  className="w-20 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                  className="w-20 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
                 <input type="number" min={1} value={r.cols} title="Columns"
                   onChange={e => setRooms(rooms.map((x, j) => j === i ? { ...x, cols: +e.target.value } : x))}
-                  className="w-20 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                  className="w-20 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
                 <button onClick={() => setRooms(rooms.filter((_, j) => j !== i))}
-                  className="px-3 rounded border border-white/15 text-sm">x</button>
+                  className="px-3 rounded border border-[var(--border)] text-sm">x</button>
               </div>
             ))}
             <button onClick={() => setRooms([...rooms, { room: "", rows: 6, cols: 6 }])}
@@ -140,7 +140,7 @@ export default function Seating() {
               Student list - one per line: Name, Enrollment, Course
             </div>
             <textarea value={raw} onChange={e => setRaw(e.target.value)} rows={16}
-              className="w-full bg-black/30 border border-white/15 rounded px-3 py-2 text-xs font-mono" />
+              className="w-full bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-xs font-mono" />
             <div className="text-[11px] opacity-45 mt-2">
               Paste straight from a spreadsheet column. Course is what the allocator keeps apart.
             </div>
@@ -161,7 +161,7 @@ export default function Seating() {
               </div>
               <div className="flex gap-2">
                 <button onClick={() => open(p.id)} className="px-3 py-1.5 rounded text-xs bg-violet-600/80 hover:bg-violet-500">View</button>
-                <button onClick={() => remove(p.id)} className="px-3 py-1.5 rounded text-xs border border-white/15">Delete</button>
+                <button onClick={() => remove(p.id)} className="px-3 py-1.5 rounded text-xs border border-[var(--border)]">Delete</button>
               </div>
             </div>
           ))}
@@ -174,7 +174,7 @@ export default function Seating() {
             <button onClick={() => setView(null)} className="text-xs underline opacity-70">Back to plans</button>
             <div className="flex gap-2">
               <button onClick={csv} className="px-3 py-1.5 rounded text-xs bg-emerald-600/80 hover:bg-emerald-500">Download CSV</button>
-              <button onClick={() => window.print()} className="px-3 py-1.5 rounded text-xs border border-white/20">Print</button>
+              <button onClick={() => window.print()} className="px-3 py-1.5 rounded text-xs border border-[var(--border-strong)]">Print</button>
             </div>
           </div>
 

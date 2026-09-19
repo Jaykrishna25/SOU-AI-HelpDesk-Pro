@@ -130,7 +130,7 @@ export default function TutorPanel() {
                   className={"text-xs px-3 py-1.5 rounded-lg border transition " +
                     (subject === w.subject
                       ? "border-brand/60 bg-brand/15 text-white"
-                      : "border-white/15 hover:border-white/30 opacity-75")}>
+                      : "border-[var(--border)] hover:border-[var(--border-strong)] opacity-75")}>
                   {w.subject}
                   <span className={"ml-2 " + (w.severity === "critical" ? "text-rose-300" : "text-amber-300")}>
                     {w.score}/100
@@ -151,7 +151,7 @@ export default function TutorPanel() {
           value={subject}
           onChange={e => setSubject(e.target.value)}
           placeholder="Subject, e.g. Database Management Systems"
-          className="w-full mt-3 bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-sm outline-none focus:border-white/30"
+          className="w-full mt-3 bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--border-strong)]"
         />
       </div>
 
@@ -163,7 +163,7 @@ export default function TutorPanel() {
           <div className="flex flex-wrap gap-2 mt-3">
             {chips.map(t => (
               <button key={t} onClick={() => run("explain", t)} disabled={!!busy}
-                className="text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40">
+                className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
                 {t}
               </button>
             ))}
@@ -175,7 +175,7 @@ export default function TutorPanel() {
           onChange={e => setTopic(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter") run("explain"); }}
           placeholder="A topic, or a question about it"
-          className="w-full mt-3 bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-sm outline-none focus:border-white/30"
+          className="w-full mt-3 bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--border-strong)]"
         />
 
         <div className="flex flex-wrap gap-2 mt-3">
@@ -184,7 +184,7 @@ export default function TutorPanel() {
               className={"text-xs px-3 py-1.5 rounded-lg border transition " +
                 (depth === d.id
                   ? "border-brand/60 bg-brand/15 text-white"
-                  : "border-white/15 hover:border-white/30 opacity-75")}>
+                  : "border-[var(--border)] hover:border-[var(--border-strong)] opacity-75")}>
               {d.label}
             </button>
           ))}
@@ -200,7 +200,7 @@ export default function TutorPanel() {
             Explain it
           </button>
           <button onClick={() => run("practice")} disabled={!!busy || !topic.trim()}
-            className="text-sm px-4 py-2 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40 flex items-center gap-2">
+            className="text-sm px-4 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40 flex items-center gap-2">
             {busy === "practice" ? <Loader2 size={14} className="animate-spin" /> : <ListChecks size={14} />}
             Give me practice questions
           </button>
@@ -231,18 +231,18 @@ export default function TutorPanel() {
             {subject} · {topic} · {DEPTHS.find(d => d.id === depth)?.label}
           </div>
           <div className="text-sm mt-3 leading-relaxed whitespace-pre-wrap">{answer}</div>
-          <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-2 items-center">
+          <div className="mt-4 pt-3 border-t border-[var(--border)] flex flex-wrap gap-2 items-center">
             <span className="text-xs opacity-45">Still unclear?</span>
             {DEPTHS.filter(d => d.id !== depth).map(d => (
               <button key={d.id}
                 onClick={() => { setDepth(d.id); setTimeout(() => run("explain"), 0); }}
                 disabled={!!busy}
-                className="text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40">
+                className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
                 {d.label}
               </button>
             ))}
             <button onClick={() => run("practice")} disabled={!!busy}
-              className="text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40 ml-auto">
+              className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40 ml-auto">
               Test me on this
             </button>
           </div>
@@ -262,18 +262,18 @@ export default function TutorPanel() {
 
           <div className="mt-4 space-y-3">
             {questions.map((q, i) => (
-              <div key={i} className="border border-white/10 rounded-lg p-4">
+              <div key={i} className="border border-[var(--border)] rounded-lg p-4">
                 <div className="text-sm">
                   <span className="opacity-45 mr-2">{i + 1}.</span>{q.q}
                 </div>
                 <button
                   onClick={() => setShown(s => ({ ...s, [i]: !s[i] }))}
-                  className="mt-3 text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5">
+                  className="mt-3 text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] flex items-center gap-1.5">
                   <ChevronDown size={12} className={shown[i] ? "rotate-180 transition" : "transition"} />
                   {shown[i] ? "Hide the answer" : "Show the answer"}
                 </button>
                 {shown[i] && (
-                  <div className="mt-3 pt-3 border-t border-white/10">
+                  <div className="mt-3 pt-3 border-t border-[var(--border)]">
                     <div className="text-sm leading-relaxed whitespace-pre-wrap">{q.answer}</div>
                     {q.why && (
                       <div className="text-xs opacity-45 mt-2">Tests: {q.why}</div>

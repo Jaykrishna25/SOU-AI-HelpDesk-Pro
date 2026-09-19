@@ -55,8 +55,8 @@ export default function FunLeaderboard({ board, onFilter, games = [] }: Props) {
           <button key={f.id || "all"} onClick={() => onFilter(f.id || undefined)}
             className={"text-xs px-3 py-1.5 rounded-full border transition " +
               (board.game === (f.id || "all")
-                ? "border-white/40 bg-white/10"
-                : "border-white/12 hover:border-white/30 opacity-70")}>
+                ? "border-[var(--border-strong)] bg-[var(--panel)]"
+                : "border-[var(--border)] hover:border-[var(--border-strong)] opacity-70")}>
             {f.name}
           </button>
         ))}
@@ -87,7 +87,7 @@ export default function FunLeaderboard({ board, onFilter, games = [] }: Props) {
                 <div className={"text-[11px] " + tint}>{row.total.toLocaleString()}</div>
 
                 <div className={"w-full mt-2 rounded-t-xl bg-gradient-to-t " + bg +
-                  " to-transparent border-t border-x border-white/10 flex items-start justify-center pt-2 " + h}>
+                  " to-transparent border-t border-x border-[var(--border)] flex items-start justify-center pt-2 " + h}>
                   <span className="text-xl font-semibold opacity-80">{place}</span>
                 </div>
               </div>
@@ -114,9 +114,9 @@ export default function FunLeaderboard({ board, onFilter, games = [] }: Props) {
                   className={"rounded-xl px-4 py-2.5 flex items-center gap-3 border transition " +
                     (r.isYou
                       ? "border-brand/50 bg-brand/10"
-                      : "border-white/8 bg-white/[0.03] hover:bg-white/[0.06]")}>
+                      : "border-[var(--border)] bg-[var(--panel)] hover:bg-[var(--panel-raised)]")}>
                   <span className="text-xs opacity-40 w-6 shrink-0">#{r.rank}</span>
-                  <span className="w-8 h-8 rounded-full bg-white/8 flex items-center justify-center text-[11px] shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-[var(--panel)] flex items-center justify-center text-[11px] shrink-0">
                     {initials(r.name)}
                   </span>
                   <span className="flex-1 text-sm truncate">

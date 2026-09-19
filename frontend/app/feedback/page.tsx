@@ -76,7 +76,7 @@ export default function Feedback() {
           {[["open", "Give feedback"], ["manage", "Manage and results"]].map(([k, l]) => (
             <button key={k} onClick={() => { setTab(k as any); setAgg(null); }}
               className={"px-4 py-2 rounded-lg text-sm border " +
-                (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-white/10 hover:border-white/25")}>{l}</button>
+                (tab === k ? "bg-violet-600/25 border-violet-500/60" : "border-[var(--border)] hover:border-[var(--border-strong)]")}>{l}</button>
           ))}
         </div>
       )}
@@ -113,10 +113,10 @@ export default function Feedback() {
           ))}
           <textarea value={comment} onChange={e => setComment(e.target.value)} rows={3}
             placeholder="Anything else? (optional, anonymous)"
-            className="w-full bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
           <div className="flex gap-2 mt-4">
             <button onClick={submit} className="px-5 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-sm">Submit anonymously</button>
-            <button onClick={() => setSel(null)} className="px-5 py-2 rounded-lg border border-white/15 text-sm">Cancel</button>
+            <button onClick={() => setSel(null)} className="px-5 py-2 rounded-lg border border-[var(--border)] text-sm">Cancel</button>
           </div>
         </div>
       )}
@@ -127,13 +127,13 @@ export default function Feedback() {
             <div className="font-medium mb-3">Create a feedback form</div>
             <div className="grid gap-3 md:grid-cols-4">
               <input placeholder="Subject" value={nf.subjectName} onChange={e => setNf({ ...nf, subjectName: e.target.value })}
-                className="bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
               <input placeholder="Faculty name" value={nf.facultyName} onChange={e => setNf({ ...nf, facultyName: e.target.value })}
-                className="bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
               <input placeholder="Term" value={nf.term} onChange={e => setNf({ ...nf, term: e.target.value })}
-                className="bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
               <input type="number" placeholder="Open days" value={nf.days} onChange={e => setNf({ ...nf, days: +e.target.value })}
-                className="bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+                className="bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
             </div>
             <button onClick={create} className="mt-4 px-5 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-sm">Create</button>
           </div>
@@ -166,7 +166,7 @@ export default function Feedback() {
                 <span className="opacity-80">{LABEL[q]}</span>
                 <span className="font-semibold">{agg.scores[q]} / 5</span>
               </div>
-              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-2 bg-[var(--panel)] rounded-full overflow-hidden">
                 <div className="h-full bg-violet-500" style={{ width: (agg.scores[q] / 5 * 100) + "%" }} />
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function Feedback() {
               <div className="text-xs uppercase tracking-wider opacity-50 mb-2">Comments</div>
               <div className="space-y-2">
                 {agg.comments.map((c: string, i: number) => (
-                  <div key={i} className="text-sm bg-white/5 rounded px-3 py-2">{c}</div>
+                  <div key={i} className="text-sm bg-[var(--panel)] rounded px-3 py-2">{c}</div>
                 ))}
               </div>
             </div>

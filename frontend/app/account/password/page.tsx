@@ -54,17 +54,17 @@ export default function SetPassword() {
         <label className="text-xs opacity-70 block mb-3">Current password (leave blank if you have never set one)
           <input type="password" value={current} autoComplete="current-password"
             onChange={(e) => setCurrent(e.target.value)}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
         <label className="text-xs opacity-70 block mb-3">New password
           <input type="password" value={next} autoComplete="new-password" required
             onChange={(e) => setNext(e.target.value)}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
         <label className="text-xs opacity-70 block">Confirm new password
           <input type="password" value={confirm} autoComplete="new-password" required
             onChange={(e) => setConfirm(e.target.value)}
-            className="w-full mt-1 bg-black/30 border border-white/15 rounded px-3 py-2 text-sm" />
+            className="w-full mt-1 bg-black/30 border border-[var(--border)] rounded px-3 py-2 text-sm" />
         </label>
 
         <ul className="text-[11px] opacity-55 mt-3 space-y-0.5">

@@ -218,14 +218,14 @@ export default function StudyPanel() {
             <label>
               <input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain"
                 onChange={onTranscript} className="hidden" />
-              <span className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5 cursor-pointer">
+              <span className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] flex items-center gap-1.5 cursor-pointer">
                 <Upload size={13} /> Add a transcript
               </span>
             </label>
           )}
           {canCohort && !cohort && (
             <button onClick={loadCohort}
-              className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5">
+              className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] flex items-center gap-1.5">
               <Users size={13} /> Cohort view
             </button>
           )}
@@ -267,7 +267,7 @@ export default function StudyPanel() {
               </div>
             </div>
             <button onClick={clearUpload}
-              className="text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 shrink-0">
+              className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] shrink-0">
               Remove
             </button>
           </div>
@@ -366,12 +366,12 @@ export default function StudyPanel() {
             <div className="flex justify-between items-start gap-3 flex-wrap">
               <div>
                 <div className="font-medium flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] w-5 h-5 rounded border border-white/20 inline-flex items-center justify-center opacity-70">
+                  <span className="text-[11px] w-5 h-5 rounded border border-[var(--border-strong)] inline-flex items-center justify-center opacity-70">
                     {i.priority}
                   </span>
                   {i.subjectName}
-                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/20 opacity-70">{i.subjectCode}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-white/20 opacity-70">sem {i.semester}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border-strong)] opacity-70">{i.subjectCode}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--border-strong)] opacity-70">sem {i.semester}</span>
                 </div>
                 <div className="text-sm opacity-60 mt-1.5">{i.reason}</div>
               </div>
@@ -437,7 +437,7 @@ export default function StudyPanel() {
       )}
 
       {/* ---------- chat ---------- */}
-      <div className="mt-10 border-t border-white/10 pt-7">
+      <div className="mt-10 border-t border-[var(--border)] pt-7">
         <h2 className="text-lg font-medium">Ask about your results</h2>
         <p className="text-sm opacity-55 mt-1">
           The adviser calls tools to get its figures and shows which ones it used. It cannot calculate,
@@ -447,7 +447,7 @@ export default function StudyPanel() {
         <div className="flex flex-wrap gap-2 mt-4">
           {suggestions.map(s => (
             <button key={s} onClick={() => ask(s)} disabled={!!busy}
-              className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 disabled:opacity-40">
+              className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
               {s}
             </button>
           ))}
@@ -457,10 +457,10 @@ export default function StudyPanel() {
           {turns.map((t, i) => (
             <div key={i} className={t.role === "user" ? "text-right" : ""}>
               <div className={"inline-block max-w-[85%] text-left px-4 py-3 rounded-xl text-sm " +
-                (t.role === "user" ? "bg-white/10" : "panel-solid")}>
+                (t.role === "user" ? "bg-[var(--panel)]" : "panel-solid")}>
                 <div className="whitespace-pre-wrap leading-relaxed">{t.text}</div>
                 {!!t.tools?.length && (
-                  <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-white/10">
+                  <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-[var(--border)]">
                     <span className="text-[10px] opacity-45 flex items-center gap-1"><Wrench size={10} /> tools used:</span>
                     {t.tools.map(x => (
                       <span key={x} className="text-[10px] px-2 py-0.5 rounded-full border border-sky-500/40 text-sky-300 bg-sky-500/10">
@@ -483,15 +483,15 @@ export default function StudyPanel() {
           <input value={q} onChange={e => setQ(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") ask(q); }}
             placeholder="Ask a follow-up question"
-            className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 outline-none focus:border-white/35 text-sm" />
+            className="flex-1 px-4 py-3 rounded-xl bg-[var(--panel)] border border-[var(--border)] outline-none focus:border-[var(--border-strong)] text-sm" />
           <button onClick={() => ask(q)} disabled={!!busy || !q.trim()}
-            className="px-4 rounded-xl border border-white/15 hover:border-white/30 disabled:opacity-40">
+            className="px-4 rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] disabled:opacity-40">
             <Send size={16} />
           </button>
         </div>
       </div>
 
-      <p className="text-xs opacity-40 mt-8 border-t border-white/10 pt-5">
+      <p className="text-xs opacity-40 mt-8 border-t border-[var(--border)] pt-5">
         Guidance only, built from your recorded examination results. It does not predict results and is
         not a substitute for advice from your faculty.
       </p>

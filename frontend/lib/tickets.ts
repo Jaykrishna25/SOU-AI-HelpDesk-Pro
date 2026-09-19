@@ -100,6 +100,6 @@ export function statusColor(s: string): string {
     : s === "Escalated" ? "bg-rose-500/20 text-rose-300"
     : s === "Reopened" ? "bg-amber-500/20 text-amber-300"
     : s === "Assigned" || s === "In Progress" ? "bg-brand/20 text-brand-light"
-    : "bg-white/10 text-[var(--muted)]";
+    : "bg-[var(--panel)] text-[var(--muted)]";
 }
 
