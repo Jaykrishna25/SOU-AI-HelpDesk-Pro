@@ -11,7 +11,10 @@
    not a query, and a rule should be testable.
    ============================================================ */
 
-export type GameId = "grid" | "scramble" | "sequence" | "ladder" | "culture";
+export type GameId =
+  | "grid" | "scramble" | "sequence" | "ladder" | "culture"
+  // code games, see lib/fun-code.ts
+  | "typing" | "jumble" | "debug" | "output" | "robot" | "semantic";
 
 export const GAMES: { id: GameId; name: string; blurb: string }[] = [
   { id: "grid", name: "Mini Grid", blurb: "Fill the 4x4 so no number repeats in a row, column or box." },
@@ -19,6 +22,15 @@ export const GAMES: { id: GameId; name: string; blurb: string }[] = [
   { id: "sequence", name: "Sequence Recall", blurb: "Watch the pattern, repeat it back. It gets longer." },
   { id: "ladder", name: "Concept Ladder", blurb: "Guess the hidden subject term. Every guess shows you how close and why." },
   { id: "culture", name: "Meme Desk", blurb: "Meme of the day - where it came from, what it means, then three questions." },
+
+  /* Code games. Subject-relevant on purpose: the argument that got the Fun
+     Zone approved was that a break can still be practice. */
+  { id: "typing", name: "Typing Sprint", blurb: "Type a code snippet accurately. Brackets are the hard part." },
+  { id: "jumble", name: "Jumble Programming", blurb: "Shuffled lines of a real function. Put them back in order." },
+  { id: "debug", name: "Debug It", blurb: "One block, one bug. Find the line." },
+  { id: "output", name: "Predict the Output", blurb: "Read the code. Say what it prints. Some of these are traps." },
+  { id: "robot", name: "Robot Path", blurb: "Sequence commands to reach the goal. Coins are optional." },
+  { id: "semantic", name: "Semantic Match", blurb: "Clear each term by typing a word that belongs with it." },
 ];
 
 /* ---------------- access window ---------------- */
@@ -107,7 +119,7 @@ export function weekKey(d: Date = new Date()): string {
 /* ---------------- deterministic randomness ---------------- */
 
 /** Small, fast, seeded PRNG. Same seed, same puzzle, everywhere. */
-function mulberry32(seed: number) {
+export function mulberry32(seed: number) {
   return function () {
     seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
     let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
@@ -116,7 +128,7 @@ function mulberry32(seed: number) {
   };
 }
 
-function seedFrom(text: string): number {
+export function seedFrom(text: string): number {
   let h = 2166136261;
   for (let i = 0; i < text.length; i++) {
     h ^= text.charCodeAt(i);
@@ -125,7 +137,7 @@ function seedFrom(text: string): number {
   return h >>> 0;
 }
 
-function shuffled<T>(arr: T[], rnd: () => number): T[] {
+export function shuffled<T>(arr: T[], rnd: () => number): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(rnd() * (i + 1));

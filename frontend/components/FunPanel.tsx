@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Gamepad2, Trophy, Clock, Lock, Loader2, CheckCircle2, XCircle, Play, RotateCcw,
 } from "lucide-react";
+import FunCodeGames from "@/components/FunCodeGames";
 
 /* Fun Zone.
 
@@ -25,7 +26,18 @@ const PADS = [
   { on: "bg-rose-400", off: "bg-rose-500/20 hover:bg-rose-500/35" },
 ];
 
-type Game = "grid" | "scramble" | "sequence" | "ladder" | "culture";
+type Game =
+  | "grid" | "scramble" | "sequence" | "ladder" | "culture"
+  | "typing" | "jumble" | "debug" | "output" | "robot" | "semantic";
+
+const CODE_GAMES: Game[] = ["typing", "jumble", "debug", "output", "robot", "semantic"];
+
+const TITLES: Record<Game, string> = {
+  grid: "Mini Grid", scramble: "Word Scramble", sequence: "Sequence Recall",
+  ladder: "Concept Ladder", culture: "Meme Desk",
+  typing: "Typing Sprint", jumble: "Jumble Programming", debug: "Debug It",
+  output: "Predict the Output", robot: "Robot Path", semantic: "Semantic Match",
+};
 
 export default function FunPanel() {
   const [status, setStatus] = useState<any>(null);
@@ -165,11 +177,7 @@ export default function FunPanel() {
         <button onClick={() => { setGame(null); setPuzzle(null); setResult(null); }}
           className="text-xs opacity-60 hover:opacity-100">&larr; Back to the Fun Zone</button>
 
-        <h1 className="text-2xl font-semibold tracking-tight mt-3">
-          {game === "grid" ? "Mini Grid" : game === "scramble" ? "Word Scramble"
-            : game === "ladder" ? "Concept Ladder"
-            : game === "culture" ? "Meme Desk" : "Sequence Recall"}
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight mt-3">{TITLES[game]}</h1>
         <p className="opacity-55 text-sm mt-1">Puzzle for {puzzle.date}. Everyone gets the same one today.</p>
 
         {puzzle.alreadyPlayed !== null && puzzle.alreadyPlayed !== undefined && (
@@ -180,6 +188,11 @@ export default function FunPanel() {
         )}
 
         {err && <div className="mt-4 px-4 py-3 rounded-lg text-sm border border-rose-500/40 bg-rose-500/10">{err}</div>}
+
+        {/* ---- the six code games live in their own component ---- */}
+        {CODE_GAMES.includes(game) && (
+          <FunCodeGames game={game} puzzle={puzzle} result={result} busy={busy} onSubmit={submit} />
+        )}
 
         {/* ---- grid ---- */}
         {game === "grid" && (

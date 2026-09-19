@@ -3,7 +3,7 @@
 ## Automated tests
 
 Framework: Vitest. Run with `npm test` from `frontend/`.
-Current state: **183 tests across 12 files, all passing.**
+Current state: **253 tests across 14 files, all passing.**
 
 | File | Tests | Covers |
 |---|---|---|
@@ -19,6 +19,8 @@ Current state: **183 tests across 12 files, all passing.**
 | `whatsapp.test.ts` | 29 | Class-group parsing, redaction, later-correction-wins |
 | `transcript.test.ts` | 14 | Transcript parsing and the record-wins merge rule |
 | `careers.test.ts` | 13 | Opportunity keywords come from the student's own marks |
+| `tutor.test.ts` | 38 | What the tutor will and will not claim to know |
+| `fun-code.test.ts` | 32 | The six code games: determinism, hidden answers, solvable levels |
 
 ### tests/auth.test.ts (6)
 
@@ -162,6 +164,29 @@ could rewrite a grade, the record would not be a record.
 
 The delimiter detection and quote handling are lifted from the fee parser,
 which originally had neither and read `"1,50,000"` as `1`.
+
+### tests/tutor.test.ts (36)
+
+The tutor is the only feature in this portal that **generates** content rather
+than reporting a tool's output, so the tests are almost entirely about where it
+stops.
+
+A model explaining normalisation is doing what a textbook does — legitimate. A
+model guessing what is in your DBMS unit 3 paper is the single most damaging
+thing this portal could say to someone revising at 2am. The boundary runs on
+the server *before* the model is called, because a model asked what is in the
+exam will produce something plausible, and plausible is the problem.
+
+| Group | Proves |
+|---|---|
+| Refuses to speak for the university | 14 cases across four reasons: exam content, schedule, the student's own record, and predicting a pass |
+| Still teaches | 12 concept questions that must NOT be refused — if the boundary fired on these the feature would be useless |
+| Prompts carry the limits | Every depth prompt states what the tutor does not know; "from scratch" must include the instruction to say where its analogy breaks down |
+| Parsing practice output | A question with a missing answer is dropped rather than shown blank — a student reads the blank as the point |
+
+Writing these caught three gaps in the boundary before it shipped: *"when is
+the DBMS internal?"*, *"what is the deadline for the assignment?"* and *"how
+many backlogs do I have?"* all slipped through the first version.
 
 ### tests/careers.test.ts (13)
 

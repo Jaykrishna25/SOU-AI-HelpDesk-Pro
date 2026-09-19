@@ -23,7 +23,7 @@
 > |---|---|
 > | Live portal | [sou-ai-help-desk-pro-frontend.vercel.app](https://sou-ai-help-desk-pro-frontend.vercel.app) |
 > | Role map | [/role-map.html](https://sou-ai-help-desk-pro-frontend.vercel.app/role-map.html) |
-> | Tests | 183 across 12 files · `cd frontend && npx vitest run` |
+> | Tests | 253 across 14 files · `cd frontend && npx vitest run` |
 > | QA report | [`docs/QA_REPORT.md`](./docs/QA_REPORT.md) — 12 findings with severities |
 > | Verification | [`docs/VERIFICATION_CHECKLIST.md`](./docs/VERIFICATION_CHECKLIST.md) — 10 checks, all passing |
 >
@@ -50,9 +50,9 @@ Oracle PeopleSoft Campus Solutions, ServiceNow, Jira Service Management and Sale
 ## ✨ Highlights
 
 - **12-agent AI pipeline** (LangChain-style) — intent → entities → RAG → decision → ticket → routing → notify.
-- **Confidence-gated help desk** — ≥ 90% answers instantly; below that a ticket is auto-created.
+- **Confidence-gated help desk** — below the retrieval confidence floor the assistant says it does not know and offers a ticket, rather than improvising.
 - **7 role-based portals** — Student, Admin, Faculty, HOD, HOI, Owner, Super Admin.
-- **48h SLA** with auto-escalation letters and watcher notifications (In-App + AWS SES).
+- **SLA tracking** with escalation up the role chain and watcher notifications.
 - **RAG knowledge base** with semantic search and auto-learning.
 - **Animated premium UI** — Next.js 15 + React 19 + Framer Motion + GSAP + Three.js + Recharts, dark/light mode & glassmorphism.
 - **Cloud-native & Dockerized** — EC2, RDS, S3, SES, Cognito, IAM, CloudWatch.
@@ -63,7 +63,7 @@ Oracle PeopleSoft Campus Solutions, ServiceNow, Jira Service Management and Sale
 
 ```
 sou-ai-helpdesk-pro/
-├── prisma/schema.prisma        # Full ERD (25+ models)
+├── prisma/schema.prisma        # Full ERD (50 models)
 ├── backend/                    # Express + TypeScript API
 │   └── src/
 │       ├── ai/                 # NLP, RAG, 12 agents
@@ -134,9 +134,9 @@ Student query
    → Entity Extraction Agent       (name, dept, semester, subject, date)
    → Knowledge Retrieval + RAG     (semantic search over KB)
    → Sentiment Agent               (priority signal)
-   → Decision Agent                (confidence ≥ 90%?)
-        ├─ YES → answer directly
-        └─ NO  → Ticket Agent → Faculty Routing → Email/Notification
+   → Decision Agent                (above the confidence floor?)
+        ├─ YES → answer directly, with the source documents shown
+        └─ NO  → say so plainly → Ticket → Routing → Notification
    → Learning & Analytics Agents   (KB auto-update + metrics)
 ```
 
@@ -149,7 +149,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full diagrams.
 | Doc | Purpose |
 |-----|---------|
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System, multi-agent, AWS & sequence diagrams |
-| [ERD.md](docs/ERD.md) | Entity-Relationship diagram |
+| [ERD.md](docs/ERD.md) | Entity-Relationship diagram (50 models) |
 | [API.md](docs/API.md) | REST API reference (Swagger-style) |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | AWS + Docker deployment guide |
 | [PROJECT_REPORT.md](docs/PROJECT_REPORT.md) | Academic project report |
@@ -162,15 +162,20 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full diagrams.
 ---
 
 ## 🛡️ Security & Responsible AI
-JWT + refresh tokens · RBAC · audit logs · rate limiting · Helmet · encryption in transit ·
-human oversight on low-confidence answers · bias reduction · GDPR-aligned consent & data-privacy design.
+JWT with token-version revocation · capability-matrix RBAC · audit trail · AES-256-GCM field
+encryption for grievance identities · step-up authentication for institutional finance ·
+human oversight on low-confidence answers.
+
+**Known gaps, documented rather than hidden** — see [`docs/QA_REPORT.md`](docs/QA_REPORT.md):
+there is **no rate limiting on the AI endpoints**, booking clash detection is not atomic, and
+booking hours are stored in UTC. Twelve findings in total, with severities.
 
 ---
 
 ## 🧰 Tech Stack
 **Frontend:** Next.js 15, React 19, TypeScript, Tailwind, ShadCN-style UI, Framer Motion, GSAP, Three.js, Recharts
 **Backend:** Node.js, Express, TypeScript, Prisma, PostgreSQL
-**AI:** OpenAI GPT, LangChain, RAG, embeddings, semantic search, 12-agent architecture
+**AI:** Google Gemini via LangChain.js (portal) · Ollama + LangChain + Chroma (ai-agent) · RAG with role-bound tool calling
 **Cloud:** AWS EC2/RDS/S3/SES/Cognito/IAM/CloudWatch (Bedrock — future), Docker, CI/CD-ready
 
 ---

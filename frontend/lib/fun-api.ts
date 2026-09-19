@@ -10,6 +10,11 @@ import {
   targetFor, hintFor, judgeGuess, scoreLadder, MAX_GUESSES,
 } from "@/lib/fun-ladder";
 import { memeOfTheDay, quizFor, quizScore } from "@/lib/fun-memes";
+import {
+  makeTyping, checkTyping, makeJumble, checkJumble, makeDebug, checkDebug,
+  makeOutput, checkOutput, makeRobot, runRobot, robotBonus,
+  makeSemantic, checkSemantic, semanticBonus,
+} from "@/lib/fun-code";
 
 /* Fun Zone endpoints.
 
@@ -26,7 +31,10 @@ function seg(req: NextRequest) {
   return new URL(req.url).pathname.replace(/^\/api\/fun\/?/, "").split("/").filter(Boolean);
 }
 
-const VALID: GameId[] = ["grid", "scramble", "sequence", "ladder", "culture"];
+const VALID: GameId[] = [
+  "grid", "scramble", "sequence", "ladder", "culture",
+  "typing", "jumble", "debug", "output", "robot", "semantic",
+];
 
 export async function GET(req: NextRequest) {
   const s = await getLiveSession(req);
@@ -104,6 +112,28 @@ export async function GET(req: NextRequest) {
         alreadyPlayed: already?.score ?? null,
       });
     }
+    /* ---- code games ----
+       Each returns the client half only. Solutions, buggy line numbers,
+       answer indices and accepted words all stay on this side. */
+    if (game === "typing") {
+      return json({ game, date: today, puzzle: makeTyping(today), alreadyPlayed: already?.score ?? null });
+    }
+    if (game === "jumble") {
+      return json({ game, date: today, puzzle: makeJumble(today).client, alreadyPlayed: already?.score ?? null });
+    }
+    if (game === "debug") {
+      return json({ game, date: today, puzzle: makeDebug(today).client, alreadyPlayed: already?.score ?? null });
+    }
+    if (game === "output") {
+      return json({ game, date: today, puzzle: makeOutput(today).client, alreadyPlayed: already?.score ?? null });
+    }
+    if (game === "robot") {
+      return json({ game, date: today, puzzle: makeRobot(today).client, alreadyPlayed: already?.score ?? null });
+    }
+    if (game === "semantic") {
+      return json({ game, date: today, puzzle: makeSemantic(today).client, alreadyPlayed: already?.score ?? null });
+    }
+
     return json({
       game, date: today,
       puzzle: { sequence: makeSequence(today) },
@@ -204,8 +234,49 @@ export async function POST(req: NextRequest) {
     bonus = correct >= seq.length ? 200 : correct * 20;
   }
 
+  /* ---- code games: the server decides, every time ---- */
+  let detail: any = null;
+
+  if (game === "typing") {
+    const r = checkTyping(makeTyping(today).text, String(b.typed || ""), durationMs);
+    solved = r.solved; bonus = r.bonus;
+    detail = { accuracy: r.accuracy, wpm: r.wpm };
+  } else if (game === "jumble") {
+    solved = checkJumble(b.order, makeJumble(today).puzzle);
+  } else if (game === "debug") {
+    const { puzzle } = makeDebug(today);
+    solved = checkDebug(b.line, puzzle);
+    // The explanation is only returned once the answer has been given, so it
+    // cannot be read out of the puzzle response.
+    detail = { buggyLine: puzzle.buggyLine, explanation: puzzle.explanation, fixed: puzzle.fixed };
+  } else if (game === "output") {
+    const { answerIndex, puzzle } = makeOutput(today);
+    solved = checkOutput(b.choice, answerIndex);
+    detail = { answerIndex, explanation: puzzle.explanation };
+  } else if (game === "robot") {
+    const { level } = makeRobot(today);
+    const run = runRobot(level.grid, b.commands);
+    solved = run.reached;
+    bonus = robotBonus(run, level.par);
+    detail = { steps: run.steps, coins: run.coins, par: level.par, failed: run.failed, path: run.path };
+  } else if (game === "semantic") {
+    const { picked } = makeSemantic(today);
+    const guesses: string[] = Array.isArray(b.guesses) ? b.guesses : [];
+    // One guess per term, in order.
+    const cleared = picked.reduce(
+      (n, t, i) => n + (checkSemantic(guesses[i] ?? "", t.accepts) ? 1 : 0), 0,
+    );
+    solved = cleared > 0;
+    bonus = semanticBonus(cleared, picked.length);
+    detail = {
+      cleared, total: picked.length,
+      // Shown only after submitting, so the answers are not in the puzzle.
+      answers: picked.map(t => ({ term: t.term, accepts: t.accepts.slice(0, 4) })),
+    };
+  }
+
   if (!solved) {
-    return json({ ok: true, solved: false, score: 0, message: "Not solved - no score recorded." });
+    return json({ ok: true, solved: false, score: 0, detail, message: "Not solved - no score recorded." });
   }
 
   const score = scoreRun({ solved, durationMs, mistakes, bonus });
@@ -226,7 +297,7 @@ export async function POST(req: NextRequest) {
   } catch {
     // The unique constraint means one scoring run per puzzle per day.
     return json({
-      ok: true, solved: true, score, alreadyRecorded: true,
+      ok: true, solved: true, score, detail, alreadyRecorded: true,
       message: "Solved - but today's score for this game was already recorded.",
     });
   }
@@ -255,7 +326,7 @@ export async function POST(req: NextRequest) {
   }
 
   return json({
-    ok: true, solved: true, score,
+    ok: true, solved: true, score, detail,
     weeklyTotal: totals.get(s.userId)?.total ?? score,
     rank: ranked.findIndex(r => r[0] === s.userId) + 1,
     players: ranked.length,

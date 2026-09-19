@@ -58,8 +58,8 @@ Model is `qwen3:1.7b` via Ollama. Set `OLLAMA_MODEL` to change it.
 Fee Statement Simplifier · Study Plan adviser · Fun Zone (five daily puzzles,
 weekly leaderboard, access window) · Audit Trail viewer · account recovery with
 rank enforcement · step-up authentication · OakMitra full-page assistant at
-`/assistant` · Class Group (WhatsApp) · transcript upload · opportunity search ·
-183 tests passing across 12 files.
+`/assistant` · Class Group (WhatsApp) · Tutor · transcript upload · opportunity search ·
+253 tests passing across 14 files.
 
 ---
 
