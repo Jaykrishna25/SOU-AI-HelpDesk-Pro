@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Image from "next/image";
+import CountUp from "@/components/CountUp";
+import { stagger, popIn, tabSwap, spring, springSnappy, motionSafe } from "@/lib/motion";
 import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint, Sparkles } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
@@ -62,6 +64,9 @@ export default function DashboardShell({
   const [notifOpen, setNotifOpen] = useState(false);
   const [readKeys, setReadKeys] = useState<string[]>([]);
   const tickets = useTickets();
+  /* Honoured throughout: a user who asked their operating system for less
+     motion usually did so because movement makes them unwell. */
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     try {
@@ -133,11 +138,20 @@ export default function DashboardShell({
           {nav.map((n, i) => (
             <motion.button key={n} onClick={() => onNavSelect && onNavSelect(n)} type="button"
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-              className={`w-full text-left block px-4 py-2.5 rounded-xl text-sm transition ${
+              className={`relative w-full text-left block px-4 py-2.5 rounded-xl text-sm transition-colors ${
                 n === current
-                  ? "bg-brand text-white font-medium shadow-lg shadow-brand/25"
-                  : "text-[var(--muted)] hover:bg-brand/10 hover:text-[var(--text)]"
-              }`}>{n}</motion.button>
+                  ? "text-white font-medium"
+                  : "text-[var(--muted)] hover:text-[var(--text)]"
+              }`}>
+              {n === current && (
+                <motion.span
+                  layoutId="nav-active"
+                  transition={reduced ? { duration: 0 } : springSnappy}
+                  className="absolute inset-0 rounded-xl bg-brand shadow-lg shadow-brand/25"
+                />
+              )}
+              <span className="relative z-10">{n}</span>
+            </motion.button>
           ))}
         </nav>
 
@@ -250,10 +264,14 @@ export default function DashboardShell({
         </div>
         )}
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <motion.div
+          variants={stagger(0.06)} initial="hidden" animate="show"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
           {stats.map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -4 }}
+            <motion.div key={s.label}
+              variants={motionSafe(popIn, reduced)}
+              whileHover={reduced ? undefined : { y: -4 }}
+              transition={spring}
               className="glass glass-hover relative overflow-hidden p-4 sm:p-5">
               {/* A soft bloom in the card's own colour, so four stat cards read
                   as four things rather than one striped row. */}
@@ -261,13 +279,24 @@ export default function DashboardShell({
               <div className={`relative w-11 h-11 rounded-2xl flex items-center justify-center mb-3 text-white shadow-lg ${s.accent || STAT_TILE[i % STAT_TILE.length]}`}>
                 <s.icon size={20} />
               </div>
-              <div className="relative font-display text-2xl sm:text-[30px] font-semibold leading-none">{s.value}</div>
+              <div className="relative font-display text-2xl sm:text-[30px] font-semibold leading-none tabular">
+                <CountUp value={s.value} />
+              </div>
               <div className="relative text-xs text-[var(--muted)] mt-1.5">{s.label}</div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        {children}
+        {/* Content crossfades when the tab changes. Keyed on the active nav
+            item, so switching sections feels like a move rather than a
+            repaint. */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={current}
+            variants={motionSafe(tabSwap, reduced)}
+            initial="hidden" animate="show" exit="exit">
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

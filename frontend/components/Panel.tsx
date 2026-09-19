@@ -1,5 +1,6 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { springSoft, fade } from "@/lib/motion";
 
 /* The standard section container.
 
@@ -28,11 +29,14 @@ export default function Panel({
   children: React.ReactNode;
   delay?: number;
 }) {
+  const reduced = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
+      /* 30px was too far — a panel that slides that distance draws attention
+         to its own arrival. 12px reads as settling into place. */
+      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }}
+      animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      transition={reduced ? { ...fade, delay } : { ...springSoft, delay }}
       className="glass p-6 sm:p-7"
     >
       <div className="flex items-start justify-between gap-3 mb-5">

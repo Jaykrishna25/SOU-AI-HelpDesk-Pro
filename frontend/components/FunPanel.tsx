@@ -27,6 +27,8 @@ const FALLBACK = { icon: Gamepad2, from: "from-white/15", ring: "border-white/20
 import FunCodeGames from "@/components/FunCodeGames";
 import FunProgress from "@/components/FunProgress";
 import FunLeaderboard from "@/components/FunLeaderboard";
+import { motion } from "framer-motion";
+import { stagger, popIn } from "@/lib/motion";
 
 /* Fun Zone.
 
@@ -485,7 +487,9 @@ export default function FunPanel() {
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+      <motion.div
+        variants={stagger(0.035)} initial="hidden" animate="show"
+        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
         {(status?.games || []).map((g: any) => {
           const played = (status?.playedToday || []).includes(g.id);
           const st = GAME_STYLE[g.id] || FALLBACK;
@@ -493,7 +497,7 @@ export default function FunPanel() {
           const best = status?.bestByGame?.[g.id] ?? 0;
           const plays = status?.playsByGame?.[g.id] ?? 0;
           return (
-            <button key={g.id} onClick={() => openGame(g.id)} disabled={!!busy}
+            <motion.button key={g.id} variants={popIn} onClick={() => openGame(g.id)} disabled={!!busy}
               className={"group relative overflow-hidden rounded-2xl p-5 pb-4 text-left border transition-all duration-200 " +
                 "bg-gradient-to-br " + st.from + " via-transparent to-transparent " + st.ring + " " +
                 "hover:-translate-y-1 hover:shadow-xl " + st.glow + " " +
@@ -535,10 +539,10 @@ export default function FunPanel() {
                   <Check size={12} className="text-emerald-200" />
                 </span>
               )}
-            </button>
+            </motion.button>
           );
         })}
-      </div>
+      </motion.div>
 
       {busy === "loading" && (
         <div className="mt-5 flex items-center gap-2 text-sm opacity-60">
