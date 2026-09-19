@@ -82,7 +82,8 @@ export default function StudentDashboard() {
       ]}>
 
       {(tab === "Dashboard" || tab === "Timetable") && (
-        <Panel title="Today's timetable">
+        <Panel title="Today's timetable"
+          hint="Sample data with invented staff names — this portal is not connected to the university's timetable system.">
           <div className="space-y-2 text-sm">
             {timetable.map((r, i) => (
               <div key={i} className="flex items-center justify-between glass px-4 py-3">
@@ -92,9 +93,8 @@ export default function StudentDashboard() {
             ))}
           </div>
           <p className="text-xs text-[var(--muted)] mt-3">
-            Sample timetable with invented staff names — this portal is not connected to
-            the university's timetable system. Attendance is recorded in the official SOU
-            MIS; ask your CR or subject faculty for corrections.
+            Attendance is recorded in the official SOU MIS; ask your CR or subject faculty
+            for corrections.
           </p>
         </Panel>
       )}
@@ -135,11 +135,11 @@ export default function StudentDashboard() {
       {tab === "Results" && <ResultsPanel />}
 
       {tab === "Exams" && (
-        <Panel title="Exam timetable">
+        <Panel title="Exam timetable" hint="Not connected to the Examination Cell.">
           <p className="text-sm text-[var(--muted)]">
-            Not connected. Examination timetables, seat allocation and hall tickets are
-            published by the Examination Cell, and this portal does not hold them — so it
-            shows nothing rather than a placeholder date somebody might plan around.
+            Timetables, seat allocation and hall tickets are published by the Examination
+            Cell and this portal does not hold them — so it shows nothing, rather than a
+            placeholder date somebody might plan around.
           </p>
           <p className="text-xs text-[var(--muted)] mt-3">
             Ask OakMitra about examination procedure, or check your class group for
@@ -150,11 +150,8 @@ export default function StudentDashboard() {
       )}
 
       {tab === "Notes" && (
-        <Panel title="Notes & study material">
-          <p className="text-xs text-[var(--muted)] mb-3">
-            Sample entries. Course material is not stored in this system yet — these show
-            what the list would look like.
-          </p>
+        <Panel title="Notes & study material"
+          hint="Sample entries. Course material is not stored in this system yet.">
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             {notes.map((n, i) => (
               <button key={i} onClick={() => alert("Sample file — not a real download. Course material is not stored in this system yet.")} className="glass px-4 py-3 flex items-center justify-between text-left hover:bg-brand/10">
@@ -166,7 +163,7 @@ export default function StudentDashboard() {
       )}
 
       {tab === "My Tickets" && (
-        <Panel title="My Tickets">
+        <Panel title="My tickets">
           <button onClick={raise} className="mb-3 px-4 py-2 rounded-full bg-brand text-white text-sm hover:bg-brand-light">+ Raise a Ticket</button>
           <div className="space-y-2 text-sm">
             {mine.map((t) => (

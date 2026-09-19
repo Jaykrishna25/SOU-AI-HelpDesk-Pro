@@ -40,7 +40,7 @@ export default function CRPanel({ actor }: { actor: string }) {
 
   return (
     <>
-      <Panel title="Class Representative (CR) Assignment">
+      <Panel title="Class representatives">
         <div className="grid sm:grid-cols-3 gap-2 mb-3">
           <select value={subject} onChange={(e) => setSubject(e.target.value)}
             className="glass px-3 py-2 bg-transparent outline-none text-sm" style={{ color: "var(--text)" }}>
@@ -66,7 +66,7 @@ export default function CRPanel({ actor }: { actor: string }) {
       </Panel>
 
       <div className="mt-6">
-        <Panel title={`Attendance Awaiting Approval (${pending.length})`}>
+        <Panel title={`Awaiting approval (${pending.length})`}>
           <div className="space-y-2 text-sm">
             {pending.map((s) => (
               <div key={s.id} className="glass px-4 py-3">
@@ -100,7 +100,7 @@ export default function CRPanel({ actor }: { actor: string }) {
 
       {done.length > 0 && (
         <div className="mt-6">
-          <Panel title="Processed Attendance">
+          <Panel title="Processed attendance">
             <div className="space-y-2 text-sm">
               {done.map((s) => (
                 <div key={s.id} className="glass px-4 py-3">

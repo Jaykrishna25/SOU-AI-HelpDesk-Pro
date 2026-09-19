@@ -88,7 +88,8 @@ export default function FacultyDashboard() {
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Timetable" && (
-        <Panel title="Weekly Schedule">
+        <Panel title="Weekly schedule"
+          hint="Sample schedule. This portal is not connected to the university timetable.">
           <div className="space-y-2 text-sm">
             {schedule.map((r, i) => (
               <div key={i} className="flex justify-between glass px-4 py-3">
@@ -100,13 +101,14 @@ export default function FacultyDashboard() {
       )}
 
       {tab === "Students" && (
-        <Panel title="Student List">
+        <Panel title="Students">
           <div className="space-y-2 text-sm">{students.map((s) => <div key={s} className="glass px-4 py-3">{s}</div>)}</div>
         </Panel>
       )}
 
       {tab === "Content" && (
-        <Panel title="Upload Content">
+        <Panel title="Upload course material"
+          hint="Not wired up. File storage is configured for IQAC evidence only.">
           <div className="space-y-3">
             <input placeholder="Title (e.g. Trees.pdf)" className="w-full glass px-4 py-3 bg-transparent outline-none text-sm" />
             <div className="flex gap-2 flex-wrap">
@@ -118,13 +120,15 @@ export default function FacultyDashboard() {
       )}
 
       {tab === "Exam Duties" && (
-        <Panel title="Exam Invigilation Duty">
+        <Panel title="Invigilation duty"
+          hint="Sample duty roster. Exam Seating generates real plans for exams run through this portal.">
           <div className="glass px-4 py-3 text-sm flex justify-between"><span>ML End Sem - Exam Hall 1</span><span className="text-[var(--muted)]">20 Nov 2026</span></div>
         </Panel>
       )}
 
       {tab === "Salary" && (
-        <Panel title="Salary">
+        <Panel title="Salary"
+          hint="Sample figures. Payroll is not part of this system.">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-sm">
             <div className="glass p-4"><div className="text-lg font-bold">Rs 90k</div><div className="text-[var(--muted)]">Basic</div></div>
             <div className="glass p-4"><div className="text-lg font-bold text-emerald-400">Rs 25k</div><div className="text-[var(--muted)]">Allowances</div></div>
@@ -136,7 +140,7 @@ export default function FacultyDashboard() {
       )}
 
       {tab === "Tickets" && (
-        <Panel title={`Tickets Assigned to Me (${tickets.length})`}>
+        <Panel title={`Assigned to me (${tickets.length})`}>
           <div className="space-y-2 text-sm">
             {tickets.map((t) => (
               <div key={t.code} className="glass px-4 py-3">

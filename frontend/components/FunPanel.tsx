@@ -2,9 +2,31 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Gamepad2, Trophy, Clock, Lock, Loader2, CheckCircle2, XCircle, Play, RotateCcw,
+  Grid3x3, Shuffle, Music, Link2, Smile, Keyboard, ListOrdered, Bug, Terminal,
+  Navigation, Braces, Check,
 } from "lucide-react";
+
+/* Each game gets its own colour and mark. Eleven identical grey cards is a
+   list; eleven distinct ones is a place you choose from. The colours are not
+   decoration - they are what makes "the orange one" a usable way to think
+   about a game you played yesterday. */
+const GAME_STYLE: Record<string, { icon: any; from: string; ring: string; text: string }> = {
+  grid:     { icon: Grid3x3,     from: "from-violet-500/20",  ring: "border-violet-400/30",  text: "text-violet-300" },
+  scramble: { icon: Shuffle,     from: "from-sky-500/20",     ring: "border-sky-400/30",     text: "text-sky-300" },
+  sequence: { icon: Music,       from: "from-emerald-500/20", ring: "border-emerald-400/30", text: "text-emerald-300" },
+  ladder:   { icon: Link2,       from: "from-amber-500/20",   ring: "border-amber-400/30",   text: "text-amber-300" },
+  culture:  { icon: Smile,       from: "from-pink-500/20",    ring: "border-pink-400/30",    text: "text-pink-300" },
+  typing:   { icon: Keyboard,    from: "from-cyan-500/20",    ring: "border-cyan-400/30",    text: "text-cyan-300" },
+  jumble:   { icon: ListOrdered, from: "from-indigo-500/20",  ring: "border-indigo-400/30",  text: "text-indigo-300" },
+  debug:    { icon: Bug,         from: "from-rose-500/20",    ring: "border-rose-400/30",    text: "text-rose-300" },
+  output:   { icon: Terminal,    from: "from-lime-500/20",    ring: "border-lime-400/30",    text: "text-lime-300" },
+  robot:    { icon: Navigation,  from: "from-orange-500/20",  ring: "border-orange-400/30",  text: "text-orange-300" },
+  semantic: { icon: Braces,      from: "from-teal-500/20",    ring: "border-teal-400/30",    text: "text-teal-300" },
+};
+const FALLBACK = { icon: Gamepad2, from: "from-white/10", ring: "border-white/15", text: "text-white/70" };
 import FunCodeGames from "@/components/FunCodeGames";
 import FunProgress from "@/components/FunProgress";
+import FunLeaderboard from "@/components/FunLeaderboard";
 
 /* Fun Zone.
 
@@ -177,7 +199,7 @@ export default function FunPanel() {
           </p>
         </div>
         <FunProgress progress={status?.progress} />
-        {board && <Leaderboard board={board} onFilter={loadBoard} />}
+        {board && <FunLeaderboard board={board} onFilter={loadBoard} games={status?.games || []} />}
       </div>
     );
   }
@@ -463,17 +485,35 @@ export default function FunPanel() {
         </div>
       )}
 
-      <div className="grid sm:grid-cols-3 gap-3 mt-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
         {(status?.games || []).map((g: any) => {
           const played = (status?.playedToday || []).includes(g.id);
+          const st = GAME_STYLE[g.id] || FALLBACK;
+          const Icon = st.icon;
           return (
             <button key={g.id} onClick={() => openGame(g.id)} disabled={!!busy}
-              className="panel-solid rounded-xl p-5 text-left hover:border-white/25 transition disabled:opacity-50">
-              <div className="font-medium flex items-center gap-2">
-                {g.name}
-                {played && <span className="text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/40 text-emerald-300">played</span>}
+              className={"group relative overflow-hidden rounded-2xl p-5 text-left border transition " +
+                "bg-gradient-to-br " + st.from + " to-transparent " + st.ring + " " +
+                "hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-50 disabled:translate-y-0"}>
+
+              <div className="flex items-start gap-3">
+                <span className={"w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center shrink-0 " + st.text}>
+                  <Icon size={18} />
+                </span>
+                <div className="min-w-0">
+                  <div className="font-medium leading-tight">{g.name}</div>
+                  <div className="text-[13px] opacity-55 mt-1 leading-snug">{g.blurb}</div>
+                </div>
               </div>
-              <div className="text-sm opacity-55 mt-1.5">{g.blurb}</div>
+
+              {played && (
+                <span className="absolute top-3 right-3 w-6 h-6 rounded-full bg-emerald-500/25 border border-emerald-400/40 flex items-center justify-center"
+                  title="Played today">
+                  <Check size={12} className="text-emerald-300" />
+                </span>
+              )}
+
+              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-white/0 group-hover:bg-white/20 transition" />
             </button>
           );
         })}
@@ -485,64 +525,12 @@ export default function FunPanel() {
         </div>
       )}
 
-      {board && <Leaderboard board={board} onFilter={loadBoard} />}
+      {board && <FunLeaderboard board={board} onFilter={loadBoard} games={status?.games || []} />}
 
       <p className="text-xs opacity-40 mt-8 border-t border-white/10 pt-5">
         Puzzles are generated from the date, so everyone plays the same one. Solutions are checked on
         the server and never sent to your browser. One scoring run per puzzle per day.
       </p>
-    </div>
-  );
-}
-
-function Leaderboard({ board, onFilter }: { board: any; onFilter: (g?: string) => void }) {
-  return (
-    <div className="mt-8">
-      <div className="flex items-center gap-2 flex-wrap">
-        <h2 className="text-lg font-medium flex items-center gap-2">
-          <Trophy size={17} className="opacity-70" /> This week
-        </h2>
-        <span className="text-xs opacity-45">{board.week} · {board.players} player(s)</span>
-      </div>
-
-      <div className="flex gap-2 mt-3 flex-wrap">
-        {[["", "All games"], ["grid", "Mini Grid"], ["scramble", "Scramble"], ["sequence", "Sequence"]].map(([id, label]) => (
-          <button key={label} onClick={() => onFilter(id || undefined)}
-            className={"text-xs px-3 py-1.5 rounded-lg border " +
-              (board.game === (id || "all") ? "border-white/40 bg-white/10" : "border-white/15 hover:border-white/30")}>
-            {label}
-          </button>
-        ))}
-      </div>
-
-      <div className="space-y-2 mt-4">
-        {!board.board.length && (
-          <div className="panel-solid rounded-xl p-5 text-sm opacity-55">
-            Nobody has scored this week yet. Be first.
-          </div>
-        )}
-        {board.board.map((r: any) => (
-          <div key={r.userId}
-            className={"panel-solid rounded-xl p-3 flex items-center justify-between gap-3 " +
-              (r.isYou ? "border-violet-400/50" : "")}>
-            <div className="flex items-center gap-3 min-w-0">
-              <span className={"w-7 h-7 rounded-lg inline-flex items-center justify-center text-xs font-semibold " +
-                (r.rank === 1 ? "bg-amber-400/20 text-amber-300"
-                  : r.rank === 2 ? "bg-white/15"
-                  : r.rank === 3 ? "bg-orange-400/15 text-orange-300" : "bg-white/5 opacity-60")}>
-                {r.rank}
-              </span>
-              <div className="min-w-0">
-                <div className="text-sm font-medium truncate">
-                  {r.name}{r.isYou && <span className="text-[10px] ml-2 opacity-60">you</span>}
-                </div>
-                <div className="text-[11px] opacity-45">{r.role} · {r.plays} puzzle(s)</div>
-              </div>
-            </div>
-            <div className="text-sm font-semibold">{r.total}</div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

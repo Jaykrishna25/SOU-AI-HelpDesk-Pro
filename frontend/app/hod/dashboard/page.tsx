@@ -143,7 +143,7 @@ export default function HodDashboard() {
       {tab === "Dashboard" && <AnalyticsCharts />}
 
       {tab === "Tickets" && (
-        <Panel title={`Tickets Escalated to Me (${tickets.length})`}>
+        <Panel title={`Escalated to me (${tickets.length})`}>
           <div className="space-y-2 text-sm">
             {tickets.map((t) => (
               <div key={t.code} className="glass px-4 py-3">
@@ -174,7 +174,7 @@ export default function HodDashboard() {
       {tab === "Events" && <EditableSection title="Event Management" data={events} onChange={setEvents} cols={["Event name", "Date", "Type"]} />}
 
       {tab === "Reports" && (
-        <Panel title="Generate Reports">
+        <Panel title="Generate a report">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
             {["Student Report", "Faculty Report", "Attendance Report", "Admissions Report", "Result Analysis", "Ticket Summary"].map((r) => (
               <button key={r} onClick={() => alert(r + " generated and ready to download.")} className="glass py-3 hover:bg-brand/20 transition">{r}</button>

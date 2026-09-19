@@ -59,7 +59,7 @@ export default function AdminDashboard() {
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 
       {(tab === "Dashboard" || tab === "Tickets") && (
-        <Panel title={`My Tickets Queue (${tickets.length})`}>
+        <Panel title={`Ticket queue (${tickets.length})`}>
           <div className="space-y-2 text-sm">
             {tickets.map((t) => (
               <div key={t.code} className="glass px-4 py-3">
@@ -103,7 +103,8 @@ export default function AdminDashboard() {
       {tab === "CR & Attendance" && <CRPanel actor={me} />}
 
       {tab === "Classrooms" && (
-        <Panel title="Classroom Management">
+        <Panel title="Classrooms"
+          hint="Sample occupancy. Live room status is not connected — GreenReserve holds the bookings this portal actually manages.">
           <div className="space-y-2 text-sm">
             {rooms.map((r, i) => (
               <div key={i} className="flex items-center justify-between glass px-4 py-3">
@@ -117,7 +118,8 @@ export default function AdminDashboard() {
       )}
 
       {tab === "Resources" && (
-        <Panel title="Resource Allocation">
+        <Panel title="Resource allocation"
+          hint="Sample allocation. Not connected to an inventory system.">
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             {resources.map((r, i) => (
               <div key={i} className="glass px-4 py-3 flex justify-between">
@@ -130,7 +132,8 @@ export default function AdminDashboard() {
       )}
 
       {tab === "Announcements" && (
-        <Panel title="Create Announcement">
+        <Panel title="Create an announcement"
+          hint="Drafting only. Delivery needs the notification service connected.">
           <div className="space-y-3">
             <input placeholder="Announcement title" className="w-full glass px-4 py-3 bg-transparent outline-none text-sm" />
             <textarea placeholder="Message to students / faculty..." className="w-full glass px-4 py-3 bg-transparent outline-none text-sm h-24" />

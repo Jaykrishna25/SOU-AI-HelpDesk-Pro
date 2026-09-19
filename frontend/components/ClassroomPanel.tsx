@@ -35,7 +35,7 @@ export default function ClassroomPanel() {
 
   return (
     <>
-      <Panel title="Google Classroom">
+      <Panel title="Classroom">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
           <span className={`text-xs px-3 py-1 rounded-full ${live ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10 text-[var(--muted)]"}`}>
             {live ? "Connected to your Google Classroom" : "Sample data - not connected"}

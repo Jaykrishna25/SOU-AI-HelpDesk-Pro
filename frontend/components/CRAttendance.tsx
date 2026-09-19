@@ -39,7 +39,7 @@ export default function CRAttendance({ assignments, me }: { assignments: CRAssig
 
   return (
     <>
-      <Panel title="Mark Attendance (Class Representative)">
+      <Panel title="Mark attendance">
         <p className="text-xs text-[var(--muted)] mb-3">
           You are the CR for {assignments.map((a) => a.subjectName).join(", ")}. Attendance you mark is
           sent to the subject faculty for approval, then posted to SOU MIS.
@@ -73,7 +73,7 @@ export default function CRAttendance({ assignments, me }: { assignments: CRAssig
       </Panel>
 
       <div className="mt-6">
-        <Panel title="My Submissions">
+        <Panel title="My submissions">
           <div className="space-y-2 text-sm">
             {mine.map((s) => (
               <div key={s.id} className="glass px-4 py-3">

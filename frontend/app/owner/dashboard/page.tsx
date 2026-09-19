@@ -62,7 +62,7 @@ export default function OwnerDashboard() {
       {(tab === "Dashboard" || tab === "Revenue") && <AnalyticsCharts />}
 
       {(tab === "Tickets" || tab === "Governance") && (
-        <Panel title={`Tickets Escalated to Owner (${tickets.length})`}>
+        <Panel title={`Escalated to the Owner (${tickets.length})`}>
           <div className="space-y-2 text-sm">
             {tickets.map((t) => (
               <div key={t.code} className="glass px-4 py-3">
@@ -85,12 +85,11 @@ export default function OwnerDashboard() {
 
       {(tab === "Dashboard" || tab === "Forecasting") && (
         <div className="mt-6">
-          <Panel title="Strategic forecasting">
+          <Panel title="Strategic forecasting" hint="Not implemented — no forecasting model exists in this system.">
             <p className="text-sm text-[var(--muted)] mb-4">
-              Not implemented. No forecasting model exists in this system, so no projection is
-              shown. The figures that once appeared here were placeholders, and a placeholder
-              presented as a forecast is worse than an empty panel - it is a number someone
-              might act on.
+              The figures that once appeared here were placeholders, and a placeholder
+              presented as a forecast is worse than an empty panel — it is a number someone
+              might act on. What each projection would need:
             </p>
             <div className="grid sm:grid-cols-2 gap-3 text-sm">
               {forecastInputs.map((f, i) => (
@@ -131,15 +130,14 @@ export default function OwnerDashboard() {
       {tab === "QR Attendance" && <QRPanel />}
       {tab === "GreenReserve" && <BookingPanel />}
       {tab === "Workforce" && (
-        <Panel title="Workforce performance">
+        <Panel title="Workforce performance" hint="Not implemented — these figures are not computed anywhere.">
           {/* "4.5 / 5", "91%" and "6.2 hrs" were hard-coded strings presented as
               measurements. Nothing in this system computes them. Removed rather
               than relabelled - a fabricated figure with a caveat is still a
               fabricated figure, and this one sits on the Owner's dashboard where
               somebody might act on it. */}
           <p className="text-sm text-[var(--muted)]">
-            Not implemented. These figures are not computed anywhere in this system, so
-            none are shown. What each would need:
+            What each would need:
           </p>
           <div className="grid sm:grid-cols-2 gap-3 text-sm mt-4">
             {[
