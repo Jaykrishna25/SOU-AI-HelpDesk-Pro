@@ -59,20 +59,30 @@
 
 * { box-sizing: border-box; }
 html, body { padding: 0; margin: 0; background: var(--bg); color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: var(--fs-base);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility; }
 
-/* Headings sit tighter than body text. At display sizes the default
-   letter-spacing looks loose, which is most of what separates a considered
-   interface from a default one. */
-h1, h2, h3, h4 { letter-spacing: -0.021em; line-height: 1.2; }
+/* Display type is the serif, echoing the university wordmark. Body copy and
+   tables stay in the sans - a serif at 13px in a dense table is harder to
+   read, and this portal is mostly dense tables. */
+h1, h2, h3 {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  letter-spacing: -0.012em;
+  line-height: 1.22;
+  font-weight: 600;
+}
+h4, h5, h6 { letter-spacing: -0.015em; line-height: 1.25; }
+
+/* Tabular figures wherever numbers are compared down a column. Proportional
+   digits make a leaderboard or a fee table wobble. */
+table, .tabular { font-variant-numeric: tabular-nums; }
 
 .glass {
   background: var(--panel);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
@@ -88,25 +98,32 @@ h1, h2, h3, h4 { letter-spacing: -0.021em; line-height: 1.2; }
   box-shadow: var(--shadow-md);
   border-color: var(--border-strong);
 }
+/* Static. An animated wordmark is a logo that will not sit still, and a
+   university mark should. */
 .gradient-text {
-  background: linear-gradient(90deg, #C4414B, #C9A227, #106B3F, #C4414B);
-  background-size: 200% auto;
+  background: linear-gradient(100deg, #C4414B, #C9A227 55%, #1C8A54);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmer 4s linear infinite;
 }
-@keyframes shimmer { to { background-position: 200% center; } }
 .glow { box-shadow: 0 0 40px -8px rgba(155,28,38,0.55); }
 .aurora {
   position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
 }
+/* Static, and much softer. The blobs used to drift on an 18-second loop at
+   50% opacity, which is the single thing that made this read as a personal
+   project rather than university software. Movement in the background of an
+   application is a distraction everywhere except a landing page. */
 .aurora::before, .aurora::after {
-  content: ""; position: absolute; width: 60vw; height: 60vw; border-radius: 50%;
-  filter: blur(90px); opacity: 0.5; animation: floaty 18s ease-in-out infinite;
+  content: ""; position: absolute; width: 65vw; height: 65vw; border-radius: 50%;
+  filter: blur(130px); opacity: 0.13;
 }
 .aurora::before { background: radial-gradient(circle, #9B1C26, transparent 60%); top: -10%; left: -10%; }
 .aurora::after  { background: radial-gradient(circle, #106B3F, transparent 60%); bottom: -15%; right: -10%; animation-delay: -9s; }
-@keyframes floaty { 0%,100% { transform: translate(0,0) scale(1);} 50% { transform: translate(6vw,4vh) scale(1.15);} }
+/* floaty removed with the animation it drove. */
+
+/* A hairline rule under a page heading. Cheap, and it does more for the
+   "considered" feeling than any amount of gradient. */
+.rule { height: 1px; background: linear-gradient(90deg, var(--border-strong), transparent); }
 
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-thumb { background: #9B1C26; border-radius: 8px; }
@@ -118,8 +135,8 @@ h1, h2, h3, h4 { letter-spacing: -0.021em; line-height: 1.2; }
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
 }
 
 /* ---------------- shared primitives ----------------

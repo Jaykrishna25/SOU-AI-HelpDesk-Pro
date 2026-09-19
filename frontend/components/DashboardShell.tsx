@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint, Sparkles } from "lucide-react";
+import { GraduationCap, TreeDeciduous, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint, Sparkles } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
 import { useTickets, Ticket } from "@/lib/tickets";
@@ -98,8 +98,31 @@ export default function DashboardShell({
       <div className="aurora" />
       <Chatbot />
       <aside className="fixed top-0 left-0 h-full w-60 glass m-3 p-5 hidden lg:flex flex-col z-40" style={{ borderRadius: "var(--r-xl)" }}>
-        <div className="flex items-center gap-2 font-bold mb-8">
-          <GraduationCap className="text-brand-light" /><span className="gradient-text text-sm">SOU HelpDesk</span>
+        {/* The university identity, not a product logo.
+
+            A graduation-cap icon beside "SOU HelpDesk" is what every campus
+            app looks like. An oak mark in the institution's maroon, with the
+            full name set in the display serif, is what this institution looks
+            like — and the distinction is most of why a portal feels official
+            rather than like a student project. */}
+        <div className="mb-7">
+          <div className="flex items-center gap-2.5">
+            <span className="w-9 h-9 rounded-xl bg-brand flex items-center justify-center shrink-0 shadow-lg shadow-brand/30">
+              <TreeDeciduous size={18} className="text-white" />
+            </span>
+            <div className="min-w-0 leading-tight">
+              <div className="font-display text-[15px] font-semibold tracking-tight truncate">
+                Silver Oak
+              </div>
+              <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                University
+              </div>
+            </div>
+          </div>
+          <div className="rule mt-3.5" />
+          <div className="text-[10.5px] uppercase tracking-[0.13em] text-brand-light mt-3">
+            AI Help Desk
+          </div>
         </div>
         <nav className="space-y-1 flex-1 overflow-y-auto">
           {nav.map((n, i) => (
@@ -162,7 +185,7 @@ export default function DashboardShell({
           className="glass px-4 sm:px-6 py-4 flex items-center justify-between mb-4 relative z-[70]" style={{ isolation: "isolate" }}>
           <div className="min-w-0">
             <p className="text-[11px] text-[var(--muted)] uppercase tracking-[0.12em] truncate">{displayRole} portal</p>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate mt-0.5">
+            <h1 className="font-display text-xl sm:text-[26px] font-semibold truncate mt-0.5">
               Welcome, {displayName}
             </h1>
           </div>
@@ -233,7 +256,7 @@ export default function DashboardShell({
               <div className={`relative w-11 h-11 rounded-2xl flex items-center justify-center mb-3 text-white shadow-lg ${s.accent || STAT_TILE[i % STAT_TILE.length]}`}>
                 <s.icon size={20} />
               </div>
-              <div className="relative text-2xl sm:text-3xl font-semibold tracking-tight leading-none">{s.value}</div>
+              <div className="relative font-display text-2xl sm:text-[30px] font-semibold leading-none">{s.value}</div>
               <div className="relative text-xs text-[var(--muted)] mt-1.5">{s.label}</div>
             </motion.div>
           ))}
