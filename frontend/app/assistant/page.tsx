@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Sparkles, Send, Mic, MicOff, Volume2, VolumeX, Loader2, Ticket, BookOpen, Languages,
+  AlertTriangle,
 } from "lucide-react";
 import {
   detectLanguage, supportsSpeechInput, supportsSpeechOutput, createRecognizer,
@@ -220,9 +221,18 @@ export default function AssistantPage() {
               (m.role === "user"
                 ? "bg-brand text-white"
                 : m.unsure
-                  ? "panel-solid border-l-2 border-l-amber-400"
+                  ? "border border-amber-400/50 bg-amber-400/[0.07] border-l-4 border-l-amber-400"
                   : "panel-solid")
             }>
+              {/* A refusal has to be legible as a refusal from across a room.
+                  A thin coloured edge is not enough - someone watching a demo
+                  sees a paragraph of text and assumes it is an answer. */}
+              {m.unsure && (
+                <div className="flex items-center gap-1.5 mb-2 text-[11px] font-medium uppercase tracking-wide text-amber-300">
+                  <AlertTriangle size={12} /> Not answered from documents
+                </div>
+              )}
+
               <div className="whitespace-pre-wrap">{m.text}</div>
 
               {!!m.sources?.length && (
@@ -241,7 +251,7 @@ export default function AssistantPage() {
 
               {m.unsure && (
                 <button onClick={() => raiseTicket(msgs[i - 1]?.text || "Question from OakMitra")}
-                  className="mt-3 text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5">
+                  className="mt-3 text-xs px-3 py-1.5 rounded-lg border border-amber-400/50 text-amber-200 hover:bg-amber-400/10 flex items-center gap-1.5">
                   <Ticket size={12} /> Raise this as a ticket
                 </button>
               )}

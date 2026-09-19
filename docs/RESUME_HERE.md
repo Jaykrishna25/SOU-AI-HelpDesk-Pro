@@ -58,7 +58,7 @@ Model is `qwen3:1.7b` via Ollama. Set `OLLAMA_MODEL` to change it.
 Fee Statement Simplifier · Study Plan adviser · Fun Zone (five daily puzzles,
 weekly leaderboard, access window) · Audit Trail viewer · account recovery with
 rank enforcement · step-up authentication · OakMitra full-page assistant at
-`/assistant` · 125 tests passing across 9 files.
+`/assistant` · 126 tests passing across 9 files.
 
 ---
 
@@ -76,7 +76,9 @@ with the questions to type, in the order that wastes the least time.
       refusal gate was duplicated and the two copies disagreed, so the
       full-page assistant answered "what are my results?" instead of refusing
       it. One shared gate now, `lib/ai-guard.ts`, 38 tests.
-- [ ] **Check 7, live half** — needs a deploy first, then four minutes.
+- [x] **Check 7, live half** — passed 19 Sept. The Hindi refusal works, and the
+      fee assistant declined to invent a late-fee figure while still giving the
+      exact overdue amount from its tool. Write-up in `docs/LIVE_CHECKS.md`.
 - [ ] Checks 2, 3, 4, 5, 6, 8, 9, 10.
 
 Checks 8 and 9 need two browsers open at once (two roles signed in).

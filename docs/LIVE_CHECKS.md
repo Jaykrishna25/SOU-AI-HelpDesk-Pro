@@ -10,26 +10,42 @@ an unrun check is what breaks during a demo.
 
 ## Before you start
 
-```powershell
-cd C:\dev\sou-ai-helpdesk-pro\frontend
-npx vitest run      # expect 125 passing across 9 files
-npx tsc --noEmit    # expect no output
-```
-
-Then commit and deploy:
-
-```powershell
-cd C:\dev\sou-ai-helpdesk-pro
-git add -A
-git commit -m "Share one refusal gate between both assistants; tests and QA finding 12"
-git push origin main
-```
-
-Wait for Vercel to finish before doing check 7.
+- [x] `npx vitest run` — **126 passing across 9 files**, confirmed 2026-09-19.
+- [x] Pushed as `13418cd`.
+- [ ] Vercel has finished deploying `13418cd`. Check 7 tests the code in that
+      commit, so running it against the previous deploy just re-confirms the
+      old bug.
 
 ---
 
-## Check 7 — refusal paths ★ do this first
+## Check 7 — refusal paths ★ PASSED 2026-09-19
+
+**7b confirmed live.** `मेरी attendance kitni hai` was refused with the ticket
+button — the exact case that passed straight through the gate until the fix
+that morning, because `\b` cannot match beside a Devanagari character.
+
+**7c confirmed live, and it is the best answer in the portal.** Asked "what will
+be my penalty?", the fee assistant replied:
+
+> According to your portal fee record, your Semester 5 payment of INR 30,000 is
+> 35 days overdue. However, the university policy documents I have access to do
+> not specify the exact late fee penalty amount. You should contact the
+> Accounts Office directly.
+
+Tool chips shown: **Fee arithmetic · Policy search (RAG)**.
+
+Everything true came from a tool. The one thing it did not have — the penalty
+rate — it declined to invent, named the gap, and routed the student to a human.
+Use this as the closing moment of any demo.
+
+**Follow-up fixed the same day:** the refusal was behaviourally right but
+visually near-identical to an answer — a 2px amber edge. Refusals now carry an
+amber tint, a heavier left edge and a **NOT ANSWERED FROM DOCUMENTS** label, so
+a viewer can tell a refusal from an answer at a glance. Needs a redeploy.
+
+---
+
+## Check 7 — the original script
 
 The strongest thing you have to show. Three parts, about four minutes.
 

@@ -3,7 +3,7 @@
 ## Automated tests
 
 Framework: Vitest. Run with `npm test` from `frontend/`.
-Current state: **125 tests across 9 files, all passing.**
+Current state: **126 tests across 9 files, all passing.**
 
 | File | Tests | Covers |
 |---|---|---|
@@ -15,7 +15,7 @@ Current state: **125 tests across 9 files, all passing.**
 | `speech.test.ts` | 6 | Language detection by script |
 | `finance.test.ts` | 11 | Fee arithmetic and statement parsing |
 | `fun.test.ts` | 30 | Access window, puzzle validity, score forgery, ladder ranking |
-| `ai-guard.test.ts` | 38 | What the assistant refuses to answer |
+| `ai-guard.test.ts` | 39 | What the assistant refuses to answer |
 
 ### tests/auth.test.ts (6)
 
@@ -108,14 +108,14 @@ including mixed-script input and the fallback when no script matches.
 | returns nothing when required columns are absent | Fails closed rather than inventing rows |
 | labels the source in rendered output | The model cannot confuse uploaded with portal data |
 
-### tests/ai-guard.test.ts (38)
+### tests/ai-guard.test.ts (39)
 
 | Group | Cases | Proves |
 |---|---|---|
 | Personal record questions are refused | 18 | "my marks", "my results", "my CGPA", "how many backlogs do I have", and the same questions in Devanagari and Gujarati |
 | Policy questions are still answered | 10 | "what is the attendance requirement?" is not refused — the pronoun is what makes a question personal, not the noun |
 | Complaints are routed to a person | 7 | An error, a dispute or a ragging report reaches a human rather than an answer |
-| Ordering, messages, empty input | 3 | A question that is both personal and a complaint refuses as personal |
+| Ordering, messages, edge cases | 4 | A question that is both personal and a complaint refuses as personal; empty input is not gated; the match does not cross a sentence boundary |
 
 This file was written for verification check 7 and immediately paid for itself.
 It caught three real bugs, two of them in the code it was written to test:
