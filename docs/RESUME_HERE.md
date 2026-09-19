@@ -64,24 +64,14 @@ rank enforcement · step-up authentication · OakMitra full-page assistant at
 
 ## What is actually left
 
-### 1. The ten verification checks — the real remaining risk
+**All ten verification checks passed on 19 September.** See
+`docs/VERIFICATION_CHECKLIST.md` for the table and what the run caught. The
+portal is demo-ready; what remains is rehearsal and one seeding task.
 
-`docs/VERIFICATION_CHECKLIST.md`, against the **live site**, about 30 minutes.
+### 1. ~~The ten verification checks~~ — ALL PASSED 19 Sept
 
-**Use `docs/LIVE_CHECKS.md`** — it is the same list written as an exact script
-with the questions to type, in the order that wastes the least time.
-
-- [x] **Check 1** — sign-in and lockout. Done, passed.
-- [x] **Check 7, code half** — done 19 Sept. Found and fixed QA finding 12: the
-      refusal gate was duplicated and the two copies disagreed, so the
-      full-page assistant answered "what are my results?" instead of refusing
-      it. One shared gate now, `lib/ai-guard.ts`, 38 tests.
-- [x] **Check 7, live half** — passed 19 Sept. The Hindi refusal works, and the
-      fee assistant declined to invent a late-fee figure while still giving the
-      exact overdue amount from its tool. Write-up in `docs/LIVE_CHECKS.md`.
-- [ ] Checks 2, 3, 4, 5, 6, 8, 9, 10.
-
-Checks 8 and 9 need two browsers open at once (two roles signed in).
+The run caught three real problems, all fixed and deployed. Table and detail in
+`docs/VERIFICATION_CHECKLIST.md`; the exact scripts are in `docs/LIVE_CHECKS.md`.
 
 ### 2. Play all five games once
 
@@ -91,7 +81,6 @@ cell-cycling UI and the server's checker have to agree exactly.
 
 ### 3. Before showing the HOI
 
-- Finish the checks. An HOI will click things that are not in your script.
 - **Demo the Study Plan on an account with weak results.** The current student
   record has three subjects at 87–90, so the plan correctly shows nothing to
   revise — which makes a working feature look like it does nothing.

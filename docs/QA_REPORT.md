@@ -300,7 +300,23 @@ Both are now in the sidebar for every role under "Your account".
   a student gaining `finance.viewInstitutional` fails the build rather than
   silently handing their agent the institutional tool.
 
-## Still to run
+## Verification run — complete
 
-`docs/VERIFICATION_CHECKLIST.md` — nine browser checks, against the deployed
-site. Both fixes above need a redeploy before check 8 will pass.
+`docs/VERIFICATION_CHECKLIST.md` — **all ten checks passed on 19 September
+2026**, against the deployed site.
+
+The run was worth doing. It found three defects that the test suite could not
+have caught on its own, because all three lived in the seam between components
+rather than inside one:
+
+1. **Finding 12** — two copies of the refusal gate, disagreeing. Only visible
+   by asking the same question in two places.
+2. **A Devanagari `\b` failure** — only visible by asking in Hindi, which no
+   existing test did.
+3. **A suggestion chip the gate refused** — only visible by clicking the most
+   obvious button on the page.
+
+All three are fixed, deployed, and covered by `tests/ai-guard.test.ts`.
+
+Twelve findings total in this report. Five are documented-and-accepted gaps
+with reasoning; the rest are fixed.

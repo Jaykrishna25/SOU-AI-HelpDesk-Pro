@@ -100,7 +100,25 @@ rather than producing a rupee amount.
 
 ---
 
-## Check 5 — multilingual (one minute, do it while you are on /assistant)
+## Check 5 — multilingual ★ PASSED 2026-09-19
+
+Asked the fee-due question in English, Hindi and Gujarati. Each answer came
+back in the script it was asked in, the header pill followed the language, and
+there is no selector anywhere on the page.
+
+**A content fix came out of this check.** The first run answered, in all three
+languages, that it held no information about fee due dates — technically true,
+since the knowledge base said exactly that, but it made working retrieval look
+broken. The article now routes the student to the Fees page of their own portal
+first, where their individual due date genuinely is. Re-embedded through the new
+Owner → Audit Trail → **Re-embed the documents** button and confirmed live.
+
+Worth saying out loud in a demo: nobody picks a language. Most multilingual
+portals make you choose one from a dropdown.
+
+---
+
+## Check 5 — the original script
 
 > When is the semester fee due?
 > सेमेस्टर की फीस कब देनी है?

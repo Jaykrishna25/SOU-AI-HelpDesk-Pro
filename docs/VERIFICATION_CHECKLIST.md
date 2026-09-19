@@ -1,7 +1,45 @@
 # Pre-demo verification checklist
 
-Ten checks. Run them against the **deployed** site, not localhost — that is
-what judges will see. Roughly 30 minutes.
+## ✅ ALL TEN PASSED — 19 September 2026
+
+Run against the deployed site by Navlani Jaykrishna Satishkumar. No check
+failed. Two fixes came out of the run and are recorded below; both are
+deployed.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Sign in and lockout | Pass |
+| 2 | Passkey sign-in | Pass |
+| 3 | GreenReserve bookings, clash refused | Pass |
+| 4 | QR attendance, closed session refused | Pass |
+| 5 | Multilingual, three scripts | Pass — one content fix |
+| 6 | Voice in and out | Pass |
+| 7 | Refusal paths | Pass — one real bug found and fixed |
+| 8 | Grievance identity encryption | Pass |
+| 9 | Step-up authentication and recovery | Pass |
+| 10 | IQAC evidence and export | Pass |
+
+**What the run actually caught**, which is the point of running it:
+
+- **Check 7** exposed QA finding 12 — the refusal gate was written twice and
+  the two copies disagreed, so the full-page assistant answered "what are my
+  results?" instead of refusing it. Fixed with one shared gate
+  (`lib/ai-guard.ts`) and 39 tests. Writing those tests then caught two further
+  bugs: `\b` cannot match beside a Devanagari character, so every Hindi and
+  Gujarati personal question was passing through; and the welcome screen was
+  suggesting a question the gate refused.
+- **Check 5** exposed a knowledge-base article that led with what it did not
+  know. It now routes students to the Fees page, where their due date is.
+
+A checklist that finds nothing was not worth running. This one found three
+things, one of them on the most visible screen in the portal.
+
+---
+
+## The original checklist
+
+Run them against the **deployed** site, not localhost — that is what judges
+will see. Roughly 30 minutes.
 
 Record the result honestly. A check that fails and is known about is safe; a
 check that was never run is the one that breaks during a demo.
