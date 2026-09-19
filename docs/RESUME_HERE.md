@@ -58,7 +58,7 @@ Model is `qwen3:1.7b` via Ollama. Set `OLLAMA_MODEL` to change it.
 Fee Statement Simplifier · Study Plan adviser · Fun Zone (five daily puzzles,
 weekly leaderboard, access window) · Audit Trail viewer · account recovery with
 rank enforcement · step-up authentication · OakMitra full-page assistant at
-`/assistant` · 87 tests passing across 8 files.
+`/assistant` · 125 tests passing across 9 files.
 
 ---
 
@@ -68,8 +68,15 @@ rank enforcement · step-up authentication · OakMitra full-page assistant at
 
 `docs/VERIFICATION_CHECKLIST.md`, against the **live site**, about 30 minutes.
 
+**Use `docs/LIVE_CHECKS.md`** — it is the same list written as an exact script
+with the questions to type, in the order that wastes the least time.
+
 - [x] **Check 1** — sign-in and lockout. Done, passed.
-- [ ] **Check 7** — the refusal paths. Do this next, it is the strongest demo material.
+- [x] **Check 7, code half** — done 19 Sept. Found and fixed QA finding 12: the
+      refusal gate was duplicated and the two copies disagreed, so the
+      full-page assistant answered "what are my results?" instead of refusing
+      it. One shared gate now, `lib/ai-guard.ts`, 38 tests.
+- [ ] **Check 7, live half** — needs a deploy first, then four minutes.
 - [ ] Checks 2, 3, 4, 5, 6, 8, 9, 10.
 
 Checks 8 and 9 need two browsers open at once (two roles signed in).

@@ -208,6 +208,56 @@ whoever operates the deployment.
 Verified in practice during testing: an owner locked out of `OWN001` could not
 be recovered by the other owner and was restored through the script.
 
+### 12. The two assistants disagreed about what they would refuse — MEDIUM, fixed
+
+Found on 2026-09-19 while working check 7.
+
+The refusal gate — the rule that decides whether a question is about a
+student's own record and must go to a human — was written **twice**. Once in
+`components/Chatbot.tsx` (the corner bubble) and once in `app/assistant/page.tsx`
+(the full-page OakMitra, added the day before). The two copies did not agree.
+
+The full-page copy read:
+
+```
+/\bmy (marks|result|grade|attendance|fee receipt|refund|admission status)\b/i
+```
+
+Consequences, all confirmed:
+
+| Question | Corner bubble | Full page |
+|---|---|---|
+| "what are my results?" | refused | **answered** — `result` followed by `s` defeats `\b` |
+| "what are my grades?" | refused | **answered** — same plural bug |
+| "what is my CGPA?" | refused | **answered** — not in the list |
+| "how many backlogs do I have?" | refused | **answered** — not in the list |
+| "what is my fee balance?" | refused | **answered** — only `fee receipt` listed |
+
+So a student who asked about their own marks on the page built to be the
+flagship AI feature would get the general grading policy quoted back at them,
+phrased as an answer. That is precisely the failure the refusal path exists to
+prevent, and it was sitting on the most visible screen in the portal.
+
+**Fixed.** One gate, `lib/ai-guard.ts`, imported by both callers. Writing the
+tests for it then caught two further bugs in the replacement before it shipped:
+
+1. **Devanagari and Gujarati pronouns never matched.** JavaScript's `\b` is
+   defined over `[A-Za-z0-9_]`, so `\bमेरी\b` can never match — there is no word
+   boundary beside a non-Latin character. In a portal advertised as
+   multilingual, every Hindi and Gujarati question about a student's own record
+   was passing straight through the gate. The pattern is now split by script.
+2. **"How do I apply for a scholarship?" was refused.** It contains `I` and
+   `scholarship`, so the broadened pattern caught it — but it is a process
+   question with a documented answer. Procedural phrasing now overrides the
+   pronoun, so "how do I check my attendance on the portal?" is answered with
+   the route rather than refused.
+
+The gate deliberately fails **toward** a human: a false positive costs one
+unnecessary ticket, a false negative tells a student something confident and
+wrong about their own record.
+
+Covered by `tests/ai-guard.test.ts` — 38 cases, including the table above.
+
 ### 11. Account pages were unreachable — LOW, fixed
 
 `/account/password` and `/account/passkeys` existed and worked, but nothing in

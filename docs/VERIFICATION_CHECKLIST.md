@@ -92,7 +92,7 @@ check that was never run is the one that breaks during a demo.
       production. The old `sou-helpdesk` project in us-east-2 no longer exists, so
       there is nothing left to reconnect to by accident.
 - [ ] Repo is public and `docs/` renders on GitHub
-- [ ] `npx vitest run` — 87 tests passing
+- [ ] `npx vitest run` — 125 tests passing
 
 ## If a check fails
 

@@ -8,6 +8,7 @@ import {
   speak, stopSpeaking, LANGUAGES, type LangCode, type Recognizer,
 } from "@/lib/speech";
 import { addTicket } from "@/lib/tickets";
+import { gate, GATE_MESSAGE } from "@/lib/ai-guard";
 
 /* ============================================================
    OakMitra - the full-page assistant.
@@ -44,9 +45,11 @@ const SUGGESTIONS = [
   { icon: "hostel", label: "Hostel and campus", q: "What facilities are available on campus?" },
 ];
 
-/* Questions about a specific person's record belong with a human, not a
-   retrieval model working from general policy documents. */
-const PERSONAL = /\bmy (marks|result|grade|attendance|fee receipt|refund|admission status)\b/i;
+/* Questions about a specific person's record, and complaints, belong with a
+   human rather than a retrieval model working from general policy documents.
+   The rule itself lives in lib/ai-guard.ts so that this page and the corner
+   bubble cannot drift apart - they did once, and "my results" was refused by
+   one and answered by the other. */
 
 export default function AssistantPage() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -93,12 +96,9 @@ export default function AssistantPage() {
     const qLang = detectLanguage(q, lang);
     if (qLang !== lang) setLang(qLang);
 
-    if (PERSONAL.test(q)) {
-      setMsgs(m => [...m, {
-        role: "ai", unsure: true,
-        text: "That is a question about your own record, so it should go to staff rather than " +
-              "be answered from policy documents. Raise it as a ticket and someone will check it.",
-      }]);
+    const blocked = gate(q);
+    if (blocked) {
+      setMsgs(m => [...m, { role: "ai", unsure: true, text: GATE_MESSAGE[blocked] }]);
       setBusy(false);
       return;
     }

@@ -3,7 +3,7 @@
 ## Automated tests
 
 Framework: Vitest. Run with `npm test` from `frontend/`.
-Current state: **87 tests across 8 files, all passing.**
+Current state: **125 tests across 9 files, all passing.**
 
 | File | Tests | Covers |
 |---|---|---|
@@ -15,6 +15,7 @@ Current state: **87 tests across 8 files, all passing.**
 | `speech.test.ts` | 6 | Language detection by script |
 | `finance.test.ts` | 11 | Fee arithmetic and statement parsing |
 | `fun.test.ts` | 30 | Access window, puzzle validity, score forgery, ladder ranking |
+| `ai-guard.test.ts` | 38 | What the assistant refuses to answer |
 
 ### tests/auth.test.ts (6)
 
@@ -107,7 +108,30 @@ including mixed-script input and the fallback when no script matches.
 | returns nothing when required columns are absent | Fails closed rather than inventing rows |
 | labels the source in rendered output | The model cannot confuse uploaded with portal data |
 
-The eighth of these caught a live bug: the parser split on every candidate
+### tests/ai-guard.test.ts (38)
+
+| Group | Cases | Proves |
+|---|---|---|
+| Personal record questions are refused | 18 | "my marks", "my results", "my CGPA", "how many backlogs do I have", and the same questions in Devanagari and Gujarati |
+| Policy questions are still answered | 10 | "what is the attendance requirement?" is not refused — the pronoun is what makes a question personal, not the noun |
+| Complaints are routed to a person | 7 | An error, a dispute or a ragging report reaches a human rather than an answer |
+| Ordering, messages, empty input | 3 | A question that is both personal and a complaint refuses as personal |
+
+This file was written for verification check 7 and immediately paid for itself.
+It caught three real bugs, two of them in the code it was written to test:
+
+1. The gate was **duplicated** across the corner bubble and the full-page
+   assistant, and the copies disagreed. `"what are my results?"` was refused by
+   one and answered by the other — `\bresult\b` does not match `results`.
+2. `\bमेरी\b` can never match. JavaScript's `\b` is defined over
+   `[A-Za-z0-9_]`, so in a portal advertised as multilingual, every Hindi and
+   Gujarati question about a student's own record went straight through.
+3. The broadened pattern then refused `"how do I apply for a scholarship?"`,
+   which is a process question with a documented answer.
+
+Full write-up in `docs/QA_REPORT.md`, finding 12.
+
+The eighth of the finance cases caught a live bug: the parser split on every candidate
 delimiter at once, so `"1,50,000"` in a semicolon-separated file was read as
 `1`. A student would have been told they owed one rupee. Fixed by detecting one
 delimiter per file and respecting quoted fields.

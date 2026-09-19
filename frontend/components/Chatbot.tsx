@@ -8,6 +8,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, X, Sparkles, ArrowLeft } from "lucide-react";
 import { addTicket } from "@/lib/tickets";
+import { isPersonalRecordQuestion, needsHuman } from "@/lib/ai-guard";
 
 const INSTITUTES = [
   "College of Engineering and Technology",
@@ -109,8 +110,10 @@ const KB: Faq[] = [
 
 interface Msg { role: "user" | "ai"; text: string; meta?: string }
 
-const PERSONAL = /\b(my|mine|i)\b.{0,25}\b(attendance|fee|fees|result|marks|cgpa|sgpa|seat|receipt|certificate|admission|application|scholarship|room|id card|hall ticket|backlog|salary|refund)\b/i;
-const COMPLEX = /(complaint|dispute|not working|error|wrong|incorrect|refund|urgent|escalate|why was|denied|rejected|failed to)/i;
+/* The two gates are shared with the full-page assistant so the same question
+   gets the same treatment in both places. See lib/ai-guard.ts. */
+const PERSONAL = { test: (q: string) => isPersonalRecordQuestion(q) };
+const COMPLEX = { test: (q: string) => needsHuman(q) };
 
 function normalize(q: string): string[] {
   return q.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
