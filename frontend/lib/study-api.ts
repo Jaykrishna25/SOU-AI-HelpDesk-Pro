@@ -6,6 +6,7 @@ import { audit } from "@/lib/audit";
 import { computeStudyPlan, renderStudyPlan, WEAK_THRESHOLD } from "@/lib/study-math";
 import { fetchStudentResults, fetchSubjectCohort } from "@/lib/study-db";
 import { askStudyAgent, studySummary, studyAiConfigured } from "@/lib/study-agent";
+import { parseTranscript, mergeTranscript } from "@/lib/transcript";
 
 /* Study plan endpoints.
 
@@ -100,6 +101,45 @@ export async function POST(req: NextRequest) {
     const raw = renderStudyPlan(plan);
     const { summary } = await studySummary(raw);
     return json({ raw, summary });
+  }
+
+  /* ---- plan including an uploaded transcript ----
+
+     Supplements the portal's record; never replaces it. A subject the portal
+     already issued is reported back as ignored rather than overwritten - if a
+     text file could change a recorded grade, the record would not be a record.
+
+     Nothing is stored. The upload is parsed, merged for this one calculation,
+     and discarded with the request. */
+  if (p[0] === "upload") {
+    if (!can(s, "study.viewOwn")) return json({ error: "Not permitted" }, 403);
+
+    const raw = String(b.file || "");
+    if (!raw.trim()) return json({ error: "No file content was provided." }, 400);
+    if (raw.length > 200_000) return json({ error: "That file is too large." }, 413);
+
+    const parsed = parseTranscript(raw);
+    if (!parsed.rows.length) {
+      return json({ error: parsed.notes.join(" "), notes: parsed.notes }, 422);
+    }
+
+    const recorded = (await fetchStudentResults(s.userId)) || [];
+    const merged = mergeTranscript(recorded, parsed.rows);
+    const plan = computeStudyPlan(merged.rows, clampThreshold(b.threshold));
+    const rendered = renderStudyPlan(plan);
+    const { summary } = await studySummary(rendered);
+
+    return json({
+      raw: rendered,
+      summary,
+      plan,
+      recorded: recorded.length,
+      added: merged.added,
+      ignored: merged.ignored,
+      skipped: parsed.skipped,
+      notes: parsed.notes,
+      stored: false,
+    });
   }
 
   /* ---- ask the agent ---- */

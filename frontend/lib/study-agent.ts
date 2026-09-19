@@ -6,8 +6,9 @@ import { z } from "zod";
 import { retrieve } from "@/lib/ai";
 import { can } from "@/lib/policy";
 import type { Session } from "@/lib/server-auth";
-import { computeStudyPlan, renderStudyPlan } from "@/lib/study-math";
+import { computeStudyPlan, renderStudyPlan, scoreOf } from "@/lib/study-math";
 import { fetchStudentResults, fetchSubjectCohort } from "@/lib/study-db";
+import { searchOpportunities, renderOpportunities } from "@/lib/careers";
 
 /* ============================================================
    Study adviser: a tool-calling agent over the student's own
@@ -50,7 +51,11 @@ HARD RULES, in order of importance:
 5. Scores are out of 100. Study hours are per week.
 6. Be honest and encouraging at once. A weak subject is weak - do not soften it
    into meaninglessness, and do not lecture the student about it either.
-7. Be brief: three to six sentences unless a breakdown is requested.`;
+7. Be brief: three to six sentences unless a breakdown is requested.
+8. Opportunity listings come from a public third-party feed. They are NOT
+   university placements and not endorsements. Never promise a student they
+   will get a role, and never claim the university is connected to a listing.
+   Say which subjects the search keywords came from - that is the point of it.`;
 
 /* ---------------- tools ---------------- */
 
@@ -146,6 +151,31 @@ function academicPolicyTool() {
   );
 }
 
+function opportunitiesTool(userId: string) {
+  return tool(
+    async () => {
+      const rows = await fetchStudentResults(userId);
+      if (!rows || !rows.length) {
+        return "This student has no examination results recorded, so there is nothing to "
+             + "match opportunities against. Do not search generically instead.";
+      }
+      const scored = rows.map(r => ({ subject: r.subjectName, score: scoreOf(r) }));
+      return renderOpportunities(await searchOpportunities(scored));
+    },
+    {
+      name: "search_opportunities",
+      description:
+        "Search live internship and graduate-role listings matched to this student's own record. " +
+        "Takes NO search term - the keywords are derived from the subjects the student scored " +
+        "highest in, so results reflect what they actually studied rather than what they typed. " +
+        "Returns role, company, location, a link, and which keyword surfaced each listing. " +
+        "Call this for questions about internships, jobs, placements, careers, or what the " +
+        "student could apply for. These are third-party listings, not university placements.",
+      schema: z.object({}),
+    },
+  );
+}
+
 /* ---------------- the agent loop ---------------- */
 
 export interface StudyAnswer {
@@ -169,7 +199,13 @@ export async function askStudyAgent(opts: {
   }
 
   const tools: any[] = [academicPolicyTool()];
-  if (can(opts.session, "study.viewOwn")) tools.push(ownPlanTool(opts.session.userId, opts.threshold));
+  if (can(opts.session, "study.viewOwn")) {
+    tools.push(ownPlanTool(opts.session.userId, opts.threshold));
+    // Opportunity search is keyed off the student's own marks, so it belongs
+    // behind the same capability. Someone who may not read a record may not
+    // have listings derived from it either.
+    tools.push(opportunitiesTool(opts.session.userId));
+  }
   if (can(opts.session, "study.viewCohort")) tools.push(cohortTool(opts.threshold, opts.department || null));
 
   const byName = new Map<string, any>(tools.map(t => [t.name, t]));

@@ -5,6 +5,7 @@ import {
 } from "recharts";
 import {
   GraduationCap, AlertTriangle, CheckCircle2, Wrench, Send, Loader2, Users, Clock,
+  Upload, FileText, Info,
 } from "lucide-react";
 
 /* Study plan.
@@ -26,6 +27,7 @@ const TOOL_LABEL: Record<string, string> = {
   analyse_my_results: "Result arithmetic",
   analyse_cohort_performance: "Cohort arithmetic",
   search_academic_policy: "Policy search (RAG)",
+  search_opportunities: "Live listings feed",
 };
 
 type Turn = { role: "user" | "ai"; text: string; tools?: string[] };
@@ -43,6 +45,10 @@ export default function StudyPanel() {
   const [err, setErr] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [q, setQ] = useState("");
+  const [upload, setUpload] = useState<{
+    name: string; added: number; ignored: string[];
+    skipped: number; recorded: number; notes: string[];
+  } | null>(null);
 
   useEffect(() => {
     fetch("/api/study/status", { headers: AUTH() })
@@ -70,6 +76,41 @@ export default function StudyPanel() {
   }, []);
 
   useEffect(() => { load(threshold); }, [load, threshold]);
+
+  /* Uploading a transcript SUPPLEMENTS the portal's record; it never replaces
+     it. Subjects the portal already issued come back in `ignored` and are left
+     exactly as recorded. Nothing is stored - the file is parsed for this one
+     calculation and discarded with the request. */
+  async function onTranscript(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setErr(""); setBusy("Reading your transcript...");
+    try {
+      const text = await f.text();
+      const r = await fetch("/api/study/upload", {
+        method: "POST", headers: H(),
+        body: JSON.stringify({ file: text, threshold }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d?.error || "Could not read that transcript");
+      setPlan(d.plan); setReason("");
+      setSummary(d.summary || ""); setRaw(d.raw || "");
+      setUpload({
+        name: f.name, added: d.added, ignored: d.ignored || [],
+        skipped: d.skipped, recorded: d.recorded, notes: d.notes || [],
+      });
+    } catch (e: any) {
+      setErr(String(e?.message || e));
+    } finally {
+      setBusy("");
+      e.target.value = "";
+    }
+  }
+
+  function clearUpload() {
+    setUpload(null);
+    load(threshold);
+  }
 
   async function loadCohort() {
     setErr(""); setBusy("Aggregating cohort performance...");
@@ -108,7 +149,8 @@ export default function StudyPanel() {
     ? ["Which subjects does the cohort struggle with most?", "What should I revise first?",
        "What does the policy say about supplementary exams?", "Which subjects am I strongest in?"]
     : ["What should I revise first?", "Which subjects am I strongest in?",
-       "What does the policy say about supplementary exams?", "How am I doing overall?"];
+       "Find internships that match what I studied",
+       "What does the policy say about supplementary exams?"];
 
   /* ---------- no results ---------- */
   if (!plan && reason) {
@@ -121,6 +163,28 @@ export default function StudyPanel() {
           {reason === "no-student-record"
             ? "This account is not linked to a student record, so there are no examination results to analyse."
             : "No examination results are recorded against your enrolment yet. Once results are published, your study plan appears here automatically."}
+        </div>
+
+        {/* A transfer student, or anyone whose earlier semesters predate this
+            system, has nothing here and nothing coming. An upload is the only
+            way they get a plan at all. */}
+        <div className="panel-solid rounded-xl p-6 mt-4">
+          <div className="text-sm font-medium flex items-center gap-2">
+            <Upload size={15} className="opacity-60" /> Have a transcript on paper?
+          </div>
+          <p className="text-sm opacity-60 mt-2 max-w-xl">
+            If you transferred in, or your earlier semesters predate this portal, upload a
+            CSV of your results and the plan will be built from that instead. Nothing is
+            saved — it is read once and discarded.
+          </p>
+          <label className="inline-block mt-3">
+            <input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain"
+              onChange={onTranscript} className="hidden" />
+            <span className="text-sm px-4 py-2 rounded-lg bg-brand text-white cursor-pointer inline-flex items-center gap-2">
+              <Upload size={14} /> Upload a transcript
+            </span>
+          </label>
+          {err && <div className="mt-3 px-3 py-2 rounded-lg text-sm border border-rose-500/40 bg-rose-500/10">{err}</div>}
         </div>
       </div>
     );
@@ -144,18 +208,71 @@ export default function StudyPanel() {
             <GraduationCap size={20} className="opacity-70" /> Study plan
           </h1>
           <p className="opacity-55 text-sm mt-1">
-            Built from your recorded examination results &middot; generated {plan.generatedAt}
+            {upload
+              ? <>Your record plus {upload.added} subject(s) from <b>{upload.name}</b> &middot; generated {plan.generatedAt}</>
+              : <>Built from your recorded examination results &middot; generated {plan.generatedAt}</>}
           </p>
         </div>
-        {canCohort && !cohort && (
-          <button onClick={loadCohort}
-            className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5">
-            <Users size={13} /> Cohort view
-          </button>
-        )}
+        <div className="flex gap-2">
+          {!upload && (
+            <label>
+              <input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain"
+                onChange={onTranscript} className="hidden" />
+              <span className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5 cursor-pointer">
+                <Upload size={13} /> Add a transcript
+              </span>
+            </label>
+          )}
+          {canCohort && !cohort && (
+            <button onClick={loadCohort}
+              className="text-xs px-3 py-2 rounded-lg border border-white/15 hover:border-white/30 flex items-center gap-1.5">
+              <Users size={13} /> Cohort view
+            </button>
+          )}
+        </div>
       </div>
 
       {err && <div className="mt-5 px-4 py-3 rounded-lg text-sm border border-rose-500/40 bg-rose-500/10">{err}</div>}
+
+      {/* ---------- uploaded transcript ---------- */}
+      {upload && (
+        <div className="mt-5 rounded-xl p-4 border border-sky-500/35 bg-sky-500/[0.06]">
+          <div className="flex items-start gap-3">
+            <FileText size={16} className="mt-0.5 opacity-60 shrink-0" />
+            <div className="flex-1 text-sm">
+              <div className="font-medium">
+                {upload.added} subject(s) added from {upload.name}
+              </div>
+              <div className="opacity-65 mt-1">
+                Your {upload.recorded} recorded result(s) are unchanged. An uploaded
+                transcript supplements the portal&rsquo;s record and never overwrites it.
+              </div>
+
+              {!!upload.ignored.length && (
+                <div className="mt-2 flex items-start gap-1.5 opacity-70">
+                  <Info size={13} className="mt-0.5 shrink-0" />
+                  <span>
+                    Already in your record, so the portal&rsquo;s marks were kept:{" "}
+                    <b>{upload.ignored.join(", ")}</b>
+                  </span>
+                </div>
+              )}
+              {upload.skipped > 0 && (
+                <div className="opacity-55 text-xs mt-1.5">
+                  {upload.skipped} row(s) could not be read and were skipped, not guessed at.
+                </div>
+              )}
+              <div className="opacity-45 text-xs mt-1.5">
+                Nothing from this file has been saved.
+              </div>
+            </div>
+            <button onClick={clearUpload}
+              className="text-xs px-3 py-1.5 rounded-lg border border-white/15 hover:border-white/30 shrink-0">
+              Remove
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* structured input - changes the plan, not just the display */}
       <div className="panel-solid rounded-xl p-4 mt-6">

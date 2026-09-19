@@ -3,7 +3,7 @@
 ## Automated tests
 
 Framework: Vitest. Run with `npm test` from `frontend/`.
-Current state: **126 tests across 9 files, all passing.**
+Current state: **183 tests across 12 files, all passing.**
 
 | File | Tests | Covers |
 |---|---|---|
@@ -15,7 +15,10 @@ Current state: **126 tests across 9 files, all passing.**
 | `speech.test.ts` | 6 | Language detection by script |
 | `finance.test.ts` | 11 | Fee arithmetic and statement parsing |
 | `fun.test.ts` | 30 | Access window, puzzle validity, score forgery, ladder ranking |
-| `ai-guard.test.ts` | 39 | What the assistant refuses to answer |
+| `ai-guard.test.ts` | 40 | What the assistant refuses to answer |
+| `whatsapp.test.ts` | 29 | Class-group parsing, redaction, later-correction-wins |
+| `transcript.test.ts` | 14 | Transcript parsing and the record-wins merge rule |
+| `careers.test.ts` | 13 | Opportunity keywords come from the student's own marks |
 
 ### tests/auth.test.ts (6)
 
@@ -130,6 +133,42 @@ It caught three real bugs, two of them in the code it was written to test:
    which is a process question with a documented answer.
 
 Full write-up in `docs/QA_REPORT.md`, finding 12.
+
+### tests/whatsapp.test.ts (29)
+
+The class-group parser. Most of these tests exist to pin privacy claims that
+would otherwise be just words in a comment.
+
+| Group | Proves |
+|---|---|
+| Phone numbers never survive parsing | A phone-number sender becomes "Member 1"; numbers inside messages become "[number removed]"; no ten-digit run appears anywhere in the parsed output |
+| Redaction does not damage what students need | "room 204", "10:00 AM", "24 August" and "60 percent" all survive — the nine-digit floor is the whole design |
+| System lines dropped, real messages kept | Encryption notices, join notices and media placeholders go; announcements stay |
+| **The later correction wins** | Two messages name this test; one says room 204, a later one moves it to 108. The later one ranks first |
+| Robustness | Empty files, non-WhatsApp files, bracketed exports, 12-hour times, two-digit years, wrapped lines |
+
+One test is named for a bug found during development: a dated system line with
+no `Sender:` part was being appended to the *previous* message as a
+continuation, which then matched the system filter and was dropped whole. A
+real announcement disappeared and nothing reported it.
+
+### tests/transcript.test.ts (14)
+
+Parsing, and one integrity rule: **the portal's own record always wins**. An
+uploaded row for a subject the portal already issued is reported back as
+ignored, never applied. There is a test that uploads a *better* grade for a
+recorded subject and asserts the recorded marks are unchanged — if a text file
+could rewrite a grade, the record would not be a record.
+
+The delimiter detection and quote handling are lifted from the fee parser,
+which originally had neither and read `"1,50,000"` as `1`.
+
+### tests/careers.test.ts (13)
+
+The claim is that opportunity keywords come from the student's own strongest
+subjects rather than from a search box. These tests pin it: weak subjects never
+drive the search, the ordering follows the marks, and the renderer always
+states that listings are third-party rather than university placements.
 
 The eighth of the finance cases caught a live bug: the parser split on every candidate
 delimiter at once, so `"1,50,000"` in a semicolon-separated file was read as
