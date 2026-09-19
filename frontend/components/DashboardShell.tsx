@@ -41,6 +41,11 @@ function buildNotifs(tickets: Ticket[], role: string, name: string): Notif[] {
   }).sort((a, b) => b.ts - a.ts).slice(0, 15);
 }
 
+/* Stat-card palette. Four cards in one colour is a striped row; four colours
+   makes each one a distinct thing you can point at. */
+const STAT_TILE = ["bg-violet-500", "bg-sky-500", "bg-amber-500", "bg-emerald-500"];
+const STAT_BLOOM = ["bg-violet-500", "bg-sky-500", "bg-amber-500", "bg-emerald-500"];
+
 export default function DashboardShell({
   role, name, nav, stats, children, activeNav, onNavSelect,
 }: {
@@ -89,7 +94,7 @@ export default function DashboardShell({
     <div className="relative min-h-screen">
       <div className="aurora" />
       <Chatbot />
-      <aside className="fixed top-0 left-0 h-full w-60 glass m-3 p-5 hidden lg:flex flex-col z-40" style={{ borderRadius: 24 }}>
+      <aside className="fixed top-0 left-0 h-full w-60 glass m-3 p-5 hidden lg:flex flex-col z-40" style={{ borderRadius: "var(--r-xl)" }}>
         <div className="flex items-center gap-2 font-bold mb-8">
           <GraduationCap className="text-brand-light" /><span className="gradient-text text-sm">SOU HelpDesk</span>
         </div>
@@ -97,7 +102,11 @@ export default function DashboardShell({
           {nav.map((n, i) => (
             <motion.button key={n} onClick={() => onNavSelect && onNavSelect(n)} type="button"
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-              className={`w-full text-left block px-4 py-2.5 rounded-xl text-sm transition ${n === current ? "bg-brand text-white" : "text-[var(--muted)] hover:bg-brand/10"}`}>{n}</motion.button>
+              className={`w-full text-left block px-4 py-2.5 rounded-xl text-sm transition ${
+                n === current
+                  ? "bg-brand text-white font-medium shadow-lg shadow-brand/25"
+                  : "text-[var(--muted)] hover:bg-brand/10 hover:text-[var(--text)]"
+              }`}>{n}</motion.button>
           ))}
         </nav>
 
@@ -149,8 +158,10 @@ export default function DashboardShell({
         <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
           className="glass px-4 sm:px-6 py-4 flex items-center justify-between mb-4 relative z-[70]" style={{ isolation: "isolate" }}>
           <div className="min-w-0">
-            <p className="text-xs text-[var(--muted)] uppercase tracking-wide truncate">{displayRole} Portal</p>
-            <h1 className="text-lg sm:text-xl font-bold truncate">Welcome, {displayName}</h1>
+            <p className="text-[11px] text-[var(--muted)] uppercase tracking-[0.12em] truncate">{displayRole} portal</p>
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate mt-0.5">
+              Welcome, {displayName}
+            </h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className="relative z-[80]">
@@ -211,12 +222,16 @@ export default function DashboardShell({
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
           {stats.map((s, i) => (
             <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -6 }} className="glass p-4 sm:p-5">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.accent || "bg-brand/20"}`}>
-                <s.icon className="text-brand-light" size={20} />
+              whileHover={{ y: -4 }}
+              className="glass glass-hover relative overflow-hidden p-4 sm:p-5">
+              {/* A soft bloom in the card's own colour, so four stat cards read
+                  as four things rather than one striped row. */}
+              <span className={`absolute -top-8 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20 ${STAT_BLOOM[i % STAT_BLOOM.length]}`} />
+              <div className={`relative w-11 h-11 rounded-2xl flex items-center justify-center mb-3 text-white shadow-lg ${s.accent || STAT_TILE[i % STAT_TILE.length]}`}>
+                <s.icon size={20} />
               </div>
-              <div className="text-xl sm:text-2xl font-bold">{s.value}</div>
-              <div className="text-xs text-[var(--muted)]">{s.label}</div>
+              <div className="relative text-2xl sm:text-3xl font-semibold tracking-tight leading-none">{s.value}</div>
+              <div className="relative text-xs text-[var(--muted)] mt-1.5">{s.label}</div>
             </motion.div>
           ))}
         </div>

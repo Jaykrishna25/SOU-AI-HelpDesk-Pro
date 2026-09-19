@@ -2,31 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Design tokens.
+
+   One scale, defined once, so a change here moves the whole
+   portal rather than one screen. The radius and spacing steps
+   below are the difference between eleven pages that were each
+   styled separately and one product.
+
+   The radii are deliberately generous. Soft corners read as
+   approachable, and this is a portal students are meant to
+   actually open - but they stop short of the pill shapes a
+   consumer game uses, because the same shell holds a grievance
+   form and an accreditation audit trail.
+   ============================================================ */
 :root {
   --bg: #0a0a14;
-  --panel: rgba(255,255,255,0.04);
+  --panel: rgba(255,255,255,0.045);
+  --panel-raised: rgba(255,255,255,0.07);
   --border: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.18);
   --text: #e8e8f0;
   --muted: #9aa0b4;
+
+  /* radius scale */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+
+  /* elevation */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.28);
+  --shadow-md: 0 8px 24px -8px rgba(0,0,0,.45);
+  --shadow-lg: 0 20px 48px -16px rgba(0,0,0,.6);
+
+  /* type scale - one ramp, used everywhere */
+  --fs-xs: 11.5px;
+  --fs-sm: 13px;
+  --fs-base: 14.5px;
+  --fs-lg: 17px;
+  --fs-xl: 22px;
+  --fs-2xl: 30px;
 }
 .light {
-  --bg: #f5f6fb;
-  --panel: rgba(255,255,255,0.75);
-  --border: rgba(20,20,40,0.08);
+  --bg: #f4f5fb;
+  --panel: rgba(255,255,255,0.82);
+  --panel-raised: rgba(255,255,255,0.95);
+  --border: rgba(20,20,40,0.09);
+  --border-strong: rgba(20,20,40,0.16);
   --text: #14142b;
   --muted: #5a6072;
+  --shadow-sm: 0 1px 2px rgba(20,20,60,.06);
+  --shadow-md: 0 8px 24px -8px rgba(20,20,60,.14);
+  --shadow-lg: 0 20px 48px -16px rgba(20,20,60,.18);
 }
 
 * { box-sizing: border-box; }
 html, body { padding: 0; margin: 0; background: var(--bg); color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: var(--fs-base);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility; }
+
+/* Headings sit tighter than body text. At display sizes the default
+   letter-spacing looks loose, which is most of what separates a considered
+   interface from a default one. */
+h1, h2, h3, h4 { letter-spacing: -0.021em; line-height: 1.2; }
 
 .glass {
   background: var(--panel);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* An interactive surface: lifts on hover, and says so. Anything the user can
+   click should feel different from anything they cannot. */
+.glass-hover {
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.glass-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 .gradient-text {
   background: linear-gradient(90deg, #8b5cf6, #06b6d4, #8b5cf6);
@@ -56,7 +116,50 @@ html, body { padding: 0; margin: 0; background: var(--bg); color: var(--text);
     linear-gradient(160deg, rgba(139, 92, 246, 0.16), rgba(6, 182, 212, 0.10)),
     var(--bg);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+/* ---------------- shared primitives ----------------
+   Written once here rather than as a Tailwind string repeated across
+   forty files. A pill in Grievance and a pill in IQAC should be the
+   same pill. */
+
+.pill {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  padding: .55rem 1.05rem;
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  font-weight: 550;
+  border: 1px solid transparent;
+  transition: transform .15s ease, filter .15s ease, background .15s ease;
+}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn-primary { background: #6d28d9; color: #fff; box-shadow: var(--shadow-sm); }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.12); }
+
+.btn-ghost { border-color: var(--border); color: var(--text); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--border-strong); background: var(--panel-raised); }
+
+/* An empty state should look intentional, not broken. */
+.empty-state {
+  border: 1px dashed var(--border);
+  border-radius: var(--r-lg);
+  padding: 2.25rem 1.5rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--fs-sm);
 }

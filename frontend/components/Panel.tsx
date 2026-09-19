@@ -33,11 +33,11 @@ export default function Panel({
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="glass p-6"
+      className="glass p-6 sm:p-7"
     >
-      <div className="flex items-start justify-between gap-3 mb-4">
+      <div className="flex items-start justify-between gap-3 mb-5">
         <div className="min-w-0">
-          <h3 className="font-semibold leading-tight">{title}</h3>
+          <h3 className="font-semibold text-[17px] leading-tight tracking-tight">{title}</h3>
           {hint && (
             <p className="text-xs text-[var(--muted)] mt-1 leading-snug max-w-2xl">{hint}</p>
           )}
