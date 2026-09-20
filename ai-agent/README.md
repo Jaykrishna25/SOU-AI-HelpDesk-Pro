@@ -100,6 +100,64 @@ python -m pytest tests/ -q
 
 ---
 
+## The morning briefing — the agentic part
+
+Everything else in this project answers a question somebody asked. This runs
+on a schedule, decides what is worth saying, and says it before anyone asks.
+
+```bash
+python run_briefing.py --name "Jaykrishna"     # run it
+python run_briefing.py --show                  # last one, without re-running
+```
+
+**Windows Task Scheduler** — Program `…\ai-agent\.venv\Scripts\python.exe`,
+Arguments `run_briefing.py --name "Jaykrishna"`, Start in `…\ai-agent`,
+Trigger daily at 07:30. On Unix: `30 7 * * * cd …/ai-agent && .venv/bin/python run_briefing.py`.
+
+### The loop
+
+| Step | What happens | Where |
+|---|---|---|
+| **Plan** | Reads the transcript, picks search keywords from the student's *strongest* subjects. Deterministic Python — the model does not choose what the brief is about. | `plan_today()` |
+| **Act** | Calls the live Remotive feed for each keyword. | `fetch_market()` |
+| **Observe** | Compares today's listings against a stored set of URLs it has already shown. | `diff_against_memory()` |
+| **Report** | Writes three to five sentences, leading with what *changed*. | `build_briefing()` |
+| **Remember** | Saves the URLs so tomorrow reports what is genuinely new. | `data/briefing_state.json` |
+
+**The Observe step is the one that matters.** A digest that prints the same
+thing every morning is ignored by Wednesday. This one keeps state and can say
+"three new since Tuesday" — or "nothing new today", which is also useful and
+which most digests will not admit.
+
+### Why temperature 1.0 is safe here
+
+`qwen3:8b` at **temperature 1.0** — high, and the model invents freely at that
+setting. That is good for prose and dangerous for facts, so the two are split:
+
+- **Every figure and every listing comes from a tool.** Job titles, company
+  names, locations, counts, the number of days since the last run — all
+  deterministic Python. The model never sees a number it could change.
+- **Temperature 1.0 applies only to the writing step**, which receives the
+  gathered facts and is instructed it may not add to them.
+
+The result reads differently each morning, which is the point, while the facts
+are whatever the feed actually returned. This is the same rule as the rest of
+the project — the model never calculates — applied to an unattended job.
+
+The system prompt is worth reading (`briefing.py`, `SYSTEM`). Two rules in it
+are there because the failure modes are specific: no flattery, because a
+briefing is read at 8am by someone who has not had tea; and if the feed fails
+it must say the feed failed, never "a quiet day in the market" — which would
+be inventing a market condition out of a network error.
+
+### If the model is unreachable
+
+The facts are already gathered by then, so the brief degrades to the findings
+themselves rather than to an error. `run_briefing.py` exits `1` in that case
+and `0` on success, so a scheduler can tell the difference.
+
+---
+
 ## The four tools
 
 ### 1. `analyse_my_results` — runs automatically on upload

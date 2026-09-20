@@ -19,6 +19,7 @@ from agent_core.tools import (
     tool_names_for, ALL_TOOL_NAMES,
 )
 from agent_core.agent import build_agent, ask, opening_summary, model_label
+from agent_core.briefing import build_briefing, load_latest, BRIEF_MODEL, BRIEF_TEMPERATURE
 
 st.set_page_config(page_title="SOU AI HelpDesk", page_icon="*", layout="wide")
 
@@ -54,7 +55,7 @@ st.markdown(CSS, unsafe_allow_html=True)
 for k, v in {
     "store": None, "retriever": None, "agent": None, "subjects": [],
     "summary": "", "raw": "", "history": [], "filename": "",
-    "threshold": WEAK_THRESHOLD, "role": "STUDENT", "indexed": 0,
+    "threshold": WEAK_THRESHOLD, "role": "STUDENT", "indexed": 0, "brief": None,
 }.items():
     st.session_state.setdefault(k, v)
 
@@ -112,6 +113,24 @@ with st.sidebar:
     st.caption(f"Under {CRITICAL_THRESHOLD:g} is treated as at risk of failing.")
 
     st.markdown("---")
+    st.markdown("### Morning briefing")
+    st.caption(
+        "Runs on a schedule with nobody at the keyboard: it plans what to look "
+        "for from your strongest subjects, fetches live listings, compares them "
+        "against what it showed you last time, and reports only what changed."
+    )
+    if st.button("Run it now", use_container_width=True, disabled=not st.session_state.subjects):
+        with st.spinner("Planning, fetching, comparing…"):
+            try:
+                st.session_state.brief = build_briefing(
+                    st.session_state.subjects, student_name="there")
+            except Exception as e:
+                st.error(str(e)[:220])
+    if not st.session_state.subjects:
+        st.caption("Upload a transcript first — the plan is built from your subjects.")
+    st.caption(f"Briefing model: `{BRIEF_MODEL}` at temperature {BRIEF_TEMPERATURE}")
+
+    st.markdown("---")
     st.caption(f"Model: `{model_label()}`")
     st.caption("Embeddings: `BAAI/bge-small-en-v1.5` · Vector store: Chroma")
     if st.session_state.indexed:
@@ -163,6 +182,32 @@ st.markdown(
     'rather than guesses when it cannot.</div>',
     unsafe_allow_html=True,
 )
+
+# ----------------------------------------------------------------- briefing
+_brief = st.session_state.brief or load_latest()
+if _brief:
+    b = _brief if isinstance(_brief, dict) else {
+        "greeting": _brief.greeting, "body": _brief.body, "plan": _brief.plan,
+        "listings": _brief.listings, "new_count": _brief.new_count,
+        "generated_at": _brief.generated_at, "model": _brief.model,
+        "temperature": _brief.temperature, "errors": _brief.errors,
+    }
+    with st.container(border=True):
+        st.markdown(f"#### {b['greeting']}")
+        st.write(b["body"])
+        if b.get("listings"):
+            st.caption(f"{b['new_count']} new since the last briefing")
+            for l in b["listings"]:
+                st.markdown(f"- [{l['title']}]({l['url']}) — {l['company']} · {l['location']}")
+        if b.get("errors"):
+            st.caption("Feed problems: " + "; ".join(b["errors"]))
+        st.caption(
+            f"Searched {', '.join(b['plan'].get('keywords', []))} — "
+            f"{b['plan'].get('reason', '')}. "
+            f"Written by {b.get('model')} at temperature {b.get('temperature')}, "
+            f"{b.get('generated_at', '')}. Figures and listings come from the feed, "
+            f"not the model."
+        )
 
 # ----------------------------------------------------------------- plan
 if st.session_state.subjects:

@@ -105,6 +105,20 @@ export async function POST(req: NextRequest) {
 
   if (!file) return json({ error: "Choose a file." }, 400);
 
+  /* Checked before anything is read or hashed. Without this the failure
+     surfaces as a generic "Upload failed: No token found", which reads like
+     a bug in the portal rather than a deployment that has not been given a
+     blob store. A lecturer cannot act on the first message; they can act on
+     this one by forwarding it to whoever manages the deployment. */
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return json({
+      error: "File storage is not configured on this deployment, so nothing was saved. "
+           + "BLOB_READ_WRITE_TOKEN is missing - the same store IQAC evidence uses. "
+           + "Ask whoever manages the deployment to add it.",
+      notConfigured: true,
+    }, 503);
+  }
+
   /* The same rule object the form uses, so the message a lecturer sees when
      the client catches it and when the server catches it are identical. */
   const problem = uploadProblem({

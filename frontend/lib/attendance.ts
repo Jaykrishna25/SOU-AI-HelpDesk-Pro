@@ -24,16 +24,22 @@ function token(): string {
   try { return typeof window === "undefined" ? "" : sessionStorage.getItem("sou_token") || ""; } catch { return ""; }
 }
 
+/* Polled on an interval, so a dropped connection must not throw. Callers all
+   check `success` already; a network failure simply becomes a failed call. */
 async function api(path: string, init: RequestInit = {}) {
-  const res = await fetch("/api" + path, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token() ? { Authorization: "Bearer " + token() } : {}),
-      ...(init.headers || {}),
-    },
-  });
-  return res.json().catch(() => ({ success: false }));
+  try {
+    const res = await fetch("/api" + path, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token() ? { Authorization: "Bearer " + token() } : {}),
+        ...(init.headers || {}),
+      },
+    });
+    return await res.json().catch(() => ({ success: false }));
+  } catch {
+    return { success: false, offline: true };
+  }
 }
 
 export async function assignCR(a: { subjectCode: string; subjectName: string; enrollmentNo: string; studentName: string; assignedBy: string }) {
