@@ -15,16 +15,24 @@ function token(): string {
   try { return typeof window === "undefined" ? "" : sessionStorage.getItem("sou_token") || ""; } catch { return ""; }
 }
 
+/* A network failure is not exceptional here. This polls every six seconds, so
+   a dropped wifi connection or a dev-server restart used to throw an unhandled
+   rejection on every tick. Every caller already handles `success: false`, so
+   that is what a failure becomes. */
 async function api(path: string, init: RequestInit = {}) {
-  const res = await fetch("/api" + path, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token() ? { Authorization: "Bearer " + token() } : {}),
-      ...(init.headers || {}),
-    },
-  });
-  return res.json().catch(() => ({ success: false }));
+  try {
+    const res = await fetch("/api" + path, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token() ? { Authorization: "Bearer " + token() } : {}),
+        ...(init.headers || {}),
+      },
+    });
+    return await res.json().catch(() => ({ success: false }));
+  } catch {
+    return { success: false, offline: true };
+  }
 }
 
 interface RawTicket {
@@ -70,6 +78,37 @@ export async function updateTicket(code: string, patch: Partial<Ticket>) {
     if (patch.status === "Resolved") sendMail("Ticket " + t.code + " resolved", t.note || t.subject, t.creatorName);
     else if (patch.status === "Escalated") sendMail("Ticket " + t.code + " escalated", t.note || t.subject, t.stage);
   }
+}
+
+/**
+ * Escalate several of one student's tickets in a single action.
+ *
+ * One request, one note, one email — not one of each per ticket, which is
+ * what the per-row flow produced and why a student with four queries got
+ * four separate messages about the same conversation.
+ *
+ * The server independently refuses a batch spanning two students; this
+ * returns whatever it says rather than assuming success.
+ */
+export async function escalateBatch(
+  codes: string[], stage: string, recipient: string, note: string,
+): Promise<{ ok: boolean; escalated: string[]; skipped: string[]; error?: string }> {
+  const d = await api("/tickets/batch", {
+    method: "POST",
+    body: JSON.stringify({ codes, stage, recipient, note }),
+  });
+  refreshData();
+  if (!d.success) {
+    return { ok: false, escalated: [], skipped: [], error: d.error || "The batch could not be sent." };
+  }
+  /* One mail for the whole batch. Sending one per code here would undo the
+     entire point of the endpoint. */
+  sendMail(
+    d.escalated.length + " queries escalated to " + recipient,
+    note + "\n\nTickets: " + d.escalated.join(", "),
+    recipient,
+  );
+  return { ok: true, escalated: d.escalated || [], skipped: d.skipped || [] };
 }
 
 export function useTickets(): Ticket[] {

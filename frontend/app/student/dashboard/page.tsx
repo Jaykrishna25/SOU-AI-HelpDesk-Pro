@@ -6,6 +6,8 @@ import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useEffect, useState } from "react";
 import { CalendarDays, GraduationCap, Wallet, ClipboardCheck } from "lucide-react";
+import MaterialsPanel from "@/components/MaterialsPanel";
+import MessagesPanel from "@/components/MessagesPanel";
 import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
 import ClassroomPanel from "@/components/ClassroomPanel";
@@ -13,6 +15,7 @@ import CRAttendance from "@/components/CRAttendance";
 import StudyPanel from "@/components/StudyPanel";
 import ClassGroupPanel from "@/components/ClassGroupPanel";
 import TutorPanel from "@/components/TutorPanel";
+import BriefingCard from "@/components/BriefingCard";
 import FunPanel from "@/components/FunPanel";
 import ResultsPanel, { useMyResults, averageLabel } from "@/components/ResultsPanel";
 import { useTickets, addTicket, updateTicket, statusColor } from "@/lib/tickets";
@@ -35,7 +38,7 @@ export default function StudentDashboard() {
   const myCr: CRAssignment[] = crs.filter((c) => c.enrollmentNo.toLowerCase() === me.enrollmentNo.toLowerCase());
   const isCR = myCr.length > 0;
 
-  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Study Plan", "Tutor", "Class Group", "Exams", "Notes", "My Tickets", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Fun Zone"];
+  const NAV = ["Dashboard", "Timetable", "Classroom", "Fees", "Results", "Course Material", "Study Plan", "Tutor", "Ask Faculty", "Class Group", "Exams", "Notes", "My Tickets", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Fun Zone"];
   if (isCR) NAV.splice(2, 0, "Mark Attendance");
 
   const first = me.name.split(" ")[0].toLowerCase();
@@ -81,6 +84,8 @@ export default function StudentDashboard() {
         { label: "My Tickets", value: String(mine.length), icon: CalendarDays },
       ]}>
 
+      {tab === "Dashboard" && <BriefingCard />}
+
       {(tab === "Dashboard" || tab === "Timetable") && (
         <Panel title="Today's timetable"
           hint="Sample data with invented staff names — this portal is not connected to the university's timetable system.">
@@ -100,6 +105,10 @@ export default function StudentDashboard() {
       )}
 
       {tab === "Feedback" && <FeedbackPanel />}
+
+      {tab === "Course Material" && <MaterialsPanel mode="view" />}
+
+      {tab === "Ask Faculty" && <MessagesPanel />}
 
       {tab === "Study Plan" && <StudyPanel />}
       {tab === "Tutor" && <TutorPanel />}

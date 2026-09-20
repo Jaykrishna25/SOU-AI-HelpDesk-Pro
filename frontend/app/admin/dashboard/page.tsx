@@ -12,6 +12,7 @@ import { DoorOpen, Ticket, Megaphone, Building2 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
+import TicketBoard from "@/components/TicketBoard";
 import CRPanel from "@/components/CRPanel";
 import FinancePanel from "@/components/FinancePanel";
 import AccountsPanel from "@/components/AccountsPanel";
@@ -58,8 +59,17 @@ export default function AdminDashboard() {
         resolveOptions={["Student (ticket creator)", "HOD", "Owner"]}
         onClose={() => setModal({ open: false, mode: "escalate", code: "" })} onConfirm={onConfirm} />
 
+      {/* The board is the Tickets tab's main view: desks across, one card per
+          student inside each. The flat list below it is kept because Assign
+          and Resolve are still per-ticket actions - only escalation batches. */}
+      {tab === "Tickets" && (
+        <Panel title={`Ticket board (${tickets.length})`}>
+          <TicketBoard tickets={tickets} />
+        </Panel>
+      )}
+
       {(tab === "Dashboard" || tab === "Tickets") && (
-        <Panel title={`Ticket queue (${tickets.length})`}>
+        <Panel title={tab === "Tickets" ? "All tickets - individual actions" : `Ticket queue (${tickets.length})`}>
           <div className="space-y-2 text-sm">
             {tickets.map((t) => (
               <div key={t.code} className="glass px-4 py-3">

@@ -257,6 +257,70 @@ export async function POST(req: Request, ctx: Ctx) {
   const s = await getLiveSession(req);
   if (!s) return bad("Unauthenticated", 401);
 
+  /* ---------------- batch escalation ----------------
+
+     One admin action, one note, one notification, however many tickets.
+     The old flow was one PATCH per ticket, which sent a student four
+     separate emails about what is, to them, a single conversation.
+
+     THE CROSS-STUDENT CHECK IS HERE, not only in the UI. The client
+     refuses a mixed batch too, but that is a courtesy; this is the
+     guarantee. One escalation carries one note, so a batch spanning two
+     students would put both their names in front of whoever receives it
+     and drop each into the other's thread. A privacy rule enforced only
+     in a component is one refactor away from not existing. */
+  if (a === "tickets" && b === "batch") {
+    if (!isStaff(s.role)) return bad("Not permitted", 403);
+    const codes = Array.isArray((body as any).codes) ? (body as any).codes.map(String) : [];
+    const { recipient, stage, note } = body as Record<string, string>;
+    if (!codes.length) return bad("No tickets selected");
+    if (codes.length > 50) return bad("Too many tickets in one batch");
+    if (!stage) return bad("A destination is required");
+
+    const found = await prisma.ticket.findMany({ where: { code: { in: codes } } });
+    if (found.length !== codes.length) return bad("Some tickets could not be found", 404);
+
+    const owners = new Set(found.map(t => t.creatorId));
+    if (owners.size > 1) {
+      return bad("These tickets belong to " + owners.size + " different people. "
+               + "Send each person's tickets separately.", 422);
+    }
+
+    /* Already-settled tickets are skipped rather than reopened. An admin who
+       selected a whole card should not silently un-resolve last week's work. */
+    const open = found.filter(t => t.status !== "Resolved" && t.status !== "Closed");
+    if (!open.length) return bad("Every selected ticket is already resolved");
+
+    const summary = note || ("Escalated to " + (recipient || stage) + " as a group.");
+    await prisma.$transaction(
+      open.map(t => prisma.ticket.update({
+        where: { code: t.code },
+        data: {
+          status: "Escalated", stage, note: summary,
+          history: { create: { event: "ESCALATED", actor: s.fullName, note: summary } },
+        },
+      }))
+    );
+
+    /* One notification naming every code. The student gets a single message
+       and can still tell which of their queries moved. */
+    const creatorId = found[0].creatorId;
+    await notifyUser(creatorId,
+      open.length + (open.length === 1 ? " query escalated" : " queries escalated"),
+      summary + " (" + open.map(t => t.code).join(", ") + ")");
+
+    await audit({
+      action: "UPDATE", entity: "Ticket", entityId: open.map(t => t.code).join(","),
+      session: s, req,
+      summary: s.fullName + " escalated " + open.length + " tickets to " + stage + " as one batch",
+    });
+
+    return ok({
+      escalated: open.map(t => t.code),
+      skipped: found.filter(t => !open.includes(t)).map(t => t.code),
+    });
+  }
+
   if (a === "tickets") {
     const { subject, description, category, priority } = body as Record<string, string>;
     if (!subject) return bad("subject is required");

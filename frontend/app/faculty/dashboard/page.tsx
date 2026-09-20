@@ -6,6 +6,8 @@ import QRPanel from "@/components/QRPanel";
 import BookingPanel from "@/components/BookingPanel";
 import { useEffect, useState } from "react";
 import { Users, ClipboardCheck, Wallet, BookOpen } from "lucide-react";
+import MaterialsPanel from "@/components/MaterialsPanel";
+import MessagesPanel from "@/components/MessagesPanel";
 import DashboardShell from "@/components/DashboardShell";
 import Panel from "@/components/Panel";
 import TicketActionModal, { TicketAction } from "@/components/TicketActionModal";
@@ -16,7 +18,7 @@ import FunPanel from "@/components/FunPanel";
 import { useTickets, updateTicket, statusColor, roleToStage } from "@/lib/tickets";
 import { useSubmissions } from "@/lib/attendance";
 
-const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Content", "Exam Duties", "Salary", "Tickets", "Study Plan", "Tutor", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Fun Zone"];
+const NAV = ["Dashboard", "Timetable", "CR & Attendance", "Students", "Messages", "Content", "Exam Duties", "Salary", "Tickets", "Study Plan", "Tutor", "GreenReserve", "QR Attendance", "Feedback", "Grievance", "Insights", "Fun Zone"];
 
 export default function FacultyDashboard() {
   const [tab, setTab] = useState("Dashboard");
@@ -106,18 +108,9 @@ export default function FacultyDashboard() {
         </Panel>
       )}
 
-      {tab === "Content" && (
-        <Panel title="Upload course material"
-          hint="Not wired up. File storage is configured for IQAC evidence only.">
-          <div className="space-y-3">
-            <input placeholder="Title (e.g. Trees.pdf)" className="w-full glass px-4 py-3 bg-transparent outline-none text-sm" />
-            <div className="flex gap-2 flex-wrap">
-              {["Notes", "Assignment", "Video", "PPT"].map((t) => <button key={t} onClick={() => alert(t + " selected. Choose a file to upload.")} className="px-4 py-2 rounded-full glass text-sm hover:bg-brand/20">{t}</button>)}
-            </div>
-            <button onClick={() => alert("Not wired up in this build. File storage is configured for IQAC evidence only — see the IQAC tab for a working upload.")} className="px-4 py-2 rounded-full bg-brand text-white text-sm">Upload</button>
-          </div>
-        </Panel>
-      )}
+      {tab === "Messages" && <MessagesPanel />}
+
+      {tab === "Content" && <MaterialsPanel mode="manage" />}
 
       {tab === "Exam Duties" && (
         <Panel title="Invigilation duty"
@@ -165,8 +158,6 @@ export default function FacultyDashboard() {
     </DashboardShell>
   );
 }
-
-
 
 
 

@@ -38,6 +38,10 @@ export type Capability =
   | "fun.play"
   // market & technology radar
   | "trends.view"
+  // course material shared by faculty
+  | "material.share" | "material.view"
+  // direct student-faculty conversations
+  | "message.start" | "message.receive"
   // administration
   | "user.manage" | "role.assign" | "audit.view";
 
@@ -89,6 +93,19 @@ const MATRIX: Record<Capability, Role[]> = {
   // curated public briefing. Faculty advising students need it as much as
   // students do, so it is open to every signed-in role.
   "trends.view": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
+
+  // Faculty and above publish; everyone signed in may read. A student
+  // uploading "course material" would be indistinguishable from a student
+  // distributing anything else through a channel their classmates trust.
+  "material.share": ["FACULTY", "HOD", "HOI", "ADMIN", "OWNER", "SUPER_ADMIN"],
+  "material.view": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
+
+  // Students start conversations; teaching staff receive them. Deliberately
+  // one-directional: staff replying to an existing thread is covered by being
+  // a participant, and staff-initiated messaging to a student is a different
+  // feature with different consent questions attached.
+  "message.start": ["STUDENT"],
+  "message.receive": ["FACULTY", "HOD", "HOI"],
 
   "user.manage": ["ADMIN", "OWNER", "SUPER_ADMIN"],
   "role.assign": ["OWNER", "SUPER_ADMIN"],

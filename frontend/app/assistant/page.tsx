@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Sparkles, Send, Mic, MicOff, Volume2, VolumeX, Loader2, Ticket, BookOpen, Languages,
-  AlertTriangle,
+  AlertTriangle, GraduationCap,
 } from "lucide-react";
 import {
   detectLanguage, supportsSpeechInput, supportsSpeechOutput, createRecognizer,
@@ -38,6 +38,10 @@ interface Msg {
   text: string;
   sources?: { title: string; score: number }[];
   unsure?: boolean;
+  /* Which gate refused this, when one did. A coursework refusal must not
+     offer a ticket button - the student has no help desk business, and a
+     ticket would put noise in the admin queue instead of answering them. */
+  reason?: "personal" | "academic" | "complaint";
 }
 
 /* In lib/ so a test can assert the assistant never suggests a question it
@@ -97,7 +101,7 @@ export default function AssistantPage() {
 
     const blocked = gate(q);
     if (blocked) {
-      setMsgs(m => [...m, { role: "ai", unsure: true, text: GATE_MESSAGE[blocked] }]);
+      setMsgs(m => [...m, { role: "ai", unsure: true, reason: blocked, text: GATE_MESSAGE[blocked] }]);
       setBusy(false);
       return;
     }
@@ -198,6 +202,7 @@ export default function AssistantPage() {
               Fees, examinations, attendance, hostel, library, placements, certificates. I answer
               from the university&apos;s own documents and show you which one each answer came from.
               When I don&apos;t know, I say so and offer to raise a ticket instead.
+              For subjects, code and doubts, use the Tutor - that is what it is for.
             </p>
 
             <div className="grid sm:grid-cols-2 gap-2 mt-6">
@@ -227,7 +232,9 @@ export default function AssistantPage() {
                   sees a paragraph of text and assumes it is an answer. */}
               {m.unsure && (
                 <div className="flex items-center gap-1.5 mb-2 text-[11px] font-medium uppercase tracking-wide text-amber-300">
-                  <AlertTriangle size={12} /> Not answered from documents
+                  {m.reason === "academic"
+                    ? <><GraduationCap size={12} /> Coursework - not the help desk</>
+                    : <><AlertTriangle size={12} /> Not answered from documents</>}
                 </div>
               )}
 
@@ -247,7 +254,14 @@ export default function AssistantPage() {
                 </div>
               )}
 
-              {m.unsure && (
+              {m.unsure && m.reason === "academic" && (
+                <a href="/student/dashboard?tab=Tutor"
+                  className="mt-3 text-xs px-3 py-1.5 rounded-lg border border-amber-400/50 text-amber-200 hover:bg-amber-400/10 inline-flex items-center gap-1.5">
+                  <GraduationCap size={12} /> Open the Tutor
+                </a>
+              )}
+
+              {m.unsure && m.reason !== "academic" && (
                 <button onClick={() => raiseTicket(msgs[i - 1]?.text || "Question from OakMitra")}
                   className="mt-3 text-xs px-3 py-1.5 rounded-lg border border-amber-400/50 text-amber-200 hover:bg-amber-400/10 flex items-center gap-1.5">
                   <Ticket size={12} /> Raise this as a ticket

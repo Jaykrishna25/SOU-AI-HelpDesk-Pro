@@ -46,6 +46,11 @@ model User {
   createdTickets Ticket[]      @relation("TicketCreator")
   notifications  Notification[]
   auditLogs      AuditLog[]
+
+  // Named relations because a User appears on both sides of a conversation
+     // and Prisma cannot tell the two apart without them.
+  studentConversations Conversation[] @relation("ConversationStudent")
+  facultyConversations Conversation[] @relation("ConversationFaculty")
 }
 
 model Department {
@@ -945,4 +950,195 @@ model GameScore {
   @@index([weekKey, game])
   @@index([userId])
   @@index([createdAt])
+}
+
+// The morning briefing agent's memory.
+//
+// One row per user. `seenUrls` is what the agent has already shown them, so
+// tomorrow it can report what is genuinely new rather than repeating itself -
+// which is the difference between a briefing and a daily spam.
+//
+// Progression elsewhere in this portal is derived rather than stored; this is
+// not, because "what did I already say" cannot be recomputed from anything.
+/// A generated study timetable. The slots are computed in lib/plan-core.ts,
+/// not by a model, so the arithmetic is testable.
+model StudyPlanRun {
+  id          String   @id @default(cuid())
+  userId      String
+  goal        String
+  days        Int
+  hoursPerDay Float
+  strategy    String   @db.Text
+  subjects    Json
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  tasks       StudyTask[]
+
+  @@index([userId, active])
+}
+
+model StudyTask {
+  id      String       @id @default(cuid())
+  planId  String
+  plan    StudyPlanRun @relation(fields: [planId], references: [id], onDelete: Cascade)
+  userId  String
+  day     Int
+  date    DateTime
+  start   String
+  end     String
+  subject String
+  title   String
+  mode    String
+  minutes Int
+  done    Boolean      @default(false)
+  doneAt  DateTime?
+
+  @@index([userId, planId])
+  @@index([userId, doneAt])
+}
+
+/// Self-study practice only. Never a mark, never on a transcript.
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  subject   String
+  total     Int
+  correct   Int
+  source    String   @default("subject")
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Briefing {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  body      String   @db.Text
+  greeting  String
+  plan      Json
+  // New job openings shown in the most recent briefing.
+  listings  Json
+  // New AI models and open-source tools shown in the most recent briefing.
+  releases  Json     @default("[]")
+  newCount  Int      @default(0)
+  releaseCount Int   @default(0)
+  // Every URL this student has been shown, across all three feeds. Bounded.
+  seenUrls  String[] @default([])
+  model     String   @default("")
+  runs      Int      @default(0)
+  lastRunAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ============================================================
+   // Course material shared by faculty with their students.
+//
+   // The blob is stored PRIVATE and streamed back through an
+   // authenticated route, exactly as IQAC evidence is. A public
+   // blob URL would be simpler, and it would also mean anything a
+   // lecturer uploads is readable by anyone who ever sees the link
+   // - including after the student leaves. Course material is not
+   // secret, but it is not the open web either, and the portal
+   // already owns the pattern for serving a file to a signed-in
+   // person.
+//
+   // `subject` is free text rather than a relation to Subject.
+   // That is a deliberate concession: the seed does not reliably
+   // link a Faculty row to Subject rows, so a hard relation would
+   // make the feature unusable for exactly the accounts meant to
+   // use it. If that link is tightened later, this becomes a
+   // foreign key and the data migrates cleanly.
+   // ============================================================
+model CourseMaterial {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  subject      String
+  semester     Int?
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  blobUrl      String
+  blobPathname String
+  checksum     String?
+  uploadedById String
+  uploadedBy   String
+  uploadedAt   DateTime @default(now())
+  // Withdrawn rather than deleted: a student may have been told to read
+     // something that is later pulled, and an audit trail that loses the row
+     // cannot answer what they were asked to read.
+  visible      Boolean  @default(true)
+
+  @@index([subject, visible])
+  @@index([uploadedById])
+  @@index([uploadedAt])
+}
+
+// ============================================================
+   // Direct student-to-faculty conversations.
+//
+   // A ticket is the right tool when a student needs the
+   // institution: it has a queue, an owner, an SLA and an
+   // escalation path. It is the wrong tool for "can I see you
+   // about the lab submission" - that question does not need a
+   // desk, and routing it through one buries a thirty-second
+   // exchange under a workflow.
+//
+   // Two decisions worth defending:
+//
+   // 1. PARTICIPANTS ARE FIXED AT CREATION. A conversation is
+      // between exactly one student and exactly one faculty
+      // member, stored as two columns rather than a join table.
+      // Nobody can be added later. A group thread would need a
+      // membership model and a rule about who may add whom, and
+      // every message already sent would retrospectively acquire
+      // a new reader.
+//
+   // 2. MESSAGES ARE KEPT. Unlike the class-group chat - which is
+      // deliberately never stored, because it is sixty people's
+      // data uploaded by one of them - this is a conversation
+      // both parties knowingly had inside the portal, and a
+      // student needs to be able to point at what they were told.
+      // That also means it is disclosable, and the UI says so.
+   // ============================================================
+model Conversation {
+  id           String   @id @default(cuid())
+  studentId    String
+  student      User     @relation("ConversationStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  facultyId    String
+  faculty      User     @relation("ConversationFaculty", fields: [facultyId], references: [id], onDelete: Cascade)
+  subject      String
+  // Denormalised so a list of threads is one query, not one per thread.
+  lastMessageAt DateTime @default(now())
+  lastSnippet   String   @default("")
+  // Either side may close it; either side may reopen by replying.
+  closed       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  messages     Message[]
+
+  // One open thread per pair per subject line keeps the list navigable
+     // without forbidding a student from ever raising a second topic.
+  @@index([studentId, lastMessageAt])
+  @@index([facultyId, lastMessageAt])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  senderName     String
+  senderRole     String
+  body           String
+  sentAt         DateTime @default(now())
+  // Read receipts are per-thread rather than per-message: the only question
+     // the UI asks is "has the other side seen this thread since I wrote".
+  readByStudent  Boolean  @default(false)
+  readByFaculty  Boolean  @default(false)
+
+  @@index([conversationId, sentAt])
 }

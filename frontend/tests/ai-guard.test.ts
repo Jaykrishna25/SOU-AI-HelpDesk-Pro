@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  isPersonalRecordQuestion, needsHuman, gate, GATE_MESSAGE,
+  isPersonalRecordQuestion, needsHuman, isAcademicQuestion, gate, GATE_MESSAGE,
 } from "@/lib/ai-guard";
 import { SUGGESTIONS } from "@/lib/assistant-suggestions";
 
@@ -123,5 +123,103 @@ describe("gate ordering and messages", () => {
     // Without the [^.?!] restriction this would match "my" in the first
     // sentence against "fees" in the second and refuse a policy question.
     expect(isPersonalRecordQuestion("I am new here. What are the fees?")).toBe(false);
+  });
+});
+
+
+/* ============================================================
+   Gate 3: coursework.
+
+   The asymmetry here runs the OPPOSITE way to the two gates
+   above, and these tests exist to hold it that way.
+
+   Gates 1 and 2 are generous: over-refusing costs one ticket.
+   This gate is narrow, because over-refusing means an ordinary
+   help desk question - "how do I submit my assignment?" - gets
+   turned away. The negative cases below are therefore the
+   important half of this block, not an afterthought.
+   ============================================================ */
+
+describe("coursework goes to the tutor, not the help desk", () => {
+  const academic = [
+    "write a program to reverse a linked list",
+    "give me the code for binary search",
+    "sql query for finding duplicate rows",
+    "my code is not working, can you debug it",
+    "what is the output of this code",
+    "explain the concept of normalisation",
+    "what is polymorphism",
+    "what is a deadlock",
+    "difference between TCP and UDP",
+    "solve this numerical for me",
+    "solve the following question",
+    "clear my doubt about recursion",
+    "what is the time complexity of quicksort",
+    "prove this theorem",
+  ];
+
+  for (const q of academic) {
+    it(`refuses: ${q}`, () => {
+      expect(isAcademicQuestion(q)).toBe(true);
+      expect(gate(q)).toBe("academic");
+    });
+  }
+
+  it("points at the tutor instead of at a ticket", () => {
+    // The message must name where to go. A bare refusal removes a capability
+    // students already had and tells them nothing about getting it back.
+    expect(GATE_MESSAGE.academic).toMatch(/tutor/i);
+    expect(GATE_MESSAGE.academic).not.toMatch(/raise it as a ticket/i);
+  });
+});
+
+describe("the coursework gate does not swallow help desk questions", () => {
+  /* Every one of these contains a word the gate looks for, and every one is
+     ordinary help desk business. This is the list that will fail first if
+     someone widens the patterns above. */
+  const helpDesk = [
+    "how do I submit my assignment",
+    "what is the last date to submit the assignment",
+    "I have a doubt about the fee deadline",          // "doubt" = "question" in Indian English
+    "I have a doubt regarding hostel admission",
+    "where do I pay the exam form fee",
+    "what is the process to get a bonafide certificate",
+    "what is the minimum attendance requirement",
+    "what are the rules for supplementary examinations",
+    "the library portal is not working",              // a complaint, not a code question
+    "how do I reset my portal password",
+    "what facilities are available on campus",
+    "when is the last date for scholarship registration",
+  ];
+
+  for (const q of helpDesk) {
+    it(`still handles: ${q}`, () => {
+      expect(isAcademicQuestion(q)).toBe(false);
+    });
+  }
+
+  it("an administrative subject beats a coursework word outright", () => {
+    // The allowlist runs first and wins. Without that ordering, the word
+    // "doubt" alone would refuse a large share of the portal's real traffic.
+    expect(isAcademicQuestion("clear my doubt about the fee structure")).toBe(false);
+    expect(isAcademicQuestion("clear my doubt about recursion")).toBe(true);
+  });
+
+  it("keeps every welcome-screen suggestion answerable", () => {
+    // The same trap as before, now with a third gate able to spring it.
+    for (const s of SUGGESTIONS) {
+      expect(isAcademicQuestion(s.q), `suggestion "${s.label}"`).toBe(false);
+    }
+  });
+
+  it("sends a broken submission to a person, and broken code to the tutor", () => {
+    expect(gate("the assignment upload page is not working")).toBe("complaint");
+    expect(gate("my code is not working")).toBe("academic");
+  });
+
+  it("still puts a personal record question first", () => {
+    // "why are my marks wrong" is personal; the coursework gate must not
+    // intercept it and send a student to a tutor about their own result.
+    expect(gate("why are my marks wrong")).toBe("personal");
   });
 });

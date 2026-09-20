@@ -8,7 +8,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, X, Sparkles, ArrowLeft } from "lucide-react";
 import { addTicket } from "@/lib/tickets";
-import { isPersonalRecordQuestion, needsHuman } from "@/lib/ai-guard";
+import { isPersonalRecordQuestion, needsHuman, isAcademicQuestion } from "@/lib/ai-guard";
 
 const INSTITUTES = [
   "College of Engineering and Technology",
@@ -114,6 +114,7 @@ interface Msg { role: "user" | "ai"; text: string; meta?: string }
    gets the same treatment in both places. See lib/ai-guard.ts. */
 const PERSONAL = { test: (q: string) => isPersonalRecordQuestion(q) };
 const COMPLEX = { test: (q: string) => needsHuman(q) };
+const ACADEMIC = { test: (q: string) => isAcademicQuestion(q) };
 
 function normalize(q: string): string[] {
   return q.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
@@ -144,6 +145,14 @@ function decide(q: string, institute: string, course: string): Decision {
   if (PERSONAL.test(q))
     return { text: "That question is about your personal record, which I cannot look up directly. I have raised a ticket so the right desk can check your account and reply.",
       meta: "Personalised query - routed to a human", ticket: true, category: faq?.intent || "ACADEMIC_OFFICE" };
+
+  /* Coursework is checked before the complaint gate, and crucially raises NO
+     ticket. A student asking how recursion works has no help desk business;
+     filing one would put noise in the admin queue and still not answer them.
+     They are pointed at the Tutor, which is built for exactly this. */
+  if (ACADEMIC.test(q))
+    return { text: "I am the university help desk, so I answer from circulars and official documents - a subject answer from me would not be coming from anywhere trustworthy. Open the Tutor in your portal: it explains topics at the depth you ask for and sets practice questions.",
+      meta: "Coursework - sent to the Tutor, no ticket raised", ticket: false, category: "TUTOR" };
 
   if (COMPLEX.test(q))
     return { text: "This looks like an issue that needs someone to investigate rather than a standard answer. I have raised a ticket and routed it for you.",
