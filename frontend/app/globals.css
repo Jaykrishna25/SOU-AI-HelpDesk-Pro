@@ -183,3 +183,75 @@ table, .tabular { font-variant-numeric: tabular-nums; }
   color: var(--muted);
   font-size: var(--fs-sm);
 }
+
+/* ============================================================
+   Light-mode contrast corrections.
+
+   THE PROBLEM
+   -----------
+   This portal was built dark-first, and the accent colours show
+   it: 119 uses of `text-amber-300`, `text-rose-300`,
+   `text-emerald-300`, `text-sky-300` and friends, plus 50 of
+   `text-brand-light`. Every one of those is a pale tint chosen to
+   sit on a near-black panel.
+
+   Light then became the default theme. Those same tints are now
+   painted on cream, where `#C4414B` on `#faf6f2` measures about
+   4.4:1 and the 300-weight accents fall well under 3:1 - and most
+   of them are 10px and 11px chip labels, which need MORE contrast
+   than body text, not less. The source chips on the Market &
+   Technology Radar are the clearest example: pale blue on pale
+   pink, effectively unreadable.
+
+   WHY THIS IS ONE BLOCK RATHER THAN 26 EDITED FILES
+   -------------------------------------------------
+   The alternative was rewriting 169 class strings by hand across
+   26 components. That is a large diff, every line of it a chance
+   to typo a colour into something that silently still fails, and
+   it would have to be repeated the next time someone reaches for
+   `text-rose-300` out of habit. Overriding the utilities under
+   `.light` fixes every existing use and every future one, in the
+   only place a reviewer has to look.
+
+   The dark theme is untouched: each rule is scoped to `.light`,
+   so the palette these colours were originally chosen for still
+   renders exactly as before.
+
+   Each replacement is the same hue at a weight that clears 4.5:1
+   against both `--bg` and the white panels, so the colour still
+   MEANS what it meant - amber is still caution, rose is still
+   failure - it is simply legible now.
+   ============================================================ */
+
+.light .text-amber-300,
+.light .text-amber-200  { color: #92400e; }   /* amber-800  ~6.5:1 */
+.light .text-rose-300   { color: #be123c; }   /* rose-700   ~5.9:1 */
+.light .text-rose-200   { color: #9f1239; }   /* rose-800   ~8.0:1 */
+.light .text-emerald-300 { color: #047857; }  /* emerald-700 ~4.9:1 */
+.light .text-emerald-200 { color: #065f46; }  /* emerald-800 ~6.6:1 */
+.light .text-sky-300    { color: #0369a1; }   /* sky-700    ~5.7:1 */
+.light .text-violet-300 { color: #6d28d9; }   /* violet-700 ~7.0:1 */
+.light .text-orange-200 { color: #9a3412; }   /* orange-800 ~6.9:1 */
+
+/* `brand.light` is #C4414B and its own comment in tailwind.config.ts says
+   "legible on dark". On cream it is not. The full-strength maroon is the
+   same brand colour and reaches ~7.3:1. */
+.light .text-brand-light { color: #9B1C26; }
+
+/* BACKGROUNDS AND BORDERS ARE DELIBERATELY LEFT ALONE.
+
+   The first attempt here widened the faint chip tints with
+   [class*="bg-emerald-5"] and similar. That also matches
+   `bg-emerald-500/80`, `bg-rose-500/80` and `bg-violet-600/80` - the solid
+   Resolve, Escalate and action buttons, which carry white text. Flattening
+   their fill would have made those buttons invisible, which is precisely
+   the complaint this block exists to answer.
+
+   With the label now a 700-weight hue, a 10% tint behind it is already
+   enough to read as a chip. Nothing else needs to move, and a selector
+   that cannot tell a 10% tint from an 80% button has no business in a
+   stylesheet. */
+
+/* A disabled control should read as unavailable, not as absent. Tailwind's
+   `disabled:opacity-40` on a pale button leaves nothing to see at all. */
+.light button:disabled, .light a[aria-disabled="true"] { opacity: 0.55; }
