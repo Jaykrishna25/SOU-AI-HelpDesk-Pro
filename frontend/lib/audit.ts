@@ -13,7 +13,11 @@ export type AuditAction =
   | "APPROVE" | "REJECT" | "VERIFY"
   | "EXPORT" | "VIEW_CONFIDENTIAL" | "VIEW_IDENTITY"
   | "LOGIN" | "LOGIN_FAILED" | "LOGOUT"
-  | "ROLE_CHANGE" | "PASSWORD_RESET";
+  | "ROLE_CHANGE" | "PASSWORD_RESET"
+  /* A reset has three recordable moments, and only logging the last one
+     hides the interesting case: someone probing a known enrollment number
+     leaves a run of DENIED with no REQUESTED after it. */
+  | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_DENIED";
 
 export interface AuditInput {
   action: AuditAction;

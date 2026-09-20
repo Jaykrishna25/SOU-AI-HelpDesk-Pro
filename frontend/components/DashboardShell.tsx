@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import CountUp from "@/components/CountUp";
 import { stagger, popIn, tabSwap, spring, springSnappy, motionSafe } from "@/lib/motion";
-import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint, Sparkles } from "lucide-react";
+import { GraduationCap, LogOut, Bell, CheckCheck, ExternalLink, KeyRound, Fingerprint, Sparkles, TrendingUp } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Chatbot from "./Chatbot";
 import { useTickets, Ticket } from "@/lib/tickets";
@@ -173,6 +173,12 @@ export default function DashboardShell({
           <Link href="/assistant"
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm bg-brand/15 border border-brand/30 text-brand-light hover:bg-brand/25">
             <Sparkles size={15} /> Ask OakMitra
+          </Link>
+          {/* Open to every role: faculty advising a student need the same
+              briefing the student is reading. */}
+          <Link href="/trends"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-[var(--muted)] hover:bg-brand/10">
+            <TrendingUp size={15} /> Market &amp; Tech Radar
           </Link>
         </div>
 

@@ -66,7 +66,7 @@ sou-ai-helpdesk-pro/
 ├── prisma/schema.prisma        # Full ERD (50 models)
 ├── backend/                    # Express + TypeScript API
 │   └── src/
-│       ├── ai/                 # NLP, RAG, 12 agents
+│       ├── ai/                 # NLP, RAG, 13 agents
 │       ├── routes/             # auth, ai, tickets, analytics, data
 │       ├── services/           # ticket workflow, SLA, notifications
 │       ├── middleware/         # JWT auth, RBAC, error handling

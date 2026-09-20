@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { LogIn, ShieldCheck, UserPlus, Copy, CheckCircle2 } from "lucide-react";
+import { LogIn, ShieldCheck, UserPlus, Copy, CheckCircle2, KeyRound, ArrowLeft, MailCheck } from "lucide-react";
 import ThreeBackground from "@/components/ThreeBackground";
 import ThemeToggle from "@/components/ThemeToggle";
 import { sendMailTo } from "@/lib/email";
@@ -60,7 +60,7 @@ const QUICK = [
 
 export default function LoginPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<"login" | "signup">("login");
+  const [tab, setTab] = useState<"login" | "signup" | "forgot">("login");
 
   const [loginId, setLoginId] = useState("SOU2023CSE69");
   const [birthdate, setBirthdate] = useState("2005-05-02");
@@ -77,6 +77,70 @@ export default function LoginPage() {
   const [mailNote, setMailNote] = useState("");
   const [copied, setCopied] = useState(false);
   const [password, setPassword] = useState("");
+
+  /* ---- forgot password ----
+     Two steps on one screen: prove the account, then set the new password.
+     The reset token never goes into storage — it lives in this component and
+     dies with the tab, because it is a credential for the next 15 minutes. */
+  const [fp, setFp] = useState({ loginId: "", email: "", birthdate: "" });
+  const [fpStep, setFpStep] = useState<"verify" | "choose" | "done">("verify");
+  const [fpToken, setFpToken] = useState("");
+  const [fpMasked, setFpMasked] = useState("");
+  const [fpPw, setFpPw] = useState("");
+  const [fpPw2, setFpPw2] = useState("");
+  const [fpErr, setFpErr] = useState("");
+  const [fpBusy, setFpBusy] = useState(false);
+
+  function openForgot() {
+    setFp({ loginId: loginId.trim(), email: "", birthdate: birthdate || "" });
+    setFpStep("verify"); setFpToken(""); setFpMasked("");
+    setFpPw(""); setFpPw2(""); setFpErr("");
+    setTab("forgot");
+  }
+
+  const submitForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFpErr(""); setFpBusy(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          loginId: fp.loginId.trim(), email: fp.email.trim(), birthdate: fp.birthdate,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) { setFpErr(data.error || "Could not verify those details."); return; }
+      setFpToken(data.resetToken);
+      setFpMasked(data.email || "");
+      setFpStep("choose");
+    } catch {
+      setFpErr("Could not reach the server. Please try again.");
+    } finally { setFpBusy(false); }
+  };
+
+  const submitNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFpErr("");
+    // Checked here as well as on the server: retyping is a typo guard, and a
+    // round trip to be told you mistyped your own new password is pointless.
+    if (fpPw !== fpPw2) { setFpErr("The two passwords do not match."); return; }
+    setFpBusy(true);
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resetToken: fpToken, newPassword: fpPw }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) { setFpErr(data.error || "Could not set the new password."); return; }
+      // A reset revokes every session, so any token still in this browser is
+      // dead. Clearing it stops a stale one being sent on the next request.
+      try { sessionStorage.removeItem("sou_token"); localStorage.removeItem("sou_token"); } catch {}
+      setFpToken(""); setFpPw(""); setFpPw2("");
+      setFpStep("done");
+    } catch {
+      setFpErr("Could not reach the server. Please try again.");
+    } finally { setFpBusy(false); }
+  };
 
   /* ---- fingerprint / face sign-in (optional; password still works) ---- */
   const [pkSupported, setPkSupported] = useState(false);
@@ -191,7 +255,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="flex gap-2 my-5">
+        <div className={"flex gap-2 my-5 " + (tab === "forgot" ? "hidden" : "")}>
           <button onClick={() => setTab("login")}
             className={`flex-1 py-2 rounded-full text-sm transition ${tab === "login" ? "bg-brand text-white" : "glass text-[var(--muted)]"}`}>Login</button>
           <button onClick={() => setTab("signup")}
@@ -208,7 +272,13 @@ export default function LoginPage() {
                   className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none" />
               </div>
               <div>
-                <label className="text-xs text-[var(--muted)]">Password</label>
+                <div className="flex items-baseline justify-between gap-2">
+                  <label className="text-xs text-[var(--muted)]">Password</label>
+                  <button type="button" onClick={openForgot}
+                    className="text-xs text-brand-light hover:underline">
+                    Forgot password?
+                  </button>
+                </div>
                 <input type="password" value={password} autoComplete="current-password"
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Leave blank if signing in for the first time"
@@ -249,6 +319,109 @@ export default function LoginPage() {
               </div>
             </div>
           </>
+        )}
+
+        {tab === "forgot" && (
+          <div className="mt-5">
+            <button onClick={() => { setTab("login"); setErr(""); }}
+              className="text-xs text-[var(--muted)] hover:text-[var(--text)] flex items-center gap-1 mb-4">
+              <ArrowLeft size={12} /> Back to sign in
+            </button>
+
+            {fpStep === "verify" && (
+              <>
+                <div className="flex items-center gap-2 mb-1">
+                  <KeyRound size={16} className="text-brand-light" />
+                  <h2 className="font-semibold text-sm">Reset your password</h2>
+                </div>
+                <p className="text-xs text-[var(--muted)] mb-4">
+                  Confirm three things we already hold for your account. All three must match.
+                </p>
+                <form onSubmit={submitForgot} className="space-y-3">
+                  <div>
+                    <label className="text-xs text-[var(--muted)]">Login ID / Enrollment No.</label>
+                    <input required value={fp.loginId} autoComplete="username"
+                      onChange={(e) => setFp({ ...fp, loginId: e.target.value })}
+                      className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[var(--muted)]">Registered email address</label>
+                    <input required type="email" value={fp.email}
+                      onChange={(e) => setFp({ ...fp, email: e.target.value })}
+                      placeholder="The address on your account"
+                      className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[var(--muted)]">Date of birth</label>
+                    <input required type="date" value={fp.birthdate}
+                      onChange={(e) => setFp({ ...fp, birthdate: e.target.value })}
+                      className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none text-sm" />
+                  </div>
+                  {fpErr && <p className="text-rose-400 text-xs">{fpErr}</p>}
+                  <button disabled={fpBusy}
+                    className="w-full py-3 rounded-full bg-brand text-white font-semibold glow flex items-center justify-center gap-2 hover:bg-brand-light transition disabled:opacity-60">
+                    <KeyRound size={16} /> {fpBusy ? "Checking..." : "Verify my account"}
+                  </button>
+                  <p className="text-[11px] text-[var(--muted)]">
+                    Repeated wrong answers lock the account for a while, the same as failed sign-ins.
+                    If you cannot remember the email on file, contact the department office.
+                  </p>
+                </form>
+              </>
+            )}
+
+            {fpStep === "choose" && (
+              <>
+                <div className="flex items-center gap-2 mb-1">
+                  <MailCheck size={16} className="text-emerald-400" />
+                  <h2 className="font-semibold text-sm">Choose a new password</h2>
+                </div>
+                <p className="text-xs text-[var(--muted)] mb-4">
+                  {fpMasked
+                    ? "Verified against " + fpMasked + ". You have 15 minutes."
+                    : "Verified. You have 15 minutes."}
+                </p>
+                <form onSubmit={submitNewPassword} className="space-y-3">
+                  <div>
+                    <label className="text-xs text-[var(--muted)]">New password</label>
+                    <input required type="password" value={fpPw} autoComplete="new-password"
+                      onChange={(e) => setFpPw(e.target.value)}
+                      className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none text-sm" />
+                    <p className="text-[11px] text-[var(--muted)] mt-1">
+                      At least 10 characters, with an uppercase letter, a lowercase letter and a
+                      number. Not your login ID, and not a date.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-[var(--muted)]">Repeat new password</label>
+                    <input required type="password" value={fpPw2} autoComplete="new-password"
+                      onChange={(e) => setFpPw2(e.target.value)}
+                      className="w-full mt-1 glass px-4 py-3 bg-transparent outline-none text-sm" />
+                  </div>
+                  {fpErr && <p className="text-rose-400 text-xs">{fpErr}</p>}
+                  <button disabled={fpBusy}
+                    className="w-full py-3 rounded-full bg-brand text-white font-semibold glow flex items-center justify-center gap-2 hover:bg-brand-light transition disabled:opacity-60">
+                    {fpBusy ? "Saving..." : "Set new password"}
+                  </button>
+                </form>
+              </>
+            )}
+
+            {fpStep === "done" && (
+              <div className="text-center py-4">
+                <CheckCircle2 className="mx-auto text-emerald-400 mb-3" size={40} />
+                <p className="font-semibold mb-1">Password changed</p>
+                <p className="text-xs text-[var(--muted)] mb-5">
+                  Every device that was signed in to this account has been signed out, including
+                  any you do not recognise. Sign in again with your new password.
+                </p>
+                <button onClick={() => { setTab("login"); setPassword(""); setLoginId(fp.loginId); }}
+                  className="w-full py-3 rounded-full bg-brand text-white font-semibold">
+                  Back to sign in
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {tab === "signup" && !newId && (

@@ -36,6 +36,8 @@ export type Capability =
   | "study.viewOwn" | "study.viewCohort"
   // fun zone
   | "fun.play"
+  // market & technology radar
+  | "trends.view"
   // administration
   | "user.manage" | "role.assign" | "audit.view";
 
@@ -82,6 +84,11 @@ const MATRIX: Record<Capability, Role[]> = {
 
   // Everyone may play. The access window, not the role, is what limits it.
   "fun.play": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
+
+  // The radar holds no personal data and nothing confidential - it is a
+  // curated public briefing. Faculty advising students need it as much as
+  // students do, so it is open to every signed-in role.
+  "trends.view": ["STUDENT", "FACULTY", "ADMIN", "HOD", "HOI", "OWNER", "SUPER_ADMIN"],
 
   "user.manage": ["ADMIN", "OWNER", "SUPER_ADMIN"],
   "role.assign": ["OWNER", "SUPER_ADMIN"],

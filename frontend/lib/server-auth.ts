@@ -30,7 +30,16 @@ export function signToken(s: Session): string {
 }
 
 export function verifyToken(token: string): Session | null {
-  try { return jwt.verify(token, EFFECTIVE) as Session; } catch { return null; }
+  try {
+    const claims = jwt.verify(token, EFFECTIVE) as Session & { purpose?: string };
+    /* Reset tokens are signed with the same secret and carry a matching
+       userId and tv, so without this they would satisfy getLiveSession and
+       act as a session with an undefined role. A token minted for one
+       purpose must never be usable for another. */
+    if (claims?.purpose) return null;
+    if (!claims?.userId || !claims?.role || !claims?.loginId) return null;
+    return claims as Session;
+  } catch { return null; }
 }
 
 export function getSession(req: Request): Session | null {
@@ -79,6 +88,39 @@ export function passwordProblem(pw: string, loginId?: string): string | null {
   if (/^(\d{4}-\d{2}-\d{2}|\d{8})$/.test(pw)) return "A date is not an acceptable password.";
   return null;
 }
+
+/* ---------------- password reset tokens ----------------
+
+   A reset token is NOT a session. It is deliberately a different
+   shape so that one can never be presented as the other: it
+   carries `purpose: "reset"`, it has no role or name on it, and
+   `verifyResetToken` rejects anything without that claim - so a
+   stolen reset token cannot be swapped into an Authorization
+   header to read a student's record.
+
+   It is bound to `tv`, the account's token version. Completing a
+   reset bumps that version, which invalidates the token that was
+   used along with every signed-in device. A reset link is
+   therefore single-use without needing a table to track it. */
+
+const RESET_TTL = "15m";
+
+interface ResetClaims { userId: string; tv: number; purpose: "reset" }
+
+export function signResetToken(userId: string, tokenVersion: number): string {
+  return jwt.sign({ userId, tv: tokenVersion, purpose: "reset" } as ResetClaims,
+    EFFECTIVE, { expiresIn: RESET_TTL });
+}
+
+export function verifyResetToken(token: string): { userId: string; tv: number } | null {
+  try {
+    const c = jwt.verify(token, EFFECTIVE) as ResetClaims;
+    if (c?.purpose !== "reset" || !c.userId || typeof c.tv !== "number") return null;
+    return { userId: c.userId, tv: c.tv };
+  } catch { return null; }
+}
+
+export const RESET_POLICY = { TTL_MINUTES: 15 };
 
 /* ---------------- lockout (serverless-safe, stored in DB) ---------------- */
 export function isLocked(u: { lockedUntil: Date | null }): boolean {

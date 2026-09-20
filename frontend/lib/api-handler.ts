@@ -1,4 +1,5 @@
-import { verifyPassword, hashPassword, passwordProblem, isLocked, noteFailedLogin, clearFailedLogins, LOCK_POLICY } from "@/lib/server-auth";
+import { verifyPassword, hashPassword, passwordProblem, isLocked, noteFailedLogin, clearFailedLogins, LOCK_POLICY, signResetToken, verifyResetToken, RESET_POLICY } from "@/lib/server-auth";
+import { maskEmail } from "@/lib/mask";
 import { audit } from "./audit";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -120,6 +121,108 @@ export async function POST(req: Request, ctx: Ctx) {
       mustChangePassword: session.mcp,
       user: { id: user.id, role: user.role, fullName: user.fullName, loginId: user.loginId },
     });
+  }
+
+  /* ---------------- forgot password ----------------
+
+     Step 1 of 2. The account is proved with three facts that are not all
+     on any one document: the login ID, the registered email, and the date
+     of birth. That is the same standard the first sign-in already uses,
+     raised by one factor.
+
+     Two things are deliberate:
+
+     - The failure message never distinguishes "no such ID" from "wrong
+       email" from "wrong date". Any of those three telling the truth
+       turns this endpoint into a way to confirm that a given enrollment
+       number exists, and then to guess at the rest one field at a time.
+
+     - Failed attempts go through noteFailedLogin, so this path shares the
+       login lockout rather than sitting beside it as an unlimited oracle.
+       A reset form with no rate limit is the softest way into an account.
+
+     This verifies identity in-session rather than emailing a link. That is
+     a real limitation and it is written down in docs/AUTH.md: anyone
+     holding all three facts can reset the password without access to the
+     mailbox. Emailing a one-time link is the upgrade, and the token this
+     returns is already shaped to be delivered that way. */
+  if (a === "auth" && b === "forgot-password") {
+    const { loginId, email, birthdate } = body as Record<string, string>;
+    const DENY = "Those details do not match an account. Check your login ID, "
+               + "registered email and date of birth.";
+
+    if (!loginId || !email || !birthdate) return bad(DENY, 400);
+
+    const user = await prisma.user.findUnique({ where: { loginId: String(loginId).trim() } });
+    if (!user || !user.isActive) return bad(DENY, 401);
+    if (isLocked(user)) {
+      return bad("Account locked after repeated failed attempts. Try again in "
+               + LOCK_POLICY.LOCK_MINUTES + " minutes.", 423);
+    }
+
+    const emailOk = !!user.email
+      && user.email.trim().toLowerCase() === String(email).trim().toLowerCase();
+    const dobOk = user.birthdate.toISOString().slice(0, 10) === String(birthdate).trim();
+
+    if (!emailOk || !dobOk) {
+      await noteFailedLogin(user.id, user.failedLogins);
+      await audit({
+        action: "PASSWORD_RESET_DENIED", entity: "User", entityId: user.id, req,
+        summary: "Failed reset attempt for " + user.loginId,
+      });
+      return bad(DENY, 401);
+    }
+
+    await clearFailedLogins(user.id);
+    await audit({
+      action: "PASSWORD_RESET_REQUESTED", entity: "User", entityId: user.id, req,
+      summary: user.loginId + " passed reset verification",
+    });
+
+    return ok({
+      resetToken: signResetToken(user.id, user.tokenVersion),
+      expiresInMinutes: RESET_POLICY.TTL_MINUTES,
+      /* Masked so the screen can confirm which mailbox is on file without
+         printing an address to whoever is standing at the machine. */
+      email: maskEmail(user.email),
+      fullName: user.fullName,
+    });
+  }
+
+  /* Step 2 of 2. Bumping tokenVersion both signs every device out and
+     retires the reset token that was just used - see signResetToken. */
+  if (a === "auth" && b === "reset-password") {
+    const { resetToken, newPassword } = body as Record<string, string>;
+    const claims = verifyResetToken(String(resetToken || ""));
+    if (!claims) {
+      return bad("This reset link has expired or has already been used. Start again.", 401);
+    }
+    const user = await prisma.user.findUnique({ where: { id: claims.userId } });
+    if (!user || !user.isActive) return bad("Account not found", 404);
+    if (claims.tv !== user.tokenVersion) {
+      return bad("This reset link has already been used. Start again.", 401);
+    }
+    const problem = passwordProblem(String(newPassword || ""), user.loginId);
+    if (problem) return bad(problem);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: await hashPassword(String(newPassword)),
+        mustChangePassword: false,
+        passwordChangedAt: new Date(),
+        tokenVersion: { increment: 1 },
+        failedLogins: 0,
+        lockedUntil: null,
+      },
+    });
+    await audit({
+      action: "PASSWORD_RESET", entity: "User", entityId: user.id, req,
+      summary: user.loginId + " reset their password and all sessions were revoked",
+    });
+    /* No token is returned. A reset signs you out everywhere, including
+       here; you sign in with the new password like anyone else. */
+    return ok({ reset: true });
   }
 
   if (a === "auth" && b === "set-password") {

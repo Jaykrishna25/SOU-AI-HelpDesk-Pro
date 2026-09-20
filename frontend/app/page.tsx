@@ -1,9 +1,10 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Bot, Ticket, BrainCircuit, Bell, ShieldCheck, Cloud, GraduationCap, Users,
-  BarChart3, Workflow, Database, Sparkles, ArrowRight, MessageSquare, Layers,
+  BarChart3, Workflow, Database, TrendingUp, ArrowRight, MessageSquare, Layers,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import ThreeBackground from "@/components/ThreeBackground";
@@ -13,7 +14,8 @@ import Counter from "@/components/Counter";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
 
 const features = [
-  { icon: Bot, title: "Multi-Agent AI Help Desk", desc: "12 cooperating agents detect intent, retrieve knowledge, decide, route & notify." },
+  { icon: Bot, title: "Multi-Agent AI Help Desk", desc: "13 cooperating agents detect intent, retrieve knowledge, decide, route & notify." },
+  { icon: TrendingUp, title: "Market & Technology Radar", desc: "What launched, what to learn, what hiring looks like — every claim dated and sourced." },
   { icon: BrainCircuit, title: "RAG Knowledge Engine", desc: "Semantic search over circulars, policies & FAQs with confidence-gated answers." },
   { icon: Ticket, title: "Smart Ticketing + SLA", desc: "Auto-ticketing when retrieval confidence is too low to trust, with escalation up the chain." },
   { icon: Bell, title: "Real-Time Notifications", desc: "Watchers auto-added across the chain; In-App + AWS SES email on every event." },
@@ -27,6 +29,7 @@ const agents = [
   "Intent Recognition", "Entity Extraction", "Knowledge Retrieval", "RAG",
   "Decision", "Ticket", "Faculty Routing", "Email",
   "Learning", "Analytics", "Notification Orchestration", "Sentiment",
+  "Market & Technology Radar",
 ];
 
 const portals = [
@@ -50,9 +53,15 @@ export default function Home() {
 
       {/* HERO */}
       <section className="relative z-10 pt-40 pb-24 px-6 text-center max-w-5xl mx-auto">
+        {/* The university's own mark, not a product tagline. It sits on a white
+            card because the lockup is printed artwork with fixed brand colours -
+            recolouring it for dark mode would misrepresent the institution's
+            identity, and a tinted logo reads as a knock-off. */}
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }}
-          className="inline-flex items-center gap-2 glass px-4 py-1.5 text-xs mb-6">
-          <Sparkles size={14} className="text-brand-light" /> Silver Oak University ?? Enterprise SaaS
+          className="inline-flex items-center justify-center bg-white rounded-2xl px-5 py-3 mb-8 shadow-xl shadow-black/10 ring-1 ring-black/5">
+          <Image src="/sou-naac-lockup.png" alt="Silver Oak University — Education to Innovation — NAAC A Grade"
+            width={828} height={156} priority
+            className="h-10 sm:h-12 md:h-14 w-auto object-contain" />
         </motion.div>
         <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
           className="text-5xl md:text-7xl font-extrabold leading-tight">
@@ -174,7 +183,11 @@ export default function Home() {
             </Link>
           </div>
         </Reveal>
-        <p className="mt-12 text-xs text-[var(--muted)]">?? 2026 Silver Oak University ?? SOU AI HelpDesk Pro ?? Enterprise University ERP & Multi-Agent Help Desk</p>
+        {/* Escaped rather than pasted: the literal characters were mangled to
+            "??" somewhere between an editor and the repo once already. */}
+        <p className="mt-12 text-xs text-[var(--muted)]">
+          {"© 2026 Silver Oak University · SOU AI HelpDesk Pro · Enterprise University ERP & Multi-Agent Help Desk"}
+        </p>
       </footer>
     </main>
   );
