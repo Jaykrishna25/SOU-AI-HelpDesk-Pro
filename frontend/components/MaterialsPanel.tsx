@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Upload, FileText, Download, EyeOff, Eye, Trash2, Loader2, AlertTriangle, FolderOpen,
+  Upload, FileText, Download, EyeOff, Eye, Trash2, Loader2, AlertTriangle, FolderOpen, RefreshCw, CheckCircle2,
 } from "lucide-react";
 import { uploadProblem, humanSize, bySubject, MAX_BYTES } from "@/lib/materials-core";
 
@@ -38,7 +38,7 @@ export default function MaterialsPanel({ mode = "view" }: { mode?: "view" | "man
   const [form, setForm] = useState({ title: "", subject: "", semester: "", description: "" });
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -56,7 +56,19 @@ export default function MaterialsPanel({ mode = "view" }: { mode?: "view" | "man
     } finally { setLoading(false); }
   }, [mode]);
 
-  useEffect(() => { load(); }, [load]);
+  /* Poll, and refresh when the tab regains focus.
+
+     Without this the panel loaded once on mount and never again, so a
+     student sitting on Course Material while their lecturer uploaded saw
+     nothing until they reloaded the page - which is precisely the moment
+     the feature is being watched. Fifteen seconds matches MessagesPanel. */
+  useEffect(() => {
+    load();
+    const timer = setInterval(load, 15000);
+    const onFocus = () => load();
+    window.addEventListener("focus", onFocus);
+    return () => { clearInterval(timer); window.removeEventListener("focus", onFocus); };
+  }, [load]);
 
   /* Validated with the same function the server uses, so a lecturer is not
      told one thing by the form and another by the response. */
@@ -66,7 +78,7 @@ export default function MaterialsPanel({ mode = "view" }: { mode?: "view" | "man
 
   async function upload() {
     if (!file) return;
-    setBusy(true); setNote("");
+    setBusy(true); setNote(null);
     const fd = new FormData();
     fd.append("file", file);
     fd.append("title", form.title);
@@ -78,14 +90,17 @@ export default function MaterialsPanel({ mode = "view" }: { mode?: "view" | "man
         method: "POST", headers: { Authorization: "Bearer " + tok() }, body: fd,
       });
       const d = await r.json();
-      if (!r.ok) { setNote(d.error || "Upload failed."); return; }
+      /* A failed upload must not look like a quiet notice. Nothing was saved,
+         and a lecturer who misses that will tell a class to read a file that
+         is not there. */
+      if (!r.ok) { setNote({ kind: "err", text: d.error || "Upload failed - nothing was saved." }); return; }
       setForm({ title: "", subject: form.subject, semester: form.semester, description: "" });
       setFile(null);
       if (fileRef.current) fileRef.current.value = "";
-      setNote("Shared. Students in " + form.subject + " can see it now.");
+      setNote({ kind: "ok", text: "Shared. Students can see it under Course Material now." });
       load();
     } catch {
-      setNote("Could not reach the server.");
+      setNote({ kind: "err", text: "Could not reach the server - nothing was saved." });
     } finally { setBusy(false); }
   }
 
@@ -130,7 +145,7 @@ export default function MaterialsPanel({ mode = "view" }: { mode?: "view" | "man
               placeholder="Semester (optional)" inputMode="numeric"
               className="glass px-3 py-2 bg-transparent outline-none text-sm" />
             <input ref={fileRef} type="file"
-              onChange={e => { setFile(e.target.files?.[0] || null); setNote(""); }}
+              onChange={e => { setFile(e.target.files?.[0] || null); setNote(null); }}
               className="glass px-3 py-2 bg-transparent outline-none text-sm file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-brand file:text-white file:text-xs" />
           </div>
           <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
@@ -154,9 +169,32 @@ export default function MaterialsPanel({ mode = "view" }: { mode?: "view" | "man
               <AlertTriangle size={11} className="mt-0.5 shrink-0" /> {problem}
             </p>
           )}
-          {note && <p className="text-[11px] text-[var(--muted)] mt-2">{note}</p>}
+          {note && (
+            <p className={"mt-2 text-xs flex items-start gap-1.5 px-3 py-2 rounded-lg border " +
+              (note.kind === "ok"
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                : "border-rose-500/50 bg-rose-500/10 text-rose-200")}>
+              {note.kind === "ok"
+                ? <CheckCircle2 size={12} className="mt-0.5 shrink-0" />
+                : <AlertTriangle size={12} className="mt-0.5 shrink-0" />}
+              {note.text}
+            </p>
+          )}
         </div>
       )}
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <h3 className="text-sm font-semibold">
+          {mode === "manage" ? "What you have shared" : "Course material"}
+        </h3>
+        <span className="text-[11px] text-[var(--muted)]">
+          {items.length} {items.length === 1 ? "file" : "files"}
+        </span>
+        <button onClick={() => { setLoading(true); load(); }}
+          className="ml-auto text-xs px-3 py-1 rounded-full border border-[var(--border)] hover:border-brand transition flex items-center gap-1.5">
+          <RefreshCw size={12} /> Refresh
+        </button>
+      </div>
 
       {loading && (
         <p className="text-sm text-[var(--muted)] flex items-center gap-2">
